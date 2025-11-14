@@ -4,8 +4,6 @@ import de.oth.muskelmanagement.model.Role;
 import de.oth.muskelmanagement.model.User;
 import de.oth.muskelmanagement.repository.RoleRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,8 +12,6 @@ import java.util.Set;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
-
-    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -47,10 +43,7 @@ public class DataInitializer implements CommandLineRunner {
         Role memberRole = new Role("ROLE_MEMBER");
         roleRepository.save(memberRole);
 
-        String encodedAdminPassword = passwordEncoder.encode("password");
-        logger.info("Encoded password for admin: {}", encodedAdminPassword);
-
-        User admin = new User("Admin", "User", "admin@example.com", encodedAdminPassword,
+        User admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("password"),
                 Set.of(adminRole, trainerRole, memberRole));
         userRepository.save(admin);
 

@@ -5,8 +5,6 @@ import de.oth.muskelmanagement.model.User;
 import de.oth.muskelmanagement.repository.RoleRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.dto.UserDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +14,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -61,14 +57,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByEmail(String email) {
-        logger.info("Attempting to find user by email: {}", email);
-        User user = userRepository.findByEmail(email);
-        if (user != null) {
-            logger.info("User found: {}", user.getEmail());
-        } else {
-            logger.warn("User not found for email: {}", email);
-        }
-        return user;
+        return userRepository.findByEmail(email);
     }
 
     @Override

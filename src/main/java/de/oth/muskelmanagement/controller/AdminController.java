@@ -3,8 +3,6 @@ package de.oth.muskelmanagement.controller;
 import de.oth.muskelmanagement.service.UserService;
 import de.oth.muskelmanagement.service.dto.UserDto;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,8 +16,6 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-
-    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
     private final UserService userService;
 
@@ -61,12 +57,7 @@ public class AdminController {
     @GetMapping("/users/edit/{id}")
     public String showEditUserForm(@PathVariable("id") Long id, Model model, Principal principal) {
         UserDto user = userService.findById(id);
-        logger.info("Attempting to edit user with ID: {}, Email: {}", id, user.getEmail());
-        logger.info("Current principal email: {}", principal.getName());
-        boolean isSelfEdit = user.getEmail().equals(principal.getName());
-        logger.info("Is self-edit: {}", isSelfEdit);
-
-        if (isSelfEdit) {
+        if (user.getEmail().equals(principal.getName())) {
             throw new AccessDeniedException("Admins are not allowed to edit their own account.");
         }
         model.addAttribute("user", user);
@@ -78,12 +69,7 @@ public class AdminController {
     public String updateUser(@PathVariable("id") Long id, @Valid @ModelAttribute("user") UserDto userDto,
             BindingResult bindingResult, Model model, Principal principal) {
         UserDto existingUser = userService.findById(id); // Get existing user to compare email
-        logger.info("Attempting to update user with ID: {}, Email: {}", id, existingUser.getEmail());
-        logger.info("Current principal email: {}", principal.getName());
-        boolean isSelfUpdate = existingUser.getEmail().equals(principal.getName());
-        logger.info("Is self-update: {}", isSelfUpdate);
-
-        if (isSelfUpdate) {
+        if (existingUser.getEmail().equals(principal.getName())) {
             throw new AccessDeniedException("Admins are not allowed to update their own account.");
         }
         if (bindingResult.hasErrors()) {
@@ -98,12 +84,7 @@ public class AdminController {
     @GetMapping("/users/delete/{id}")
     public String deleteUser(@PathVariable("id") Long id, Principal principal) {
         UserDto userToDelete = userService.findById(id);
-        logger.info("Attempting to delete user with ID: {}, Email: {}", id, userToDelete.getEmail());
-        logger.info("Current principal email: {}", principal.getName());
-        boolean isSelfDelete = userToDelete.getEmail().equals(principal.getName());
-        logger.info("Is self-delete: {}", isSelfDelete);
-
-        if (isSelfDelete) {
+        if (userToDelete.getEmail().equals(principal.getName())) {
             throw new AccessDeniedException("Admins are not allowed to delete their own account.");
         }
         userService.deleteUser(id);

@@ -5,8 +5,6 @@ import de.oth.muskelmanagement.config.handler.CustomAuthenticationFailureHandler
 import de.oth.muskelmanagement.model.Role;
 import de.oth.muskelmanagement.model.User;
 import de.oth.muskelmanagement.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,8 +27,6 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-
     @Autowired
     private CustomAccessDeniedHandler accessDeniedHandler;
 
@@ -51,13 +47,10 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(UserService userService) {
         return email -> {
-            logger.info("Attempting to load user by email: {}", email);
             User user = userService.findByEmail(email);
             if (user == null) {
-                logger.warn("User not found for email: {}", email);
                 throw new UsernameNotFoundException("User not found");
             }
-            logger.info("User found: {}", user.getEmail());
             return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
                     user.isEnabled(), true, true, true, getAuthorities(user.getRoles()));
         };
