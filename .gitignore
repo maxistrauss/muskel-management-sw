@@ -35,3 +35,11 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Node ###
+node_modules/
+package-lock.json
+
+### Database ###
+*.mv.db
+*.trace.db

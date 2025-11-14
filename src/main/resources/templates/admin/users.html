@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Management</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <div class="flex-shrink-0 flex items-center">
+                    <a class="text-2xl font-bold text-gray-800" href="/">MuskelManagement</a>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                       href="/admin/users">User
+                        Management</a>
+                </div>
+                <form class="ml-4" method="post" th:action="@{/logout}">
+                    <input class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit"
+                           value="Logout"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">User Management</h1>
+            <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="/admin/users/new">Create
+                User</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">First Name</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Last Name</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Email</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Enabled</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Roles</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                <tr th:classappend="${user.email == currentUsername} ? 'bg-blue-100' : ''"
+                    th:each="user, i : ${users}">
+                    <td class="py-3 px-4" th:text="${user.firstName}"></td>
+                    <td class="py-3 px-4" th:text="${user.lastName}"></td>
+                    <td class="py-3 px-4">
+                        <span th:text="${user.email}"></span>
+                        <span class="font-bold text-blue-600" th:if="${user.email == currentUsername}"> (You)</span>
+                    </td>
+                    <td class="py-3 px-4" th:text="${user.enabled}"></td>
+                    <td class="py-3 px-4" th:text="${#strings.listJoin(user.roles, ', ')}"></td>
+                    <td class="py-3 px-4">
+                        <th:block th:if="${user.email != currentUsername}">
+                            <div><a class="text-blue-500 hover:text-blue-700"
+                                    th:href="@{/admin/users/edit/{id}(id=${user.id})}">Edit</a></div>
+                            <div><a class="text-red-500 hover:text-red-700"
+                                    th:href="@{/admin/users/delete/{id}(id=${user.id})}">Delete</a></div>
+                        </th:block>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
