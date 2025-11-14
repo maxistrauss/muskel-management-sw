@@ -58,7 +58,7 @@ class UserServiceImplTest {
         userDto.setEnabled(true);
         userDto.setRoles(new HashSet<>(Collections.singletonList("ROLE_ADMIN")));
 
-        user = new User("Test", "User", "test@example.com", "encodedPassword",
+        user = new User("Test", "User", "test@example.com", "Basic", "encodedPassword",
                 new HashSet<>(Collections.singletonList(memberRole)));
         user.setId(1L);
         user.setEnabled(true);
@@ -104,7 +104,7 @@ class UserServiceImplTest {
 
     @Test
     void updateUser_shouldUpdateUserDetailsAndKeepMemberRole() {
-        User existingUser = new User("Old", "Name", "old@example.com", "oldEncodedPassword",
+        User existingUser = new User("Old", "Name", "old@example.com", "Basic", "oldEncodedPassword",
                 new HashSet<>(Collections.singletonList(memberRole)));
         existingUser.setId(1L);
 

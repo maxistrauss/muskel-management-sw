@@ -35,27 +35,82 @@
             <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="/admin/users/new">Create
                 User</a>
         </div>
+
+        <!-- Search/Filter Form -->
+        <form class="mb-6 p-4 border rounded-lg bg-gray-50" method="get" th:action="@{/admin/users}">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="email">Email:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="email" name="email" th:value="${email}" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="firstName">First Name:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="firstName" name="firstName" th:value="${firstName}" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="lastName">Last Name:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="lastName" name="lastName" th:value="${lastName}" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="membershipType">Membership
+                        Type:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="membershipType" name="membershipType" th:value="${membershipType}" type="text"/>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        type="submit">Search
+                </button>
+                <a class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded ml-2"
+                   th:href="@{/admin/users}">Clear</a>
+            </div>
+        </form>
+
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white">
                 <thead class="bg-gray-800 text-white">
                 <tr>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm">First Name</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm">Last Name</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm">Email</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm">Enabled</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">
+                        <a th:href="@{/admin/users(page=${userPage.number}, size=${userPage.size}, sort='firstName,' + ${sortDirection}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
+                           th:with="sortDirection=${userPage.sort.getOrderFor('firstName') != null and userPage.sort.getOrderFor('firstName').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">First
+                            Name</a>
+                    </th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">
+                        <a th:href="@{/admin/users(page=${userPage.number}, size=${userPage.size}, sort='lastName,' + ${sortDirection}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
+                           th:with="sortDirection=${userPage.sort.getOrderFor('lastName') != null and userPage.sort.getOrderFor('lastName').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">Last
+                            Name</a>
+                    </th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">
+                        <a th:href="@{/admin/users(page=${userPage.number}, size=${userPage.size}, sort='email,' + ${sortDirection}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
+                           th:with="sortDirection=${userPage.sort.getOrderFor('email') != null and userPage.sort.getOrderFor('email').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">Email</a>
+                    </th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">
+                        <a th:href="@{/admin/users(page=${userPage.number}, size=${userPage.size}, sort='membershipType,' + ${sortDirection}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
+                           th:with="sortDirection=${userPage.sort.getOrderFor('membershipType') != null and userPage.sort.getOrderFor('membershipType').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">Membership
+                            Type</a>
+                    </th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">
+                        <a th:href="@{/admin/users(page=${userPage.number}, size=${userPage.size}, sort='enabled,' + ${sortDirection}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
+                           th:with="sortDirection=${userPage.sort.getOrderFor('enabled') != null and userPage.sort.getOrderFor('enabled').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">Enabled</a>
+                    </th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Roles</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Actions</th>
                 </tr>
                 </thead>
                 <tbody class="text-gray-700">
                 <tr th:classappend="${user.email == currentUsername} ? 'bg-blue-100' : ''"
-                    th:each="user, i : ${users}">
+                    th:each="user, i : ${userPage.content}">
                     <td class="py-3 px-4" th:text="${user.firstName}"></td>
                     <td class="py-3 px-4" th:text="${user.lastName}"></td>
                     <td class="py-3 px-4">
                         <span th:text="${user.email}"></span>
                         <span class="font-bold text-blue-600" th:if="${user.email == currentUsername}"> (You)</span>
                     </td>
+                    <td class="py-3 px-4" th:text="${user.membershipType}"></td>
                     <td class="py-3 px-4" th:text="${user.enabled}"></td>
                     <td class="py-3 px-4" th:text="${#strings.listJoin(user.roles, ', ')}"></td>
                     <td class="py-3 px-4">
@@ -69,6 +124,34 @@
                 </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center mt-6">
+            <div class="flex items-center space-x-2" th:if="${userPage.totalPages > 0}">
+                <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-l-lg"
+                   th:href="@{/admin/users(page=${userPage.number - 1}, size=${userPage.size}, sort=${userPage.sort.toString()}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
+                   th:if="${userPage.hasPrevious()}">Previous</a>
+                <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-l-lg"
+                      th:unless="${userPage.hasPrevious()}">Previous</span>
+
+                <div th:each="i : ${#numbers.sequence(0, userPage.totalPages - 1)}">
+                    <a class="px-3 py-2 leading-tight border border-gray-300"
+                       th:classappend="${i == userPage.number ? 'bg-blue-500 text-white' : 'text-gray-700 bg-white hover:bg-gray-100'}"
+                       th:href="@{/admin/users(page=${i}, size=${userPage.size}, sort=${userPage.sort.toString()}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}">[[${i + 1}]]</a>
+                </div>
+
+                <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-r-lg"
+                   th:href="@{/admin/users(page=${userPage.number + 1}, size=${userPage.size}, sort=${userPage.sort.toString()}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
+                   th:if="${userPage.hasNext()}">Next</a>
+                <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-r-lg"
+                      th:unless="${userPage.hasNext()}">Next</span>
+            </div>
+            <div class="text-sm text-gray-700">
+                Showing <span th:text="${userPage.number * userPage.size + 1}"></span> to <span
+                    th:text="${(userPage.number * userPage.size + userPage.numberOfElements)}"></span> of <span
+                    th:text="${userPage.totalElements}"></span> entries
+            </div>
         </div>
     </div>
 </div>

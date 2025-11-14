@@ -20,6 +20,9 @@ public class UserDto {
     @Email(message = "Please provide a valid email address")
     private String email;
 
+    @NotBlank(message = "Membership type cannot be blank")
+    private String membershipType;
+
     private String password;
 
     private boolean enabled;
@@ -30,12 +33,14 @@ public class UserDto {
     public UserDto() {
     }
 
-    public UserDto(Long id, String firstName, String lastName, String email, String password, boolean enabled,
+    public UserDto(Long id, String firstName, String lastName, String email, String membershipType, String password,
+            boolean enabled,
             Set<String> roles) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.membershipType = membershipType;
         this.password = password;
         this.enabled = enabled;
         this.roles = roles;
@@ -71,6 +76,14 @@ public class UserDto {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getMembershipType() {
+        return membershipType;
+    }
+
+    public void setMembershipType(String membershipType) {
+        this.membershipType = membershipType;
     }
 
     public String getPassword() {

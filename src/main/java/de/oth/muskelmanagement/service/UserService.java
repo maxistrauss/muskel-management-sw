@@ -2,15 +2,15 @@ package de.oth.muskelmanagement.service;
 
 import de.oth.muskelmanagement.model.User;
 import de.oth.muskelmanagement.service.dto.UserDto;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     User save(UserDto userDto);
 
     User findByEmail(String email);
 
-    List<UserDto> findAll();
+    Page<UserDto> findAll(Pageable pageable);
 
     UserDto findById(Long id);
 
@@ -20,5 +20,5 @@ public interface UserService {
 
     void changeUserPassword(UserDto user, String newPassword);
 
-    List<UserDto> findUsers(String email, String firstName, String lastName);
+    Page<UserDto> findUsers(String email, String firstName, String lastName, String membershipType, Pageable pageable);
 }

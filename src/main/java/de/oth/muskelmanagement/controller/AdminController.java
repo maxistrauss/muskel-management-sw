@@ -3,6 +3,9 @@ package de.oth.muskelmanagement.controller;
 import de.oth.muskelmanagement.service.UserService;
 import de.oth.muskelmanagement.service.dto.UserDto;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -24,10 +26,25 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public String listUsers(Model model, Principal principal) {
-        List<UserDto> users = userService.findAll();
-        model.addAttribute("users", users);
+    public String listUsers(Model model, Principal principal, @PageableDefault(size = 10) Pageable pageable,
+            @RequestParam(required = false) String email, @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName, @RequestParam(required = false) String membershipType) {
+
+        Page<UserDto> userPage = userService.findUsers(email, firstName, lastName, membershipType, pageable);
+
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("users", userPage.getContent()); // For compatibility with existing table iteration
+        model.addAttribute("currentPage", userPage.getNumber() + 1);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalItems", userPage.getTotalElements());
         model.addAttribute("currentUsername", principal.getName());
+
+        // Add search parameters back to model for form persistence
+        model.addAttribute("email", email);
+        model.addAttribute("firstName", firstName);
+        model.addAttribute("lastName", lastName);
+        model.addAttribute("membershipType", membershipType);
+
         return "admin/users";
     }
 
