@@ -19,4 +19,6 @@ public interface UserService {
     void deleteUser(Long id);
 
     void changeUserPassword(UserDto user, String newPassword);
+
+    List<UserDto> findUsers(String email, String firstName, String lastName);
 }

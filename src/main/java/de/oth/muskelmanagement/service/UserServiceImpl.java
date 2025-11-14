@@ -117,6 +117,19 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userFromDb);
     }
 
+    @Override
+    public List<UserDto> findUsers(String email, String firstName, String lastName) {
+        List<User> users;
+        if ((email == null || email.isBlank()) && (firstName == null || firstName.isBlank()) && (lastName == null
+                || lastName.isBlank())) {
+            users = userRepository.findAll();
+        } else {
+            users = userRepository.findByEmailContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                    email != null ? email : "", firstName != null ? firstName : "", lastName != null ? lastName : "");
+        }
+        return users.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
     private UserDto convertToDto(User user) {
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());
