@@ -9,5 +9,4 @@ public class MuskelManagementApplication {
     public static void main(String[] args) {
         SpringApplication.run(MuskelManagementApplication.class, args);
     }
-
 }
