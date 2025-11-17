@@ -16,8 +16,9 @@
             <div class="flex items-center">
                 <div sec:authorize="hasRole('ADMIN')">
                     <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-                       href="/admin/users">User
-                        Management</a>
+                       href="/admin/users">User Management</a>
+                    <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                       href="/admin/tarifs">Tarif Management</a>
                 </div>
                 <form class="ml-4" method="post" th:action="@{/logout}">
                     <input class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit"
@@ -37,6 +38,16 @@
                                               th:text="${#authentication.principal.username}"></span>!</p>
             <p class="text-lg">Your roles are: <span class="font-semibold"
                                                      th:text="${#authentication.principal.authorities}"></span></p>
+            
+            <div sec:authorize="hasRole('ADMIN')" class="mt-6">
+                <h2 class="text-2xl font-bold mb-4">Admin Functions</h2>
+                <div class="flex flex-col space-y-3">
+                    <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded text-center"
+                       href="/admin/users">User Management</a>
+                    <a class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded text-center"
+                       href="/admin/tarifs">Tarif Management</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

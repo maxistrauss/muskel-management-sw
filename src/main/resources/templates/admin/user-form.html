@@ -16,8 +16,9 @@
             <div class="flex items-center">
                 <div sec:authorize="hasRole('ADMIN')">
                     <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-                       href="/admin/users">User
-                        Management</a>
+                       href="/admin/users">User Management</a>
+                    <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                       href="/admin/tarifs">Tarif Management</a>
                 </div>
                 <form class="ml-4" method="post" th:action="@{/logout}">
                     <input class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit"

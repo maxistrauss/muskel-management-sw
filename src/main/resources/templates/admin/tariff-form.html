@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tarif Form</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <div class="flex-shrink-0 flex items-center">
+                    <a class="text-2xl font-bold text-gray-800" href="/">MuskelManagement</a>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                       href="/admin/users">User Management</a>
+                    <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                       href="/admin/tarifs">Tarif Management</a>
+                </div>
+                <form class="ml-4" method="post" th:action="@{/logout}">
+                    <input class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit"
+                           value="Logout"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold mb-6" th:if="${tarif.id == null}">Create Tarif</h1>
+        <h1 class="text-3xl font-bold mb-6" th:if="${tarif.id != null}">Edit Tarif</h1>
+        <form method="post"
+              th:action="${tarif.id == null} ? @{/admin/tarifs/new} : @{/admin/tarifs/edit/{id}(id=${tarif.id})}" th:object="${tarif}">
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="name" th:field="*{name}" type="text"/>
+                <span class="text-red-500 text-xs italic" th:errors="*{name}"
+                      th:if="${#fields.hasErrors('name')}"></span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="price">Price (€):</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="price" th:field="*{price}" type="number" step="0.01" min="0.01"/>
+                <span class="text-red-500 text-xs italic" th:errors="*{price}"
+                      th:if="${#fields.hasErrors('price')}"></span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="durationMonths">Duration (Months):</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="durationMonths" th:field="*{durationMonths}" type="number" min="1"/>
+                <span class="text-red-500 text-xs italic" th:errors="*{durationMonths}"
+                      th:if="${#fields.hasErrors('durationMonths')}"></span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="description">Description:</label>
+                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          id="description" th:field="*{description}" rows="4"></textarea>
+                <span class="text-red-500 text-xs italic" th:errors="*{description}"
+                      th:if="${#fields.hasErrors('description')}"></span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    <input class="mr-2 leading-tight" th:field="*{active}" type="checkbox"/>Active
+                </label>
+            </div>
+            <div>
+                <input class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" th:value="${tarif.id == null} ? 'Create' : 'Update'"
+                       type="submit"/>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+
