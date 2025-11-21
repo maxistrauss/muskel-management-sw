@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Equipment Management</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<!-- Include Navbar Fragment -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Equipment Management</h1>
+            <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="/admin/equipment/new">Add Equipment</a>
+        </div>
+
+        <!-- Search/Filter Form -->
+        <form class="mb-6 p-4 border rounded-lg bg-gray-50" method="get" th:action="@{/admin/equipment}">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="name" name="name" th:value="${name}" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="serialNumber">Serial Number:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="serialNumber" name="serialNumber" th:value="${serialNumber}" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="manufacturer">Manufacturer:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="manufacturer" name="manufacturer" th:value="${manufacturer}" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="status">Status:</label>
+                    <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="status" name="status">
+                        <option value="">All</option>
+                        <option th:each="s : ${allStatuses}" th:selected="${s == status}" th:text="${s.displayName}" th:value="${s}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="location">Location:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="location" name="location" th:value="${location}" type="text"/>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        type="submit">Search
+                </button>
+                <a class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded ml-2"
+                   th:href="@{/admin/equipment}">Clear</a>
+            </div>
+        </form>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Name</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Serial Number</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Status</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Category</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Location</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Manufacturer</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                <tr th:classappend="${equip.archived} ? 'bg-gray-200' : ''"
+                    th:each="equip : ${equipmentPage.content}">
+                    <td class="py-3 px-4" th:text="${equip.name}"></td>
+                    <td class="py-3 px-4" th:text="${equip.serialNumber}"></td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded text-xs font-semibold"
+                              th:classappend="${equip.status.name() == 'AVAILABLE'} ? 'bg-green-200 text-green-800' : 
+                                              (${equip.status.name() == 'IN_MAINTENANCE'} ? 'bg-yellow-200 text-yellow-800' : 
+                                              (${equip.status.name() == 'DEFECTIVE'} ? 'bg-red-200 text-red-800' : 'bg-gray-300 text-gray-800'))"
+                              th:text="${equip.status.displayName}"></span>
+                    </td>
+                    <td class="py-3 px-4" th:text="${equip.category != null ? equip.category.displayName : '-'}"></td>
+                    <td class="py-3 px-4" th:text="${equip.location ?: '-'}"></td>
+                    <td class="py-3 px-4" th:text="${equip.manufacturer ?: '-'}"></td>
+                    <td class="py-3 px-4">
+                        <div><a class="text-blue-500 hover:text-blue-700"
+                                th:href="@{/admin/equipment/edit/{id}(id=${equip.id})}">Edit</a></div>
+                        <div th:if="${!equip.archived}">
+                            <a class="text-orange-500 hover:text-orange-700"
+                               th:href="@{/admin/equipment/archive/{id}(id=${equip.id})}">Archive</a>
+                        </div>
+                        <div><a class="text-red-500 hover:text-red-700"
+                                th:href="@{/admin/equipment/delete/{id}(id=${equip.id})}">Delete</a></div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center mt-6">
+            <div class="flex items-center space-x-2" th:if="${equipmentPage.totalPages > 0}">
+                <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-l-lg"
+                   th:href="@{/admin/equipment(page=${equipmentPage.number - 1}, size=${equipmentPage.size}, name=${name}, serialNumber=${serialNumber}, manufacturer=${manufacturer}, status=${status}, location=${location})}"
+                   th:if="${equipmentPage.hasPrevious()}">Previous</a>
+                <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-l-lg"
+                      th:unless="${equipmentPage.hasPrevious()}">Previous</span>
+
+                <div th:each="i : ${#numbers.sequence(0, equipmentPage.totalPages - 1)}">
+                    <a class="px-3 py-2 leading-tight border border-gray-300"
+                       th:classappend="${i == equipmentPage.number ? 'bg-blue-500 text-white' : 'text-gray-700 bg-white hover:bg-gray-100'}"
+                       th:href="@{/admin/equipment(page=${i}, size=${equipmentPage.size}, name=${name}, serialNumber=${serialNumber}, manufacturer=${manufacturer}, status=${status}, location=${location})}">[[${i + 1}]]</a>
+                </div>
+
+                <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-r-lg"
+                   th:href="@{/admin/equipment(page=${equipmentPage.number + 1}, size=${equipmentPage.size}, name=${name}, serialNumber=${serialNumber}, manufacturer=${manufacturer}, status=${status}, location=${location})}"
+                   th:if="${equipmentPage.hasNext()}">Next</a>
+                <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-r-lg"
+                      th:unless="${equipmentPage.hasNext()}">Next</span>
+            </div>
+            <div class="text-sm text-gray-700">
+                Showing <span th:text="${equipmentPage.number * equipmentPage.size + 1}"></span> to <span
+                    th:text="${(equipmentPage.number * equipmentPage.size + equipmentPage.numberOfElements)}"></span> of <span
+                    th:text="${equipmentPage.totalElements}"></span> entries
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

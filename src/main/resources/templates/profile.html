@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Profile</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<!-- Include Navbar Fragment -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">My Profile</h1>
+            <div th:if="${isViewMode}">
+                <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
+                   href="/profile/edit">Edit Profile</a>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" 
+             th:if="${error}">
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- View Mode -->
+        <div th:if="${isViewMode}">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                <p class="text-gray-600" th:text="${user.email}"></p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">First Name:</label>
+                <p class="text-gray-600" th:text="${user.firstName}"></p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Last Name:</label>
+                <p class="text-gray-600" th:text="${user.lastName}"></p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Membership Type:</label>
+                <p class="text-gray-600" th:text="${user.membershipType ?: 'Not assigned'}"></p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Roles:</label>
+                <p class="text-gray-600" th:text="${user.roles != null ? #strings.listJoin(user.roles, ', ') : 'No roles'}"></p>
+            </div>
+            
+            <!-- Deactivate Account Section -->
+            <div class="mt-8 pt-6 border-t border-gray-300">
+                <h2 class="text-xl font-bold text-red-600 mb-4">Danger Zone</h2>
+                <p class="text-gray-600 mb-4">Once you deactivate your account, you will be logged out and will not be able to log in again until an administrator reactivates your account.</p>
+                <form method="post" th:action="@{/profile/deactivate}" onsubmit="return confirm('Are you sure you want to deactivate your account? You will need to contact an administrator to reactivate it.');">
+                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" type="submit">
+                        Deactivate My Account
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Mode -->
+        <form method="post" th:action="@{/profile/edit}" th:if="${!isViewMode}" th:object="${user}">
+            <input th:field="*{id}" type="hidden"/>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="email">Email:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 cursor-not-allowed"
+                       id="email" th:field="*{email}" type="email" readonly disabled/>
+                <p class="text-gray-500 text-xs italic">Email cannot be changed</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="membershipType">Membership Type:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 cursor-not-allowed"
+                       id="membershipType" th:field="*{membershipType}" type="text" readonly disabled/>
+                <p class="text-gray-500 text-xs italic">Membership type can only be changed by administrators</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="firstName">First Name:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="firstName" th:field="*{firstName}" type="text"/>
+                <span class="text-red-500 text-xs italic" th:errors="*{firstName}"
+                      th:if="${#fields.hasErrors('firstName')}"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="lastName">Last Name:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="lastName" th:field="*{lastName}" type="text"/>
+                <span class="text-red-500 text-xs italic" th:errors="*{lastName}"
+                      th:if="${#fields.hasErrors('lastName')}"></span>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-gray-500 text-sm italic">Note: Roles can only be changed by administrators.</p>
+            </div>
+
+            <div class="flex space-x-2">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        type="submit">Save Changes</button>
+                <a class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded inline-block"
+                   href="/profile">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Equipment Form</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+</head>
+<body class="bg-gray-100">
+<!-- Include Navbar Fragment -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold mb-6" th:if="${equipment.id == null}">Add Equipment</h1>
+        <h1 class="text-3xl font-bold mb-6" th:if="${equipment.id != null}">Edit Equipment</h1>
+        <form method="post"
+              th:action="${equipment.id == null} ? @{/admin/equipment/new} : @{/admin/equipment/edit/{id}(id=${equipment.id})}" 
+              th:object="${equipment}">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Left Column -->
+                <div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name: *</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                               id="name" th:field="*{name}" type="text" required/>
+                        <span class="text-red-500 text-xs italic" th:errors="*{name}"
+                              th:if="${#fields.hasErrors('name')}"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="serialNumber">Serial Number: *</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                               id="serialNumber" th:field="*{serialNumber}" type="text" required/>
+                        <span class="text-red-500 text-xs italic" th:errors="*{serialNumber}"
+                              th:if="${#fields.hasErrors('serialNumber')}"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="status">Status: *</label>
+                        <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                id="status" th:field="*{status}" required>
+                            <option th:each="s : ${allStatuses}" th:text="${s.displayName}" th:value="${s}"></option>
+                        </select>
+                        <span class="text-red-500 text-xs italic" th:errors="*{status}"
+                              th:if="${#fields.hasErrors('status')}"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="category">Category:</label>
+                        <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                id="category" th:field="*{category}">
+                            <option value="">-- Select Category --</option>
+                            <option th:each="c : ${allCategories}" th:text="${c.displayName}" th:value="${c}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="manufacturer">Manufacturer:</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                               id="manufacturer" th:field="*{manufacturer}" type="text"/>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="location">Location:</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                               id="location" th:field="*{location}" type="text" 
+                               placeholder="e.g., Kraftraum 1"/>
+                        <span class="text-xs text-gray-500">This will be replaced by Room selection in the future</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="purchaseDate">Purchase Date:</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                               id="purchaseDate" th:field="*{purchaseDate}" type="date"/>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="maintenanceInterval">Maintenance Interval (days):</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                               id="maintenanceInterval" th:field="*{maintenanceInterval}" type="number" min="0"
+                               placeholder="e.g., 90"/>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="lastMaintenanceDate">Last Maintenance Date:</label>
+                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                               id="lastMaintenanceDate" th:field="*{lastMaintenanceDate}" type="date"/>
+                    </div>
+
+                    <div class="mb-4" th:if="${equipment.id != null}">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <input class="mr-2 leading-tight" th:field="*{archived}" type="checkbox"/>Archived
+                        </label>
+                        <span class="text-xs text-gray-500">Mark as archived instead of deleting</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-between">
+                <a class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                   th:href="@{/admin/equipment}">Cancel</a>
+                <input class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                       th:value="${equipment.id == null} ? 'Create' : 'Update'"
+                       type="submit"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Flatpickr JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/de.js"></script>
+<script>
+    // Flatpickr Konfiguration für deutsche Lokalisierung
+    flatpickr.localize(flatpickr.l10ns.de);
+    
+    // Initialisiere Date Picker für Purchase Date
+    flatpickr("#purchaseDate", {
+        dateFormat: "Y-m-d",
+        locale: "de",
+        allowInput: true,
+        altInput: true,
+        altFormat: "d.m.Y",
+        enableTime: false,
+        clickOpens: true,
+        monthSelectorType: "dropdown",
+        yearSelectorType: "dropdown"
+    });
+    
+    // Initialisiere Date Picker für Last Maintenance Date
+    flatpickr("#lastMaintenanceDate", {
+        dateFormat: "Y-m-d",
+        locale: "de",
+        allowInput: true,
+        altInput: true,
+        altFormat: "d.m.Y",
+        enableTime: false,
+        clickOpens: true,
+        monthSelectorType: "dropdown",
+        yearSelectorType: "dropdown"
+    });
+</script>
+</body>
+</html>
