@@ -4,6 +4,7 @@ import de.oth.muskelmanagement.model.Role;
 import de.oth.muskelmanagement.model.User;
 import de.oth.muskelmanagement.repository.RoleRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
+import de.oth.muskelmanagement.service.dto.RegistrationDto;
 import de.oth.muskelmanagement.service.dto.UserDto;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,6 +61,30 @@ public class UserServiceImpl implements UserService {
             memberRole = new Role("ROLE_MEMBER");
             roleRepository.save(memberRole);
         }
+        roles.add(memberRole);
+        user.setRoles(roles);
+
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User registerUser(RegistrationDto registrationDto) {
+        User user = new User();
+        user.setFirstName(registrationDto.getFirstName());
+        user.setLastName(registrationDto.getLastName());
+        user.setEmail(registrationDto.getEmail());
+        user.setMembershipType(registrationDto.getMembershipType());
+        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
+        user.setEnabled(true); // New registrations are enabled by default
+
+        // Only assign ROLE_MEMBER for self-registration
+        Role memberRole = roleRepository.findByName("ROLE_MEMBER");
+        if (memberRole == null) {
+            memberRole = new Role("ROLE_MEMBER");
+            roleRepository.save(memberRole);
+        }
+        
+        Set<Role> roles = new HashSet<>();
         roles.add(memberRole);
         user.setRoles(roles);
 

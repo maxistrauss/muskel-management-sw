@@ -1,12 +1,15 @@
 package de.oth.muskelmanagement.service;
 
 import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.service.dto.RegistrationDto;
 import de.oth.muskelmanagement.service.dto.UserDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     User save(UserDto userDto);
+
+    User registerUser(RegistrationDto registrationDto);
 
     User findByEmail(String email);
 
