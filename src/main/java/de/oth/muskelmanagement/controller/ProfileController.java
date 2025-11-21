@@ -110,6 +110,23 @@ public class ProfileController {
         return "redirect:/login";
     }
 
+    @PostMapping("/toggle-2fa")
+    public String toggleTwoFactor(Principal principal, RedirectAttributes redirectAttributes) {
+        User user = userService.findByEmail(principal.getName());
+        
+        if (user != null) {
+            userService.toggleTwoFactor(user.getId());
+            
+            if (!user.isTwoFactorEnabled()) {
+                redirectAttributes.addFlashAttribute("success", "Two-Factor Authentication has been enabled. You will receive a code via email on your next login.");
+            } else {
+                redirectAttributes.addFlashAttribute("success", "Two-Factor Authentication has been disabled.");
+            }
+        }
+        
+        return "redirect:/profile";
+    }
+
     private UserDto convertToDto(User user) {
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());
@@ -118,6 +135,7 @@ public class ProfileController {
         userDto.setEmail(user.getEmail());
         userDto.setMembershipType(user.getMembershipType());
         userDto.setEnabled(user.isEnabled());
+        userDto.setTwoFactorEnabled(user.isTwoFactorEnabled());
         userDto.setRoles(user.getRoles().stream().map(role -> role.getName()).collect(java.util.stream.Collectors.toSet()));
         return userDto;
     }

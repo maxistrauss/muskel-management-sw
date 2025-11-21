@@ -46,6 +46,7 @@ public class UserServiceImpl implements UserService {
         user.setMembershipType(userDto.getMembershipType());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEnabled(userDto.isEnabled());
+        user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
 
         Set<Role> roles = userDto.getRoles().stream().map(roleName -> {
             Role role = roleRepository.findByName(roleName);
@@ -115,6 +116,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userDto.getEmail());
         user.setMembershipType(userDto.getMembershipType());
         user.setEnabled(userDto.isEnabled());
+        user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
 
         // Only update password if it's provided in the DTO
         if (userDto.getPassword() != null && !userDto.getPassword().isBlank()) {
@@ -186,7 +188,32 @@ public class UserServiceImpl implements UserService {
         userDto.setEmail(user.getEmail());
         userDto.setMembershipType(user.getMembershipType());
         userDto.setEnabled(user.isEnabled());
+        userDto.setTwoFactorEnabled(user.isTwoFactorEnabled());
         userDto.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
         return userDto;
+    }
+
+    @Override
+    public void enableTwoFactor(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setTwoFactorEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void disableTwoFactor(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setTwoFactorEnabled(false);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void toggleTwoFactor(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setTwoFactorEnabled(!user.isTwoFactorEnabled());
+        userRepository.save(user);
     }
 }

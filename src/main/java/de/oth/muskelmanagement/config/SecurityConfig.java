@@ -33,15 +33,22 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthenticationFailureHandler authenticationFailureHandler;
 
+    @Autowired
+    private de.oth.muskelmanagement.config.handler.CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/login", "/register", "/verify-2fa", "/verify-2fa/resend", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(formLogin -> formLogin.loginPage("/login").defaultSuccessUrl("/", true)
-                        .failureHandler(authenticationFailureHandler).usernameParameter("email").permitAll())
+                .formLogin(formLogin -> formLogin
+                        .loginPage("/login")
+                        .successHandler(authenticationSuccessHandler)
+                        .failureHandler(authenticationFailureHandler)
+                        .usernameParameter("email")
+                        .permitAll())
                 .logout(LogoutConfigurer::permitAll)
                 .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandler))
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
@@ -67,10 +74,5 @@ public class SecurityConfig {
             authorities.add(new SimpleGrantedAuthority(role.getName()));
         }
         return authorities;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }

@@ -107,4 +107,21 @@ public class AdminController {
         userService.deleteUser(id);
         return "redirect:/admin/users";
     }
+
+    @PostMapping("/users/{id}/toggle-2fa")
+    public String toggleUserTwoFactor(@PathVariable("id") Long id) {
+        userService.toggleTwoFactor(id);
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/users/{id}/toggle-enabled")
+    public String toggleUserEnabled(@PathVariable("id") Long id, Principal principal) {
+        UserDto user = userService.findById(id);
+        if (user.getEmail().equals(principal.getName())) {
+            throw new AccessDeniedException("Admins are not allowed to toggle their own account status.");
+        }
+        user.setEnabled(!user.isEnabled());
+        userService.updateUser(user);
+        return "redirect:/admin/users";
+    }
 }

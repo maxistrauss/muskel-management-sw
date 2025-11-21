@@ -77,6 +77,7 @@
                         <a th:href="@{/admin/users(page=${userPage.number}, size=${userPage.size}, sort='enabled,' + ${sortDirection}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
                            th:with="sortDirection=${userPage.sort.getOrderFor('enabled') != null and userPage.sort.getOrderFor('enabled').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">Enabled</a>
                     </th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">2FA</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Roles</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Actions</th>
                 </tr>
@@ -91,7 +92,35 @@
                         <span class="font-bold text-blue-600" th:if="${user.email == currentUsername}"> (You)</span>
                     </td>
                     <td class="py-3 px-4" th:text="${user.membershipType}"></td>
-                    <td class="py-3 px-4" th:text="${user.enabled}"></td>
+                    <td class="py-3 px-4">
+                        <th:block th:if="${user.email != currentUsername}">
+                            <form method="post" th:action="@{/admin/users/{id}/toggle-enabled(id=${user.id})}"
+                                  style="display: inline;">
+                                <button type="submit"
+                                        th:classappend="${user.enabled} ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-600 hover:bg-red-200'"
+                                        class="px-3 py-1 rounded-full text-xs font-semibold transition duration-200">
+                                    <span th:if="${user.enabled}">✓ Active</span>
+                                    <span th:unless="${user.enabled}">✗ Inactive</span>
+                                </button>
+                            </form>
+                        </th:block>
+                        <th:block th:if="${user.email == currentUsername}">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                                ✓ Active (You)
+                            </span>
+                        </th:block>
+                    </td>
+                    <td class="py-3 px-4">
+                        <form method="post" th:action="@{/admin/users/{id}/toggle-2fa(id=${user.id})}"
+                              style="display: inline;">
+                            <button type="submit"
+                                    th:classappend="${user.twoFactorEnabled} ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                                    class="px-3 py-1 rounded-full text-xs font-semibold transition duration-200">
+                                <span th:if="${user.twoFactorEnabled}">✓ Enabled</span>
+                                <span th:unless="${user.twoFactorEnabled}">Disabled</span>
+                            </button>
+                        </form>
+                    </td>
                     <td class="py-3 px-4" th:text="${#strings.listJoin(user.roles, ', ')}"></td>
                     <td class="py-3 px-4">
                         <th:block th:if="${user.email != currentUsername}">
