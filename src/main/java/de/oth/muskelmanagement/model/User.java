@@ -22,6 +22,9 @@ public class User {
 
     private boolean enabled = true;
 
+    @Column(name = "two_factor_enabled", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean twoFactorEnabled = false;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
@@ -101,5 +104,13 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public Boolean isTwoFactorEnabled() {
+        return twoFactorEnabled != null ? twoFactorEnabled : false;
+    }
+
+    public void setTwoFactorEnabled(Boolean twoFactorEnabled) {
+        this.twoFactorEnabled = twoFactorEnabled;
     }
 }

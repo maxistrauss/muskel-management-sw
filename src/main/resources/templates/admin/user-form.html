@@ -55,6 +55,12 @@
                     <input class="mr-2 leading-tight" th:field="*{enabled}" type="checkbox"/>Enabled
                 </label>
             </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    <input class="mr-2 leading-tight" th:field="*{twoFactorEnabled}" type="checkbox"/>Two-Factor Authentication
+                </label>
+                <p class="text-gray-500 text-xs italic">User will need to enter a code from email when logging in</p>
+            </div>
             <div class="mb-6">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Roles:</label>
                 <div class="mb-2" th:each="role : ${allRoles}">
