@@ -1,10 +1,10 @@
 # 📋 MuskelManagement - Changelog
 
-## 🗓️ 2025-11-21 - Flatpickr Date Picker Integration
+## 🗓️ 2025-11-21 - Flatpickr Date Picker & Navigation Fixes
 
 ### 🆕 Neue Features
 
-#### Date Picker UI Verbesserung
+#### 1. Date Picker UI Verbesserung
 Moderne Date Picker Integration für bessere Benutzererfahrung:
 - **Flatpickr** Library integriert (~15KB, keine Dependencies)
 - Deutsche Lokalisierung aktiviert
@@ -13,11 +13,19 @@ Moderne Date Picker Integration für bessere Benutzererfahrung:
 - Dropdown-Selektoren für Monat und Jahr
 - Konsistentes UI über alle Browser hinweg
 
+### 🐛 Bug Fixes
+
+#### 2. Navigation Bar Merge-Konflikt behoben
+Nach dem Merge vom main Branch wurden duplizierte HTML-Fragmente in der Navigation entfernt:
+- Fehlerhafte `href="/admin/users">User Management</a>` Zeilen entfernt
+- Navigation jetzt konsistent über alle Templates
+- Tarif Management Link überall hinzugefügt
+
 ---
 
 ## 🔧 Geänderte Dateien
 
-### Template Updates
+### Date Picker Integration
 **File:** [`src/main/resources/templates/admin/equipment-form.html`](src/main/resources/templates/admin/equipment-form.html:1)
 
 **Änderungen:**
@@ -32,6 +40,7 @@ Moderne Date Picker Integration für bessere Benutzererfahrung:
    - Speicher-Format: `yyyy-mm-dd` (HTML5 kompatibel)
    - Dropdown-Selektoren für Monat/Jahr
    - Manuelle Eingabe möglich
+5. Tarif Management Link hinzugefügt
 
 **CDN Links:**
 ```html
@@ -42,6 +51,30 @@ Moderne Date Picker Integration für bessere Benutzererfahrung:
 <!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/de.js"></script>
+```
+
+### Navigation Bar Fixes
+**Betroffene Dateien:**
+- [`src/main/resources/templates/welcome.html`](src/main/resources/templates/welcome.html:16) - Duplizierte Zeile entfernt
+- [`src/main/resources/templates/admin/users.html`](src/main/resources/templates/admin/users.html:16) - Duplizierte Zeile entfernt
+- [`src/main/resources/templates/admin/user-form.html`](src/main/resources/templates/admin/user-form.html:16) - Duplizierte Zeile entfernt
+- [`src/main/resources/templates/admin/equipment.html`](src/main/resources/templates/admin/equipment.html:16) - Tarif Management Link hinzugefügt
+- [`src/main/resources/templates/admin/equipment-form.html`](src/main/resources/templates/admin/equipment-form.html:19) - Tarif Management Link hinzugefügt
+
+**Problem:**
+Merge-Konflikt führte zu fehlerhaftem HTML:
+```html
+<!-- VORHER (falsch) -->
+<a href="/admin/equipment">Equipment Management</a>
+   href="/admin/users">User Management</a>  <!-- ❌ Fehler -->
+<a href="/admin/tarifs">Tarif Management</a>
+```
+
+**Lösung:**
+```html
+<!-- NACHHER (korrekt) -->
+<a href="/admin/equipment">Equipment Management</a>
+<a href="/admin/tarifs">Tarif Management</a>
 ```
 
 ---
@@ -68,10 +101,11 @@ Moderne Date Picker Integration für bessere Benutzererfahrung:
 
 ## 📊 Statistik
 
-**Geänderte Dateien:** 1
+**Geänderte Dateien:** 6
 **Hinzugefügte Dependencies:** 0 (via CDN)
 **Library Größe:** ~15KB (gzipped)
 **Zusätzliche Lines of Code:** ~30
+**Behobene Bugs:** 1 (Navigation Merge-Konflikt)
 
 ---
 
