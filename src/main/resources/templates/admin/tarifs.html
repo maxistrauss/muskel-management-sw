@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tarif Management</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <div class="flex-shrink-0 flex items-center">
+                    <a class="text-2xl font-bold text-gray-800" href="/">MuskelManagement</a>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                       href="/admin/users">User Management</a>
+                    <a class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                       href="/admin/tarifs">Tarif Management</a>
+                </div>
+                <form class="ml-4" method="post" th:action="@{/logout}">
+                    <input class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit"
+                           value="Logout"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Tarif Management</h1>
+            <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="/admin/tarifs/new">Create
+                Tarif</a>
+        </div>
+
+        <!-- Search/Filter Form -->
+        <form class="mb-6 p-4 border rounded-lg bg-gray-50" method="get" th:action="@{/admin/tarifs}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="name" name="name" th:value="${name}" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="active">Active:</label>
+                    <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="active" name="active">
+                        <option value="">All</option>
+                        <option th:value="true" th:selected="${active == true}">Active</option>
+                        <option th:value="false" th:selected="${active == false}">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        type="submit">Search
+                </button>
+                <a class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded ml-2"
+                   th:href="@{/admin/tarifs}">Clear</a>
+            </div>
+        </form>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Name</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Price</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Duration (Months)</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Description</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Active</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                <tr th:each="tarif : ${tarifPage.content}">
+                    <td class="py-3 px-4" th:text="${tarif.name}"></td>
+                    <td class="py-3 px-4" th:text="${#numbers.formatDecimal(tarif.price, 0, 2)} + ' €'"></td>
+                    <td class="py-3 px-4" th:text="${tarif.durationMonths}"></td>
+                    <td class="py-3 px-4" th:text="${tarif.description}"></td>
+                    <td class="py-3 px-4" th:text="${tarif.active}"></td>
+                    <td class="py-3 px-4">
+                        <div><a class="text-blue-500 hover:text-blue-700"
+                                th:href="@{/admin/tarifs/edit/{id}(id=${tarif.id})}">Edit</a></div>
+                        <div><a class="text-red-500 hover:text-red-700"
+                                th:href="@{/admin/tarifs/delete/{id}(id=${tarif.id})}">Delete</a></div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center mt-6">
+            <div class="flex items-center space-x-2" th:if="${tarifPage.totalPages > 0}">
+                <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-l-lg"
+                   th:href="@{/admin/tarifs(page=${tarifPage.number - 1}, size=${tarifPage.size}, sort=${tarifPage.sort.toString()}, name=${name}, active=${active})}"
+                   th:if="${tarifPage.hasPrevious()}">Previous</a>
+                <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-l-lg"
+                      th:unless="${tarifPage.hasPrevious()}">Previous</span>
+
+                <div th:each="i : ${#numbers.sequence(0, tarifPage.totalPages - 1)}">
+                    <a class="px-3 py-2 leading-tight border border-gray-300"
+                       th:classappend="${i == tarifPage.number ? 'bg-blue-500 text-white' : 'text-gray-700 bg-white hover:bg-gray-100'}"
+                       th:href="@{/admin/tarifs(page=${i}, size=${tarifPage.size}, sort=${tarifPage.sort.toString()}, name=${name}, active=${active})}">[[${i + 1}]]</a>
+                </div>
+
+                <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-r-lg"
+                   th:href="@{/admin/tarifs(page=${tarifPage.number + 1}, size=${tarifPage.size}, sort=${tarifPage.sort.toString()}, name=${name}, active=${active})}"
+                   th:if="${tarifPage.hasNext()}">Next</a>
+                <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-r-lg"
+                      th:unless="${tarifPage.hasNext()}">Next</span>
+            </div>
+            <div class="text-sm text-gray-700">
+                Showing <span th:text="${tarifPage.number * tarifPage.size + 1}"></span> to <span
+                    th:text="${(tarifPage.number * tarifPage.size + tarifPage.numberOfElements)}"></span> of <span
+                    th:text="${tarifPage.totalElements}"></span> entries
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
