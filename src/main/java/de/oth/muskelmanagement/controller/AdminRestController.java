@@ -63,6 +63,12 @@ public class AdminRestController {
                     "Admins are not allowed to update their own account.");
         }
 
+        // Validate deactivation reason when disabling an account
+        if (!userDto.isEnabled() && (userDto.getDeactivationReason() == null || userDto.getDeactivationReason().isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Deactivation reason is required when disabling a user account.");
+        }
+
         userDto.setId(id); // Ensure ID from path is used
         userService.updateUser(userDto);
         return ResponseEntity.ok(userDto);

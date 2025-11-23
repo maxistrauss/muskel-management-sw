@@ -27,6 +27,8 @@ public class UserDto {
 
     private boolean enabled;
 
+    private String deactivationReason;
+
     private boolean twoFactorEnabled;
 
     @NotEmpty(message = "User must have at least one role")
@@ -36,7 +38,7 @@ public class UserDto {
     }
 
     public UserDto(Long id, String firstName, String lastName, String email, String membershipType, String password,
-            boolean enabled, boolean twoFactorEnabled, Set<String> roles) {
+            boolean enabled, String deactivationReason, boolean twoFactorEnabled, Set<String> roles) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -44,6 +46,7 @@ public class UserDto {
         this.membershipType = membershipType;
         this.password = password;
         this.enabled = enabled;
+        this.deactivationReason = deactivationReason;
         this.twoFactorEnabled = twoFactorEnabled;
         this.roles = roles;
     }
@@ -118,5 +121,13 @@ public class UserDto {
 
     public void setTwoFactorEnabled(boolean twoFactorEnabled) {
         this.twoFactorEnabled = twoFactorEnabled;
+    }
+
+    public String getDeactivationReason() {
+        return deactivationReason;
+    }
+
+    public void setDeactivationReason(String deactivationReason) {
+        this.deactivationReason = deactivationReason;
     }
 }
