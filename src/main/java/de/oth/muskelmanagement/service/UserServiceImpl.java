@@ -29,12 +29,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Override
@@ -111,12 +113,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUser(UserDto userDto) {
         User user = userRepository.findById(userDto.getId()).orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Track if enabled status changed
+        boolean wasEnabled = user.isEnabled();
+        boolean willBeEnabled = userDto.isEnabled();
+        boolean statusChanged = wasEnabled != willBeEnabled;
+        
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
         user.setMembershipType(userDto.getMembershipType());
         user.setEnabled(userDto.isEnabled());
         user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
+        
+        // Handle deactivation reason
+        if (!willBeEnabled) {
+            user.setDeactivationReason(userDto.getDeactivationReason());
+        } else {
+            // Clear deactivation reason when account is activated
+            user.setDeactivationReason(null);
+        }
 
         // Only update password if it's provided in the DTO
         if (userDto.getPassword() != null && !userDto.getPassword().isBlank()) {
@@ -141,6 +157,18 @@ public class UserServiceImpl implements UserService {
         user.setRoles(roles);
 
         userRepository.save(user);
+        
+        // Send email notification if status changed
+        if (statusChanged) {
+            String userName = user.getFirstName() + " " + user.getLastName();
+            if (!willBeEnabled) {
+                // Account was deactivated
+                emailService.sendAccountDeactivationEmail(user.getEmail(), userName, user.getDeactivationReason());
+            } else {
+                // Account was activated
+                emailService.sendAccountActivationEmail(user.getEmail(), userName);
+            }
+        }
     }
 
     @Override
@@ -188,6 +216,7 @@ public class UserServiceImpl implements UserService {
         userDto.setEmail(user.getEmail());
         userDto.setMembershipType(user.getMembershipType());
         userDto.setEnabled(user.isEnabled());
+        userDto.setDeactivationReason(user.getDeactivationReason());
         userDto.setTwoFactorEnabled(user.isTwoFactorEnabled());
         userDto.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
         return userDto;

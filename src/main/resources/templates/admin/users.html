@@ -94,15 +94,11 @@
                     <td class="py-3 px-4" th:text="${user.membershipType}"></td>
                     <td class="py-3 px-4">
                         <th:block th:if="${user.email != currentUsername}">
-                            <form method="post" th:action="@{/admin/users/{id}/toggle-enabled(id=${user.id})}"
-                                  style="display: inline;">
-                                <button type="submit"
-                                        th:classappend="${user.enabled} ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-600 hover:bg-red-200'"
-                                        class="px-3 py-1 rounded-full text-xs font-semibold transition duration-200">
-                                    <span th:if="${user.enabled}">✓ Active</span>
-                                    <span th:unless="${user.enabled}">✗ Inactive</span>
-                                </button>
-                            </form>
+                            <span th:classappend="${user.enabled} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-600'"
+                                  class="px-3 py-1 rounded-full text-xs font-semibold">
+                                <span th:if="${user.enabled}">Active</span>
+                                <span th:unless="${user.enabled}">Inactive</span>
+                            </span>
                         </th:block>
                         <th:block th:if="${user.email == currentUsername}">
                             <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
@@ -111,15 +107,11 @@
                         </th:block>
                     </td>
                     <td class="py-3 px-4">
-                        <form method="post" th:action="@{/admin/users/{id}/toggle-2fa(id=${user.id})}"
-                              style="display: inline;">
-                            <button type="submit"
-                                    th:classappend="${user.twoFactorEnabled} ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-                                    class="px-3 py-1 rounded-full text-xs font-semibold transition duration-200">
-                                <span th:if="${user.twoFactorEnabled}">✓ Enabled</span>
-                                <span th:unless="${user.twoFactorEnabled}">Disabled</span>
-                            </button>
-                        </form>
+                        <span th:classappend="${user.twoFactorEnabled} ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'"
+                              class="px-3 py-1 rounded-full text-xs font-semibold">
+                            <span th:if="${user.twoFactorEnabled}">Enabled</span>
+                            <span th:unless="${user.twoFactorEnabled}">Disabled</span>
+                        </span>
                     </td>
                     <td class="py-3 px-4" th:text="${#strings.listJoin(user.roles, ', ')}"></td>
                     <td class="py-3 px-4">

@@ -3,6 +3,26 @@
 <head>
     <title>User Form</title>
     <link rel="stylesheet" th:href="@{/css/output.css}"/>
+    <script>
+        function toggleDeactivationReason() {
+            const enabledCheckbox = document.getElementById('enabled');
+            const deactivationReasonDiv = document.getElementById('deactivationReasonDiv');
+            const deactivationReasonInput = document.getElementById('deactivationReason');
+            
+            if (!enabledCheckbox.checked) {
+                deactivationReasonDiv.style.display = 'block';
+                deactivationReasonInput.required = true;
+            } else {
+                deactivationReasonDiv.style.display = 'none';
+                deactivationReasonInput.required = false;
+                deactivationReasonInput.value = '';
+            }
+        }
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            toggleDeactivationReason();
+        });
+    </script>
 </head>
 <body class="bg-gray-100">
 <!-- Include Navbar Fragment -->
@@ -52,8 +72,21 @@
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">
-                    <input class="mr-2 leading-tight" th:field="*{enabled}" type="checkbox"/>Enabled
+                    <input class="mr-2 leading-tight" id="enabled" th:field="*{enabled}" type="checkbox" onchange="toggleDeactivationReason()"/>Enabled
                 </label>
+            </div>
+            <div class="mb-4" id="deactivationReasonDiv" style="display: none;">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="deactivationReason">
+                    Deactivation Reason: <span class="text-red-500">*</span>
+                </label>
+                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          id="deactivationReason"
+                          th:field="*{deactivationReason}"
+                          rows="4"
+                          placeholder="Please provide a reason for deactivating this account..."></textarea>
+                <p class="text-gray-500 text-xs italic mt-1">This reason will be sent to the user via email</p>
+                <span class="text-red-500 text-xs italic" th:errors="*{deactivationReason}"
+                      th:if="${#fields.hasErrors('deactivationReason')}"></span>
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">

@@ -89,6 +89,13 @@ public class AdminController {
         if (existingUser.getEmail().equals(principal.getName())) {
             throw new AccessDeniedException("Admins are not allowed to update their own account.");
         }
+        
+        // Validate deactivation reason when disabling an account
+        if (!userDto.isEnabled() && (userDto.getDeactivationReason() == null || userDto.getDeactivationReason().isBlank())) {
+            bindingResult.rejectValue("deactivationReason", "deactivationReason.required",
+                "Deactivation reason is required when disabling a user account.");
+        }
+        
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
             return "admin/user-form";
@@ -105,23 +112,6 @@ public class AdminController {
             throw new AccessDeniedException("Admins are not allowed to delete their own account.");
         }
         userService.deleteUser(id);
-        return "redirect:/admin/users";
-    }
-
-    @PostMapping("/users/{id}/toggle-2fa")
-    public String toggleUserTwoFactor(@PathVariable("id") Long id) {
-        userService.toggleTwoFactor(id);
-        return "redirect:/admin/users";
-    }
-
-    @PostMapping("/users/{id}/toggle-enabled")
-    public String toggleUserEnabled(@PathVariable("id") Long id, Principal principal) {
-        UserDto user = userService.findById(id);
-        if (user.getEmail().equals(principal.getName())) {
-            throw new AccessDeniedException("Admins are not allowed to toggle their own account status.");
-        }
-        user.setEnabled(!user.isEnabled());
-        userService.updateUser(user);
         return "redirect:/admin/users";
     }
 }

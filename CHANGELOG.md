@@ -1,5 +1,33 @@
 # 📋 MuskelManagement - Changelog
 
+## 🗓️ 2025-11-23 - User Management UI Update
+
+### 🔄 Änderungen
+
+#### User List Page: Toggle-Buttons zu Display-Only konvertiert
+Die interaktiven Toggle-Buttons für Account-Status und 2FA wurden auf der User-Liste zu reinen Anzeige-Elementen geändert:
+
+**Geänderte Funktionalität:**
+- ✓ **Enable/Disable Account** - Nicht mehr direkt in der Tabelle änderbar
+- ✓ **2FA Enable/Disable** - Nicht mehr direkt in der Tabelle änderbar
+- ✓ Visuelle Darstellung bleibt **identisch** (Badges mit Farben)
+- ✓ Account und 2FA Management erfolgt nun ausschließlich über die **Edit-Page**
+
+**Betroffene Dateien:**
+- [`src/main/resources/templates/admin/users.html`](src/main/resources/templates/admin/users.html:95-112) - Toggle-Forms durch styled `<span>` Elemente ersetzt
+- [`src/main/java/de/oth/muskelmanagement/controller/AdminController.java`](src/main/java/de/oth/muskelmanagement/controller/AdminController.java:111-126) - Toggle-Endpoints entfernt
+
+**Entfernte Endpoints:**
+- `POST /admin/users/{id}/toggle-enabled` - Entfernt
+- `POST /admin/users/{id}/toggle-2fa` - Entfernt
+
+**User Experience:**
+- Admins sehen weiterhin farbige Status-Badges (✓ Active, ✗ Inactive, 2FA Enabled/Disabled)
+- Änderungen erfolgen über die User-Edit-Page mittels Checkboxen
+- Badges haben keine Hover-Effekte mehr (nicht klickbar)
+
+---
+
 ## 🗓️ 2025-11-21 - Flatpickr Date Picker & Navigation Fixes
 
 ### 🆕 Neue Features

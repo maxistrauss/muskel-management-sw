@@ -22,6 +22,9 @@ public class User {
 
     private boolean enabled = true;
 
+    @Column(name = "deactivation_reason", columnDefinition = "TEXT")
+    private String deactivationReason;
+
     @Column(name = "two_factor_enabled", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean twoFactorEnabled = false;
 
@@ -112,5 +115,13 @@ public class User {
 
     public void setTwoFactorEnabled(Boolean twoFactorEnabled) {
         this.twoFactorEnabled = twoFactorEnabled;
+    }
+
+    public String getDeactivationReason() {
+        return deactivationReason;
+    }
+
+    public void setDeactivationReason(String deactivationReason) {
+        this.deactivationReason = deactivationReason;
     }
 }
