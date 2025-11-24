@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Subscription</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<!-- Include Navbar Fragment -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container mx-auto mt-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">My Subscription</h1>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Active Subscription Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-semibold mb-4">Current Subscription</h2>
+
+            <!-- Active Subscription -->
+            <div th:if="${activeSubscription != null}">
+                <div class="border-l-4 border-green-500 bg-green-50 p-4 mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-green-800">🟢 Active Subscription</h3>
+                        <span th:if="${activeSubscription.isExpiringSoon}" 
+                              class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                            Expiring Soon
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <p class="text-sm text-gray-600">Plan</p>
+                            <p class="text-lg font-semibold" th:text="${activeSubscription.tarifName}"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Price</p>
+                            <p class="text-lg font-semibold">
+                                <span th:text="${#numbers.formatDecimal(activeSubscription.tarifPrice, 0, 2)}"></span> € 
+                                / <span th:text="${activeSubscription.tarifDuration}"></span> month<span th:if="${activeSubscription.tarifDuration > 1}">s</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Start Date</p>
+                            <p class="text-lg font-semibold" th:text="${#temporals.format(activeSubscription.startDate, 'dd.MM.yyyy')}"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">End Date</p>
+                            <p class="text-lg font-semibold" th:text="${#temporals.format(activeSubscription.endDate, 'dd.MM.yyyy')}"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Days Remaining</p>
+                            <p class="text-lg font-semibold">
+                                <span th:text="${activeSubscription.daysRemaining}"></span> days
+                            </p>
+                        </div>
+                        <div th:if="${activeSubscription.tarifDescription}">
+                            <p class="text-sm text-gray-600">Description</p>
+                            <p class="text-sm" th:text="${activeSubscription.tarifDescription}"></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex gap-3">
+                        <form th:action="@{/member/subscriptions/{id}/cancel(id=${activeSubscription.id})}" method="post"
+                              onsubmit="return confirm('Are you sure you want to cancel your subscription? You will keep access until the end date.');">
+                            <button type="submit" 
+                                    class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                                Cancel Subscription
+                            </button>
+                        </form>
+                        <a th:href="@{/member/tarifs}" 
+                           class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                            View Available Plans
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Active Subscription -->
+            <div th:if="${activeSubscription == null}">
+                <div class="border-l-4 border-gray-400 bg-gray-50 p-4">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">No Active Subscription</h3>
+                    <p class="text-gray-600 mb-4">You don't have an active subscription at the moment.</p>
+                    <a th:href="@{/member/tarifs}" 
+                       class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded inline-block">
+                        Browse Available Plans
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscription History -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">Subscription History</h2>
+
+            <div th:if="${subscriptionHistory != null && !subscriptionHistory.isEmpty()}">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="py-3 px-4 text-left">Plan</th>
+                            <th class="py-3 px-4 text-left">Period</th>
+                            <th class="py-3 px-4 text-left">Status</th>
+                            <th class="py-3 px-4 text-left">Price</th>
+                        </tr>
+                        </thead>
+                        <tbody class="text-gray-700">
+                        <tr th:each="sub : ${subscriptionHistory}" class="border-b hover:bg-gray-50">
+                            <td class="py-3 px-4" th:text="${sub.tarifName}"></td>
+                            <td class="py-3 px-4">
+                                <span th:text="${#temporals.format(sub.startDate, 'dd.MM.yyyy')}"></span> - 
+                                <span th:text="${#temporals.format(sub.endDate, 'dd.MM.yyyy')}"></span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span th:if="${sub.isActive}" 
+                                      class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                                    ACTIVE
+                                </span>
+                                <span th:if="${sub.isExpired}" 
+                                      class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                                    EXPIRED
+                                </span>
+                                <span th:if="${sub.isCancelled}" 
+                                      class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                                    CANCELLED
+                                </span>
+                                <span th:if="${sub.status.name() == 'PENDING'}" 
+                                      class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                                    PENDING
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span th:text="${#numbers.formatDecimal(sub.tarifPrice, 0, 2)}"></span> €
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div th:if="${subscriptionHistory == null || subscriptionHistory.isEmpty()}">
+                <p class="text-gray-500 text-center py-4">No subscription history available.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

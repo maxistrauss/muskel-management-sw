@@ -41,6 +41,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/member/**").hasRole("MEMBER")
                         .requestMatchers("/login", "/register", "/verify-2fa", "/verify-2fa/resend", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(formLogin -> formLogin
@@ -49,9 +50,10 @@ public class SecurityConfig {
                         .failureHandler(authenticationFailureHandler)
                         .usernameParameter("email")
                         .permitAll())
+                .httpBasic(basic -> {})  // Enable HTTP Basic Auth for API endpoints (useful for Postman/API testing)
                 .logout(LogoutConfigurer::permitAll)
                 .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandler))
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"))  // Disable CSRF for API endpoints
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
         return http.build();
     }
