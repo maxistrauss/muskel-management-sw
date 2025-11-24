@@ -31,10 +31,6 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    
-    // PDF Generation with OpenHTMLToPDF
-    implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
-    implementation 'com.openhtmltopdf:openhtmltopdf-slf4j:1.0.10'
 }
 
 node {
