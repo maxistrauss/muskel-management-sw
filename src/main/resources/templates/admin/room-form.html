@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Room Form</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<!-- Include Navbar Fragment -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold mb-6" th:if="${room.id == null}">Create Room</h1>
+        <h1 class="text-3xl font-bold mb-6" th:if="${room.id != null}">Edit Room</h1>
+        <form method="post"
+              th:action="${room.id == null} ? @{/admin/rooms/new} : @{/admin/rooms/edit/{id}(id=${room.id})}" th:object="${room}">
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Room Name:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="name" th:field="*{name}" type="text" placeholder="e.g., Main Gym, Cardio Room"/>
+                <span class="text-red-500 text-xs italic" th:errors="*{name}"
+                      th:if="${#fields.hasErrors('name')}"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="capacity">Capacity:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="capacity" th:field="*{capacity}" type="number" min="1" placeholder="Maximum number of people"/>
+                <span class="text-red-500 text-xs italic" th:errors="*{capacity}"
+                      th:if="${#fields.hasErrors('capacity')}"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="amenities">Amenities:</label>
+                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          id="amenities" th:field="*{amenities}" rows="4" 
+                          placeholder="e.g., Mirrors, Air conditioning, Sound system, Rubber flooring"></textarea>
+                <span class="text-red-500 text-xs italic" th:errors="*{amenities}"
+                      th:if="${#fields.hasErrors('amenities')}"></span>
+                <p class="text-gray-600 text-xs mt-1">Describe built-in features and facilities of this room</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    <input class="mr-2 leading-tight" th:field="*{active}" type="checkbox"/>Active
+                </label>
+                <p class="text-gray-600 text-xs mt-1">Inactive rooms won't appear in equipment assignment dropdowns</p>
+            </div>
+
+            <!-- Display assigned equipment if editing -->
+            <div class="mb-6" th:if="${room.id != null and room.equipment != null and !room.equipment.isEmpty()}">
+                <h3 class="text-lg font-semibold mb-2">Assigned Equipment:</h3>
+                <div class="bg-gray-50 p-4 rounded border">
+                    <ul class="list-disc list-inside">
+                        <li th:each="equip : ${room.equipment}" class="text-gray-700">
+                            <span th:text="${equip.name}"></span>
+                            <span class="text-gray-500 text-sm" th:text="'(SN: ' + ${equip.serialNumber} + ')'"></span>
+                        </li>
+                    </ul>
+                </div>
+                <p class="text-gray-600 text-xs mt-2">To reassign equipment, use the Equipment Management page</p>
+            </div>
+
+            <div class="flex justify-between">
+                <a class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                   th:href="@{/admin/rooms}">Cancel</a>
+                <input class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                       th:value="${room.id == null} ? 'Create Room' : 'Update Room'"
+                       type="submit"/>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

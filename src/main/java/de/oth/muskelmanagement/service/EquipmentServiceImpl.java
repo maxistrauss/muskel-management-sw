@@ -2,7 +2,9 @@ package de.oth.muskelmanagement.service;
 
 import de.oth.muskelmanagement.model.Equipment;
 import de.oth.muskelmanagement.model.EquipmentStatus;
+import de.oth.muskelmanagement.model.Room;
 import de.oth.muskelmanagement.repository.EquipmentRepository;
+import de.oth.muskelmanagement.repository.RoomRepository;
 import de.oth.muskelmanagement.service.dto.EquipmentDto;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -21,9 +23,11 @@ import java.util.List;
 public class EquipmentServiceImpl implements EquipmentService {
 
     private final EquipmentRepository equipmentRepository;
+    private final RoomRepository roomRepository;
 
-    public EquipmentServiceImpl(EquipmentRepository equipmentRepository) {
+    public EquipmentServiceImpl(EquipmentRepository equipmentRepository, RoomRepository roomRepository) {
         this.equipmentRepository = equipmentRepository;
+        this.roomRepository = roomRepository;
     }
 
     @Override
@@ -32,7 +36,14 @@ public class EquipmentServiceImpl implements EquipmentService {
         equipment.setName(equipmentDto.getName());
         equipment.setSerialNumber(equipmentDto.getSerialNumber());
         equipment.setStatus(equipmentDto.getStatus());
-        equipment.setLocation(equipmentDto.getLocation());
+        
+        // Handle room assignment
+        if (equipmentDto.getRoomId() != null) {
+            Room room = roomRepository.findById(equipmentDto.getRoomId())
+                    .orElseThrow(() -> new RuntimeException("Room not found with id: " + equipmentDto.getRoomId()));
+            equipment.setRoom(room);
+        }
+        
         equipment.setPurchaseDate(equipmentDto.getPurchaseDate());
         equipment.setManufacturer(equipmentDto.getManufacturer());
         equipment.setCategory(equipmentDto.getCategory());
@@ -68,7 +79,16 @@ public class EquipmentServiceImpl implements EquipmentService {
         equipment.setName(equipmentDto.getName());
         equipment.setSerialNumber(equipmentDto.getSerialNumber());
         equipment.setStatus(equipmentDto.getStatus());
-        equipment.setLocation(equipmentDto.getLocation());
+        
+        // Handle room assignment
+        if (equipmentDto.getRoomId() != null) {
+            Room room = roomRepository.findById(equipmentDto.getRoomId())
+                    .orElseThrow(() -> new RuntimeException("Room not found with id: " + equipmentDto.getRoomId()));
+            equipment.setRoom(room);
+        } else {
+            equipment.setRoom(null);
+        }
+        
         equipment.setPurchaseDate(equipmentDto.getPurchaseDate());
         equipment.setManufacturer(equipmentDto.getManufacturer());
         equipment.setCategory(equipmentDto.getCategory());
@@ -112,7 +132,8 @@ public class EquipmentServiceImpl implements EquipmentService {
                 predicates.add(cb.equal(root.get("status"), status));
             }
             if (StringUtils.hasText(location)) {
-                predicates.add(cb.like(cb.lower(root.get("location")), "%" + location.toLowerCase() + "%"));
+                // Search by room name
+                predicates.add(cb.like(cb.lower(root.get("room").get("name")), "%" + location.toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -127,7 +148,13 @@ public class EquipmentServiceImpl implements EquipmentService {
         dto.setName(equipment.getName());
         dto.setSerialNumber(equipment.getSerialNumber());
         dto.setStatus(equipment.getStatus());
-        dto.setLocation(equipment.getLocation());
+        
+        // Handle room mapping
+        if (equipment.getRoom() != null) {
+            dto.setRoomId(equipment.getRoom().getId());
+            dto.setRoomName(equipment.getRoom().getName());
+        }
+        
         dto.setPurchaseDate(equipment.getPurchaseDate());
         dto.setManufacturer(equipment.getManufacturer());
         dto.setCategory(equipment.getCategory());

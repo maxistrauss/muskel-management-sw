@@ -21,7 +21,9 @@ public class Equipment {
     @Column(nullable = false)
     private EquipmentStatus status = EquipmentStatus.AVAILABLE;
 
-    private String location; // Placeholder for future Room entity relationship
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = true)
+    private Room room;
 
     private LocalDate purchaseDate;
 
@@ -40,13 +42,13 @@ public class Equipment {
     public Equipment() {
     }
 
-    public Equipment(String name, String serialNumber, EquipmentStatus status, String location,
+    public Equipment(String name, String serialNumber, EquipmentStatus status, Room room,
                      LocalDate purchaseDate, String manufacturer, EquipmentCategory category,
                      Integer maintenanceInterval, LocalDate lastMaintenanceDate) {
         this.name = name;
         this.serialNumber = serialNumber;
         this.status = status;
-        this.location = location;
+        this.room = room;
         this.purchaseDate = purchaseDate;
         this.manufacturer = manufacturer;
         this.category = category;
@@ -86,12 +88,12 @@ public class Equipment {
         this.status = status;
     }
 
-    public String getLocation() {
-        return location;
+    public Room getRoom() {
+        return room;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setRoom(Room room) {
+        this.room = room;
     }
 
     public LocalDate getPurchaseDate() {

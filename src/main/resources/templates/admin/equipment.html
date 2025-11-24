@@ -64,7 +64,7 @@
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Serial Number</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Status</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Category</th>
-                    <th class="py-3 px-4 uppercase font-semibold text-sm">Location</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Room</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Manufacturer</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Actions</th>
                 </tr>
@@ -82,7 +82,10 @@
                               th:text="${equip.status.displayName}"></span>
                     </td>
                     <td class="py-3 px-4" th:text="${equip.category != null ? equip.category.displayName : '-'}"></td>
-                    <td class="py-3 px-4" th:text="${equip.location ?: '-'}"></td>
+                    <td class="py-3 px-4">
+                        <span th:if="${equip.roomName != null}" th:text="${equip.roomName}"></span>
+                        <span th:unless="${equip.roomName != null}" class="text-gray-400 italic">Unassigned</span>
+                    </td>
                     <td class="py-3 px-4" th:text="${equip.manufacturer ?: '-'}"></td>
                     <td class="py-3 px-4">
                         <div><a class="text-blue-500 hover:text-blue-700"

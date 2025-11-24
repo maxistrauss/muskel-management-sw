@@ -67,11 +67,13 @@
                 <!-- Right Column -->
                 <div>
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="location">Location:</label>
-                        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                               id="location" th:field="*{location}" type="text" 
-                               placeholder="e.g., Kraftraum 1"/>
-                        <span class="text-xs text-gray-500">This will be replaced by Room selection in the future</span>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="roomId">Room:</label>
+                        <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                id="roomId" th:field="*{roomId}">
+                            <option value="">-- Unassigned --</option>
+                            <option th:each="room : ${allRooms}" th:text="${room.name + ' (Capacity: ' + room.capacity + ')'}" th:value="${room.id}"></option>
+                        </select>
+                        <span class="text-xs text-gray-500">Assign this equipment to a training room</span>
                     </div>
 
                     <div class="mb-4">

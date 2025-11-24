@@ -2,6 +2,7 @@ package de.oth.muskelmanagement.repository;
 
 import de.oth.muskelmanagement.model.Equipment;
 import de.oth.muskelmanagement.model.EquipmentStatus;
+import de.oth.muskelmanagement.model.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -16,4 +17,10 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long>, Jpa
     List<Equipment> findByArchivedFalse();
 
     List<Equipment> findByStatus(EquipmentStatus status);
+    
+    List<Equipment> findByRoom(Room room);
+    
+    List<Equipment> findByRoomId(Long roomId);
+    
+    List<Equipment> findByRoomIsNull();
 }
