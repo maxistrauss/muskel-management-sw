@@ -1,6 +1,8 @@
 package de.oth.muskelmanagement.controller;
 
+import de.oth.muskelmanagement.service.SubscriptionService;
 import de.oth.muskelmanagement.service.UserService;
+import de.oth.muskelmanagement.service.dto.SubscriptionDto;
 import de.oth.muskelmanagement.service.dto.UserDto;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -14,15 +16,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
     private final UserService userService;
+    private final SubscriptionService subscriptionService;
 
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, SubscriptionService subscriptionService) {
         this.userService = userService;
+        this.subscriptionService = subscriptionService;
     }
 
     @GetMapping("/users")
@@ -79,6 +84,11 @@ public class AdminController {
         }
         model.addAttribute("user", user);
         model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
+        
+        // Add active subscription if exists for PDF generation
+        Optional<SubscriptionDto> activeSubscription = subscriptionService.getActiveSubscription(id);
+        activeSubscription.ifPresent(subscription -> model.addAttribute("activeSubscription", subscription));
+        
         return "admin/user-form";
     }
 
