@@ -7,8 +7,8 @@
 <!-- Sidebar Navigation Fragment -->
 <div th:fragment="navbar">
     <!-- Mobile Menu Toggle Button (Fixed Top-Left) -->
-    <button 
-        id="sidebar-toggle" 
+    <button
+        id="sidebar-toggle"
         class="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-800 text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         aria-label="Toggle sidebar">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -17,8 +17,8 @@
     </button>
 
     <!-- Sidebar -->
-    <aside 
-        id="sidebar" 
+    <aside
+        id="sidebar"
         class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full lg:translate-x-0 bg-gray-800 shadow-lg"
         aria-label="Sidebar">
         <div class="h-full flex flex-col px-3 py-4 overflow-y-auto">
@@ -61,8 +61,8 @@
                         </svg>
                         Exercises
                     </a>
-                    <a 
-                        href="/member/subscriptions" 
+                    <a
+                        href="/member/subscriptions"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                         th:classappend="${currentUri.contains('/member/subscriptions') ? 'bg-gray-700 text-white' : ''}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,8 +70,8 @@
                         </svg>
                         My Subscription
                     </a>
-                    <a 
-                        href="/member/tarifs" 
+                    <a
+                        href="/member/tarifs"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                         th:classappend="${currentUri.contains('/member/tarifs') ? 'bg-gray-700 text-white' : ''}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,8 +84,8 @@
                 <!-- Trainer Menu -->
                 <div class="pt-4" sec:authorize="hasRole('TRAINER')">
                     <p class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Trainer</p>
-                    <a 
-                        href="/trainer/courses" 
+                    <a
+                        href="/trainer/courses"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                         th:classappend="${currentUri.contains('/trainer/courses') ? 'bg-gray-700 text-white' : ''}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,8 +98,8 @@
                 <!-- Admin Menu -->
                 <div class="pt-4" sec:authorize="hasRole('ADMIN')">
                     <p class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</p>
-                    <a 
-                        href="/admin/users" 
+                    <a
+                        href="/admin/users"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                         th:classappend="${currentUri.contains('/admin/users') ? 'bg-gray-700 text-white' : ''}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,8 +107,8 @@
                         </svg>
                         User Management
                     </a>
-                    <a 
-                        href="/admin/equipment" 
+                    <a
+                        href="/admin/equipment"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                         th:classappend="${currentUri.contains('/admin/equipment') ? 'bg-gray-700 text-white' : ''}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,8 +116,8 @@
                         </svg>
                         Equipment
                     </a>
-                    <a 
-                        href="/admin/rooms" 
+                    <a
+                        href="/admin/rooms"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                         th:classappend="${currentUri.contains('/admin/rooms') ? 'bg-gray-700 text-white' : ''}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,8 +125,8 @@
                         </svg>
                         Rooms
                     </a>
-                    <a 
-                        href="/admin/tarifs" 
+                    <a
+                        href="/admin/tarifs"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                         th:classappend="${currentUri.contains('/admin/tarifs') ? 'bg-gray-700 text-white' : ''}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,8 +134,13 @@
                         </svg>
                         Tarifs
                     </a>
-                    <a 
-                        href="/admin/courses" 
+                    <a class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-200"
+                       href="/admin/membership-confirmations"
+                       th:classappend="${currentUri.contains('/admin/membership-confirmations') ? 'bg-gray-200 text-gray-900' : ''}">
+                        Membership Confirmations
+                    </a>
+                    <a
+                        href="/admin/courses"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                         th:classappend="${currentUri.contains('/admin/courses') ? 'bg-gray-700 text-white' : ''}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,8 +154,8 @@
 
             <!-- User Profile Section (Bottom of Sidebar) -->
             <div class="pt-4 mt-auto border-t border-gray-700" sec:authorize="isAuthenticated()">
-                <a 
-                    href="/profile" 
+                <a
+                    href="/profile"
                     class="flex items-center px-3 py-3 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors group">
                     <div class="flex items-center justify-center w-10 h-10 mr-3 rounded-full bg-blue-600 text-white font-semibold group-hover:bg-blue-500">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,11 +167,11 @@
                         <p class="text-xs text-gray-400 truncate" th:text="${currentUserEmail}">user@email.com</p>
                     </div>
                 </a>
-                
+
                 <!-- Logout Button -->
                 <form method="post" th:action="@{/logout}" class="mt-2">
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         class="w-full flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-red-600 hover:text-white transition-colors">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
@@ -179,8 +184,8 @@
     </aside>
 
     <!-- Backdrop for mobile -->
-    <div 
-        id="sidebar-backdrop" 
+    <div
+        id="sidebar-backdrop"
         class="fixed inset-0 z-30 bg-gray-900 bg-opacity-50 hidden lg:hidden"
         aria-hidden="true"></div>
 
@@ -205,6 +210,6 @@
             }
         });
     </script>
-</div>
+</nav>
 </body>
 </html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Membership Confirmation</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        
+        .header-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .document-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 30px 0;
+            text-align: center;
+            color: #007bff;
+        }
+        
+        .info-section {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .info-row {
+            margin: 12px 0;
+            display: table;
+            width: 100%;
+        }
+        
+        .label {
+            font-weight: bold;
+            width: 45%;
+            display: table-cell;
+            color: #495057;
+        }
+        
+        .value {
+            width: 55%;
+            display: table-cell;
+            color: #212529;
+        }
+        
+        .confirmation-text {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #007bff;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .signature-section {
+            margin-top: 60px;
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-top: 2px solid #333;
+            width: 250px;
+            margin: 60px auto 10px auto;
+            padding-top: 5px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+            font-size: 11px;
+            text-align: center;
+            color: #666;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        .highlight {
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .divider {
+            height: 2px;
+            background-color: #dee2e6;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo" th:text="${gymName}">MuskelManagement Fitness Studio</div>
+        <div class="header-subtitle">Fitness Studio &amp; Health Center</div>
+    </div>
+    
+    <div class="document-title">Membership Confirmation</div>
+    
+    <div class="confirmation-text">
+        This document certifies that the person named below is a registered member of our fitness facility 
+        with an active membership. This confirmation can be used for verification purposes.
+    </div>
+    
+    <div class="info-section">
+        <div class="info-row">
+            <span class="label">Membership Number:</span>
+            <span class="value highlight" th:text="${membershipNumber}">123</span>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="info-row">
+            <span class="label">Member Name:</span>
+            <span class="value" th:text="${firstName + ' ' + lastName}">John Doe</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">Email Address:</span>
+            <span class="value" th:text="${email}">john.doe@example.com</span>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="info-row">
+            <span class="label">Membership Type:</span>
+            <span class="value highlight" th:text="${membershipType}">Premium</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">Monthly Fee:</span>
+            <span class="value" th:text="${#numbers.formatDecimal(price, 1, 2)} + ' EUR'">49.99 EUR</span>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="info-row">
+            <span class="label">Membership Start Date:</span>
+            <span class="value" th:text="${#temporals.format(startDate, 'dd.MM.yyyy')}">01.01.2024</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="label">Membership End Date:</span>
+            <span class="value" th:text="${#temporals.format(endDate, 'dd.MM.yyyy')}">31.12.2024</span>
+        </div>
+    </div>
+    
+    <div class="signature-section">
+        <p style="font-size: 14px; margin: 20px 0;">
+            We hereby confirm the above membership details.
+        </p>
+        <div class="signature-line">
+            Management Signature
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p><strong>Document generated on:</strong> <span th:text="${#temporals.format(generatedDate, 'dd.MM.yyyy')}">24.01.2024</span></p>
+        <p style="margin-top: 15px;">
+            <strong>MuskelManagement Fitness Studio</strong><br/>
+            Your Address Line Here | Phone: +49 123 456789 | Email: info@muskelmanagement.de
+        </p>
+        <p style="margin-top: 10px; font-size: 10px; color: #999;">
+            This is an official document. Please keep it for your records.
+        </p>
+    </div>
+</body>
+</html>
