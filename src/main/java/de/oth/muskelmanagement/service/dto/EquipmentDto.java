@@ -20,7 +20,9 @@ public class EquipmentDto {
     @NotNull(message = "Status cannot be null")
     private EquipmentStatus status;
 
-    private String location;
+    private Long roomId;
+    
+    private String roomName;
 
     private LocalDate purchaseDate;
 
@@ -37,14 +39,15 @@ public class EquipmentDto {
     public EquipmentDto() {
     }
 
-    public EquipmentDto(Long id, String name, String serialNumber, EquipmentStatus status, String location,
+    public EquipmentDto(Long id, String name, String serialNumber, EquipmentStatus status, Long roomId, String roomName,
                         LocalDate purchaseDate, String manufacturer, EquipmentCategory category,
                         Integer maintenanceInterval, LocalDate lastMaintenanceDate, boolean archived) {
         this.id = id;
         this.name = name;
         this.serialNumber = serialNumber;
         this.status = status;
-        this.location = location;
+        this.roomId = roomId;
+        this.roomName = roomName;
         this.purchaseDate = purchaseDate;
         this.manufacturer = manufacturer;
         this.category = category;
@@ -85,12 +88,20 @@ public class EquipmentDto {
         this.status = status;
     }
 
-    public String getLocation() {
-        return location;
+    public Long getRoomId() {
+        return roomId;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setRoomId(Long roomId) {
+        this.roomId = roomId;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
     }
 
     public LocalDate getPurchaseDate() {

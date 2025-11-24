@@ -3,7 +3,9 @@ package de.oth.muskelmanagement.service;
 import de.oth.muskelmanagement.model.Equipment;
 import de.oth.muskelmanagement.model.EquipmentCategory;
 import de.oth.muskelmanagement.model.EquipmentStatus;
+import de.oth.muskelmanagement.model.Room;
 import de.oth.muskelmanagement.repository.EquipmentRepository;
+import de.oth.muskelmanagement.repository.RoomRepository;
 import de.oth.muskelmanagement.service.dto.EquipmentDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,24 +35,35 @@ class EquipmentServiceImplTest {
 
     @Mock
     private EquipmentRepository equipmentRepository;
+    
+    @Mock
+    private RoomRepository roomRepository;
 
     @InjectMocks
     private EquipmentServiceImpl equipmentService;
 
     private EquipmentDto equipmentDto;
     private Equipment equipment;
+    private Room testRoom;
     private Pageable pageable;
 
     @BeforeEach
     void setUp() {
         pageable = PageRequest.of(0, 10);
 
+        testRoom = new Room();
+        testRoom.setId(1L);
+        testRoom.setName("Cardio Area");
+        testRoom.setCapacity(30);
+        testRoom.setActive(true);
+
         equipmentDto = new EquipmentDto();
         equipmentDto.setId(1L);
         equipmentDto.setName("Treadmill");
         equipmentDto.setSerialNumber("TM-2024-001");
         equipmentDto.setStatus(EquipmentStatus.AVAILABLE);
-        equipmentDto.setLocation("Cardio Area");
+        equipmentDto.setRoomId(1L);
+        equipmentDto.setRoomName("Cardio Area");
         equipmentDto.setPurchaseDate(LocalDate.of(2024, 1, 15));
         equipmentDto.setManufacturer("Life Fitness");
         equipmentDto.setCategory(EquipmentCategory.CARDIO);
@@ -63,7 +76,7 @@ class EquipmentServiceImplTest {
         equipment.setName("Treadmill");
         equipment.setSerialNumber("TM-2024-001");
         equipment.setStatus(EquipmentStatus.AVAILABLE);
-        equipment.setLocation("Cardio Area");
+        equipment.setRoom(testRoom);
         equipment.setPurchaseDate(LocalDate.of(2024, 1, 15));
         equipment.setManufacturer("Life Fitness");
         equipment.setCategory(EquipmentCategory.CARDIO);
@@ -74,6 +87,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void save_shouldCreateEquipmentWithAllFields() {
+        when(roomRepository.findById(1L)).thenReturn(Optional.of(testRoom));
         when(equipmentRepository.save(any(Equipment.class))).thenAnswer(invocation -> {
             Equipment saved = invocation.getArgument(0);
             saved.setId(1L);
@@ -86,7 +100,8 @@ class EquipmentServiceImplTest {
         assertEquals("Treadmill", savedEquipment.getName());
         assertEquals("TM-2024-001", savedEquipment.getSerialNumber());
         assertEquals(EquipmentStatus.AVAILABLE, savedEquipment.getStatus());
-        assertEquals("Cardio Area", savedEquipment.getLocation());
+        assertNotNull(savedEquipment.getRoom());
+        assertEquals("Cardio Area", savedEquipment.getRoom().getName());
         assertEquals(LocalDate.of(2024, 1, 15), savedEquipment.getPurchaseDate());
         assertEquals("Life Fitness", savedEquipment.getManufacturer());
         assertEquals(EquipmentCategory.CARDIO, savedEquipment.getCategory());
@@ -116,7 +131,7 @@ class EquipmentServiceImplTest {
         assertEquals("Basic Equipment", savedEquipment.getName());
         assertEquals("BE-001", savedEquipment.getSerialNumber());
         assertEquals(EquipmentStatus.AVAILABLE, savedEquipment.getStatus());
-        assertNull(savedEquipment.getLocation());
+        assertNull(savedEquipment.getRoom());
         assertNull(savedEquipment.getManufacturer());
         verify(equipmentRepository, times(1)).save(any(Equipment.class));
     }
@@ -205,20 +220,25 @@ class EquipmentServiceImplTest {
         existingEquipment.setSerialNumber("OLD-001");
         existingEquipment.setStatus(EquipmentStatus.AVAILABLE);
 
+        Room newRoom = new Room();
+        newRoom.setId(2L);
+        newRoom.setName("New Location");
+        
         EquipmentDto updateDto = new EquipmentDto();
         updateDto.setId(1L);
         updateDto.setName("Updated Treadmill");
         updateDto.setSerialNumber("TM-2024-002");
         updateDto.setStatus(EquipmentStatus.AVAILABLE);
-        updateDto.setLocation("New Location");
+        updateDto.setRoomId(2L);
         updateDto.setPurchaseDate(LocalDate.of(2024, 6, 1));
         updateDto.setManufacturer("New Manufacturer");
         updateDto.setCategory(EquipmentCategory.STRENGTH);
         updateDto.setMaintenanceInterval(60);
-        updateDto.setLastMaintenanceDate(LocalDate.of(2024, 11, 1));
+        updateDto.setLastMaintenanceDate(LocalDate.of (2024, 11, 1));
         updateDto.setArchived(true);
 
         when(equipmentRepository.findById(1L)).thenReturn(Optional.of(existingEquipment));
+        when(roomRepository.findById(2L)).thenReturn(Optional.of(newRoom));
         when(equipmentRepository.save(any(Equipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         equipmentService.updateEquipment(updateDto);
@@ -226,7 +246,8 @@ class EquipmentServiceImplTest {
         assertEquals("Updated Treadmill", existingEquipment.getName());
         assertEquals("TM-2024-002", existingEquipment.getSerialNumber());
         assertEquals(EquipmentStatus.AVAILABLE, existingEquipment.getStatus());
-        assertEquals("New Location", existingEquipment.getLocation());
+        assertNotNull(existingEquipment.getRoom());
+        assertEquals("New Location", existingEquipment.getRoom().getName());
         assertEquals(LocalDate.of(2024, 6, 1), existingEquipment.getPurchaseDate());
         assertEquals("New Manufacturer", existingEquipment.getManufacturer());
         assertEquals(EquipmentCategory.STRENGTH, existingEquipment.getCategory());
@@ -417,12 +438,18 @@ class EquipmentServiceImplTest {
 
     // Helper method to create a second equipment for testing
     private Equipment createSecondEquipment() {
+        Room strengthRoom = new Room();
+        strengthRoom.setId(2L);
+        strengthRoom.setName("Strength Area");
+        strengthRoom.setCapacity(25);
+        strengthRoom.setActive(true);
+        
         Equipment second = new Equipment();
         second.setId(2L);
         second.setName("Weight Bench");
         second.setSerialNumber("WB-2024-001");
         second.setStatus(EquipmentStatus.AVAILABLE);
-        second.setLocation("Strength Area");
+        second.setRoom(strengthRoom);
         second.setPurchaseDate(LocalDate.of(2024, 2, 10));
         second.setManufacturer("Rogue Fitness");
         second.setCategory(EquipmentCategory.STRENGTH);

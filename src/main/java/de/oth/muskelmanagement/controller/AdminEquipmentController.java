@@ -3,6 +3,7 @@ package de.oth.muskelmanagement.controller;
 import de.oth.muskelmanagement.model.EquipmentCategory;
 import de.oth.muskelmanagement.model.EquipmentStatus;
 import de.oth.muskelmanagement.service.EquipmentService;
+import de.oth.muskelmanagement.service.RoomService;
 import de.oth.muskelmanagement.service.dto.EquipmentDto;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -20,9 +21,11 @@ import java.util.Arrays;
 public class AdminEquipmentController {
 
     private final EquipmentService equipmentService;
+    private final RoomService roomService;
 
-    public AdminEquipmentController(EquipmentService equipmentService) {
+    public AdminEquipmentController(EquipmentService equipmentService, RoomService roomService) {
         this.equipmentService = equipmentService;
+        this.roomService = roomService;
     }
 
     @GetMapping
@@ -60,6 +63,7 @@ public class AdminEquipmentController {
         model.addAttribute("equipment", new EquipmentDto());
         model.addAttribute("allStatuses", EquipmentStatus.values());
         model.addAttribute("allCategories", EquipmentCategory.values());
+        model.addAttribute("allRooms", roomService.findActiveRooms());
         return "admin/equipment-form";
     }
 
@@ -69,6 +73,7 @@ public class AdminEquipmentController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("allStatuses", EquipmentStatus.values());
             model.addAttribute("allCategories", EquipmentCategory.values());
+            model.addAttribute("allRooms", roomService.findActiveRooms());
             return "admin/equipment-form";
         }
         equipmentService.save(equipmentDto);
@@ -81,6 +86,7 @@ public class AdminEquipmentController {
         model.addAttribute("equipment", equipment);
         model.addAttribute("allStatuses", EquipmentStatus.values());
         model.addAttribute("allCategories", EquipmentCategory.values());
+        model.addAttribute("allRooms", roomService.findActiveRooms());
         return "admin/equipment-form";
     }
 
@@ -91,6 +97,7 @@ public class AdminEquipmentController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("allStatuses", EquipmentStatus.values());
             model.addAttribute("allCategories", EquipmentCategory.values());
+            model.addAttribute("allRooms", roomService.findActiveRooms());
             return "admin/equipment-form";
         }
         equipmentDto.setId(id);
