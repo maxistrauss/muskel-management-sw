@@ -12,12 +12,20 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,176 +39,251 @@ class EquipmentServiceImplTest {
 
     private EquipmentDto equipmentDto;
     private Equipment equipment;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
+        pageable = PageRequest.of(0, 10);
+
         equipmentDto = new EquipmentDto();
         equipmentDto.setId(1L);
-        equipmentDto.setName("Laufband Pro 3000");
-        equipmentDto.setSerialNumber("SN-2024-001");
+        equipmentDto.setName("Treadmill");
+        equipmentDto.setSerialNumber("TM-2024-001");
         equipmentDto.setStatus(EquipmentStatus.AVAILABLE);
-        equipmentDto.setLocation("Cardio-Bereich");
+        equipmentDto.setLocation("Cardio Area");
         equipmentDto.setPurchaseDate(LocalDate.of(2024, 1, 15));
-        equipmentDto.setManufacturer("TechFit");
+        equipmentDto.setManufacturer("Life Fitness");
         equipmentDto.setCategory(EquipmentCategory.CARDIO);
         equipmentDto.setMaintenanceInterval(90);
         equipmentDto.setLastMaintenanceDate(LocalDate.of(2024, 10, 1));
         equipmentDto.setArchived(false);
 
-        equipment = new Equipment(
-                "Laufband Pro 3000",
-                "SN-2024-001",
-                EquipmentStatus.AVAILABLE,
-                "Cardio-Bereich",
-                LocalDate.of(2024, 1, 15),
-                "TechFit",
-                EquipmentCategory.CARDIO,
-                90,
-                LocalDate.of(2024, 10, 1)
-        );
+        equipment = new Equipment();
         equipment.setId(1L);
+        equipment.setName("Treadmill");
+        equipment.setSerialNumber("TM-2024-001");
+        equipment.setStatus(EquipmentStatus.AVAILABLE);
+        equipment.setLocation("Cardio Area");
+        equipment.setPurchaseDate(LocalDate.of(2024, 1, 15));
+        equipment.setManufacturer("Life Fitness");
+        equipment.setCategory(EquipmentCategory.CARDIO);
+        equipment.setMaintenanceInterval(90);
+        equipment.setLastMaintenanceDate(LocalDate.of(2024, 10, 1));
         equipment.setArchived(false);
     }
 
     @Test
-    void save_shouldCreateEquipmentWithAllProperties() {
-        when(equipmentRepository.save(any(Equipment.class))).thenAnswer(
-                invocation -> invocation.getArgument(0));
+    void save_shouldCreateEquipmentWithAllFields() {
+        when(equipmentRepository.save(any(Equipment.class))).thenAnswer(invocation -> {
+            Equipment saved = invocation.getArgument(0);
+            saved.setId(1L);
+            return saved;
+        });
 
         Equipment savedEquipment = equipmentService.save(equipmentDto);
 
         assertNotNull(savedEquipment);
-        assertEquals("Laufband Pro 3000", savedEquipment.getName());
-        assertEquals("SN-2024-001", savedEquipment.getSerialNumber());
+        assertEquals("Treadmill", savedEquipment.getName());
+        assertEquals("TM-2024-001", savedEquipment.getSerialNumber());
         assertEquals(EquipmentStatus.AVAILABLE, savedEquipment.getStatus());
-        assertEquals("Cardio-Bereich", savedEquipment.getLocation());
-        assertEquals("TechFit", savedEquipment.getManufacturer());
+        assertEquals("Cardio Area", savedEquipment.getLocation());
+        assertEquals(LocalDate.of(2024, 1, 15), savedEquipment.getPurchaseDate());
+        assertEquals("Life Fitness", savedEquipment.getManufacturer());
         assertEquals(EquipmentCategory.CARDIO, savedEquipment.getCategory());
         assertEquals(90, savedEquipment.getMaintenanceInterval());
+        assertEquals(LocalDate.of(2024, 10, 1), savedEquipment.getLastMaintenanceDate());
         assertFalse(savedEquipment.isArchived());
+        
         verify(equipmentRepository, times(1)).save(any(Equipment.class));
     }
 
     @Test
-    void findBySerialNumber_shouldReturnEquipmentIfExists() {
-        when(equipmentRepository.findBySerialNumber("SN-2024-001")).thenReturn(equipment);
+    void save_shouldHandleMinimalEquipmentData() {
+        EquipmentDto minimalDto = new EquipmentDto();
+        minimalDto.setName("Basic Equipment");
+        minimalDto.setSerialNumber("BE-001");
+        minimalDto.setStatus(EquipmentStatus.AVAILABLE);
 
-        Equipment foundEquipment = equipmentService.findBySerialNumber("SN-2024-001");
+        when(equipmentRepository.save(any(Equipment.class))).thenAnswer(invocation -> {
+            Equipment saved = invocation.getArgument(0);
+            saved.setId(2L);
+            return saved;
+        });
 
-        assertNotNull(foundEquipment);
-        assertEquals("SN-2024-001", foundEquipment.getSerialNumber());
-        assertEquals("Laufband Pro 3000", foundEquipment.getName());
+        Equipment savedEquipment = equipmentService.save(minimalDto);
+
+        assertNotNull(savedEquipment);
+        assertEquals("Basic Equipment", savedEquipment.getName());
+        assertEquals("BE-001", savedEquipment.getSerialNumber());
+        assertEquals(EquipmentStatus.AVAILABLE, savedEquipment.getStatus());
+        assertNull(savedEquipment.getLocation());
+        assertNull(savedEquipment.getManufacturer());
+        verify(equipmentRepository, times(1)).save(any(Equipment.class));
     }
 
     @Test
-    void findBySerialNumber_shouldReturnNullIfEquipmentDoesNotExist() {
+    void findBySerialNumber_shouldReturnEquipmentWhenExists() {
+        when(equipmentRepository.findBySerialNumber("TM-2024-001")).thenReturn(equipment);
+
+        Equipment foundEquipment = equipmentService.findBySerialNumber("TM-2024-001");
+
+        assertNotNull(foundEquipment);
+        assertEquals("TM-2024-001", foundEquipment.getSerialNumber());
+        assertEquals("Treadmill", foundEquipment.getName());
+        verify(equipmentRepository, times(1)).findBySerialNumber("TM-2024-001");
+    }
+
+    @Test
+    void findBySerialNumber_shouldReturnNullWhenNotExists() {
         when(equipmentRepository.findBySerialNumber("NONEXISTENT")).thenReturn(null);
 
         Equipment foundEquipment = equipmentService.findBySerialNumber("NONEXISTENT");
 
         assertNull(foundEquipment);
+        verify(equipmentRepository, times(1)).findBySerialNumber("NONEXISTENT");
     }
 
     @Test
-    void findById_shouldReturnEquipmentDtoIfExists() {
+    void findAll_shouldReturnPagedEquipment() {
+        List<Equipment> equipmentList = Arrays.asList(equipment, createSecondEquipment());
+        Page<Equipment> equipmentPage = new PageImpl<>(equipmentList, pageable, equipmentList.size());
+        
+        when(equipmentRepository.findAll(pageable)).thenReturn(equipmentPage);
+
+        Page<EquipmentDto> result = equipmentService.findAll(pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals("Treadmill", result.getContent().get(0).getName());
+        assertEquals("Weight Bench", result.getContent().get(1).getName());
+        verify(equipmentRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void findAll_shouldReturnEmptyPageWhenNoEquipment() {
+        Page<Equipment> emptyPage = new PageImpl<>(Arrays.asList(), pageable, 0);
+        when(equipmentRepository.findAll(pageable)).thenReturn(emptyPage);
+
+        Page<EquipmentDto> result = equipmentService.findAll(pageable);
+
+        assertNotNull(result);
+        assertEquals(0, result.getTotalElements());
+        assertTrue(result.getContent().isEmpty());
+        verify(equipmentRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void findById_shouldReturnEquipmentDtoWhenExists() {
         when(equipmentRepository.findById(1L)).thenReturn(Optional.of(equipment));
 
-        EquipmentDto foundDto = equipmentService.findById(1L);
+        EquipmentDto result = equipmentService.findById(1L);
 
-        assertNotNull(foundDto);
-        assertEquals(1L, foundDto.getId());
-        assertEquals("Laufband Pro 3000", foundDto.getName());
-        assertEquals("SN-2024-001", foundDto.getSerialNumber());
-        assertEquals(EquipmentStatus.AVAILABLE, foundDto.getStatus());
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertEquals("Treadmill", result.getName());
+        assertEquals("TM-2024-001", result.getSerialNumber());
+        verify(equipmentRepository, times(1)).findById(1L);
     }
 
     @Test
-    void findById_shouldThrowExceptionIfEquipmentDoesNotExist() {
+    void findById_shouldThrowExceptionWhenNotExists() {
         when(equipmentRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> equipmentService.findById(999L));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            equipmentService.findById(999L);
+        });
+
+        assertEquals("Equipment not found", exception.getMessage());
+        verify(equipmentRepository, times(1)).findById(999L);
     }
 
     @Test
-    void updateEquipment_shouldUpdateAllProperties() {
-        Equipment existingEquipment = new Equipment(
-                "Old Name",
-                "SN-2024-001",
-                EquipmentStatus.IN_MAINTENANCE,
-                "Old Location",
-                LocalDate.of(2023, 1, 1),
-                "Old Manufacturer",
-                EquipmentCategory.STRENGTH,
-                60,
-                LocalDate.of(2023, 6, 1)
-        );
+    void updateEquipment_shouldUpdateAllFields() {
+        Equipment existingEquipment = new Equipment();
         existingEquipment.setId(1L);
+        existingEquipment.setName("Old Name");
+        existingEquipment.setSerialNumber("OLD-001");
+        existingEquipment.setStatus(EquipmentStatus.AVAILABLE);
 
         EquipmentDto updateDto = new EquipmentDto();
         updateDto.setId(1L);
-        updateDto.setName("Updated Name");
-        updateDto.setSerialNumber("SN-2024-001-NEW");
+        updateDto.setName("Updated Treadmill");
+        updateDto.setSerialNumber("TM-2024-002");
         updateDto.setStatus(EquipmentStatus.AVAILABLE);
         updateDto.setLocation("New Location");
-        updateDto.setPurchaseDate(LocalDate.of(2024, 1, 1));
+        updateDto.setPurchaseDate(LocalDate.of(2024, 6, 1));
         updateDto.setManufacturer("New Manufacturer");
-        updateDto.setCategory(EquipmentCategory.CARDIO);
-        updateDto.setMaintenanceInterval(120);
+        updateDto.setCategory(EquipmentCategory.STRENGTH);
+        updateDto.setMaintenanceInterval(60);
         updateDto.setLastMaintenanceDate(LocalDate.of(2024, 11, 1));
-        updateDto.setArchived(false);
+        updateDto.setArchived(true);
 
         when(equipmentRepository.findById(1L)).thenReturn(Optional.of(existingEquipment));
-        when(equipmentRepository.save(any(Equipment.class))).thenAnswer(
-                invocation -> invocation.getArgument(0));
+        when(equipmentRepository.save(any(Equipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         equipmentService.updateEquipment(updateDto);
 
-        assertEquals("Updated Name", existingEquipment.getName());
-        assertEquals("SN-2024-001-NEW", existingEquipment.getSerialNumber());
+        assertEquals("Updated Treadmill", existingEquipment.getName());
+        assertEquals("TM-2024-002", existingEquipment.getSerialNumber());
         assertEquals(EquipmentStatus.AVAILABLE, existingEquipment.getStatus());
         assertEquals("New Location", existingEquipment.getLocation());
+        assertEquals(LocalDate.of(2024, 6, 1), existingEquipment.getPurchaseDate());
         assertEquals("New Manufacturer", existingEquipment.getManufacturer());
-        assertEquals(EquipmentCategory.CARDIO, existingEquipment.getCategory());
-        assertEquals(120, existingEquipment.getMaintenanceInterval());
+        assertEquals(EquipmentCategory.STRENGTH, existingEquipment.getCategory());
+        assertEquals(60, existingEquipment.getMaintenanceInterval());
         assertEquals(LocalDate.of(2024, 11, 1), existingEquipment.getLastMaintenanceDate());
+        assertTrue(existingEquipment.isArchived());
+        
         verify(equipmentRepository, times(1)).save(existingEquipment);
     }
 
     @Test
-    void archiveEquipment_shouldSetArchivedTrueAndStatusToArchived() {
-        Equipment activeEquipment = new Equipment(
-                "Test Equipment",
-                "SN-2024-001",
-                EquipmentStatus.AVAILABLE,
-                "Test Location",
-                LocalDate.now(),
-                "Test Manufacturer",
-                EquipmentCategory.CARDIO,
-                90,
-                LocalDate.now()
-        );
-        activeEquipment.setId(1L);
-        activeEquipment.setArchived(false);
+    void updateEquipment_shouldThrowExceptionWhenNotExists() {
+        when(equipmentRepository.findById(999L)).thenReturn(Optional.empty());
 
-        when(equipmentRepository.findById(1L)).thenReturn(Optional.of(activeEquipment));
-        
-        ArgumentCaptor<Equipment> equipmentCaptor = ArgumentCaptor.forClass(Equipment.class);
-        when(equipmentRepository.save(equipmentCaptor.capture())).thenAnswer(
-                invocation -> invocation.getArgument(0));
+        EquipmentDto updateDto = new EquipmentDto();
+        updateDto.setId(999L);
+        updateDto.setName("Test");
+        updateDto.setSerialNumber("TEST-001");
+        updateDto.setStatus(EquipmentStatus.AVAILABLE);
 
-        equipmentService.archiveEquipment(1L);
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            equipmentService.updateEquipment(updateDto);
+        });
 
-        Equipment savedEquipment = equipmentCaptor.getValue();
-        assertTrue(savedEquipment.isArchived());
-        assertEquals(EquipmentStatus.ARCHIVED, savedEquipment.getStatus());
-        verify(equipmentRepository, times(1)).save(activeEquipment);
+        assertEquals("Equipment not found", exception.getMessage());
+        verify(equipmentRepository, never()).save(any(Equipment.class));
     }
 
     @Test
-    void archiveEquipment_shouldThrowExceptionIfEquipmentDoesNotExist() {
+    void archiveEquipment_shouldSetArchivedTrueAndStatusArchived() {
+        Equipment equipmentToArchive = new Equipment();
+        equipmentToArchive.setId(1L);
+        equipmentToArchive.setName("Treadmill");
+        equipmentToArchive.setSerialNumber("TM-001");
+        equipmentToArchive.setStatus(EquipmentStatus.AVAILABLE);
+        equipmentToArchive.setArchived(false);
+
+        when(equipmentRepository.findById(1L)).thenReturn(Optional.of(equipmentToArchive));
+        when(equipmentRepository.save(any(Equipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        equipmentService.archiveEquipment(1L);
+
+        assertTrue(equipmentToArchive.isArchived());
+        assertEquals(EquipmentStatus.ARCHIVED, equipmentToArchive.getStatus());
+        verify(equipmentRepository, times(1)).save(equipmentToArchive);
+    }
+
+    @Test
+    void archiveEquipment_shouldThrowExceptionWhenNotExists() {
         when(equipmentRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> equipmentService.archiveEquipment(999L));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            equipmentService.archiveEquipment(999L);
+        });
+
+        assertEquals("Equipment not found", exception.getMessage());
+        verify(equipmentRepository, never()).save(any(Equipment.class));
     }
 
     @Test
@@ -213,36 +296,139 @@ class EquipmentServiceImplTest {
     }
 
     @Test
-    void save_shouldHandleOptionalFieldsAsNull() {
-        EquipmentDto minimalDto = new EquipmentDto();
-        minimalDto.setName("Minimal Equipment");
-        minimalDto.setSerialNumber("SN-MINIMAL");
-        minimalDto.setStatus(EquipmentStatus.AVAILABLE);
+    void findEquipment_shouldFilterByName() {
+        List<Equipment> filteredList = Arrays.asList(equipment);
+        Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
+        
+        when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
 
-        when(equipmentRepository.save(any(Equipment.class))).thenAnswer(
-                invocation -> invocation.getArgument(0));
+        Page<EquipmentDto> result = equipmentService.findEquipment("Treadmill", null, null, null, null, pageable);
 
-        Equipment savedEquipment = equipmentService.save(minimalDto);
-
-        assertNotNull(savedEquipment);
-        assertEquals("Minimal Equipment", savedEquipment.getName());
-        assertEquals("SN-MINIMAL", savedEquipment.getSerialNumber());
-        assertNull(savedEquipment.getLocation());
-        assertNull(savedEquipment.getManufacturer());
-        assertNull(savedEquipment.getCategory());
-        verify(equipmentRepository, times(1)).save(any(Equipment.class));
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Treadmill", result.getContent().get(0).getName());
+        verify(equipmentRepository, times(1)).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
-    void updateEquipment_shouldThrowExceptionIfEquipmentDoesNotExist() {
-        EquipmentDto updateDto = new EquipmentDto();
-        updateDto.setId(999L);
-        updateDto.setName("Test");
-        updateDto.setSerialNumber("SN-999");
-        updateDto.setStatus(EquipmentStatus.AVAILABLE);
+    void findEquipment_shouldFilterBySerialNumber() {
+        List<Equipment> filteredList = Arrays.asList(equipment);
+        Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
+        
+        when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
 
-        when(equipmentRepository.findById(999L)).thenReturn(Optional.empty());
+        Page<EquipmentDto> result = equipmentService.findEquipment(null, "TM-2024", null, null, null, pageable);
 
-        assertThrows(RuntimeException.class, () -> equipmentService.updateEquipment(updateDto));
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(equipmentRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void findEquipment_shouldFilterByManufacturer() {
+        List<Equipment> filteredList = Arrays.asList(equipment);
+        Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
+        
+        when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
+
+        Page<EquipmentDto> result = equipmentService.findEquipment(null, null, "Life Fitness", null, null, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(equipmentRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void findEquipment_shouldFilterByStatus() {
+        List<Equipment> filteredList = Arrays.asList(equipment);
+        Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
+        
+        when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
+
+        Page<EquipmentDto> result = equipmentService.findEquipment(null, null, null, EquipmentStatus.AVAILABLE, null, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        assertEquals(EquipmentStatus.AVAILABLE, result.getContent().get(0).getStatus());
+        verify(equipmentRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void findEquipment_shouldFilterByLocation() {
+        List<Equipment> filteredList = Arrays.asList(equipment);
+        Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
+        
+        when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
+
+        Page<EquipmentDto> result = equipmentService.findEquipment(null, null, null, null, "Cardio", pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(equipmentRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void findEquipment_shouldFilterByMultipleCriteria() {
+        List<Equipment> filteredList = Arrays.asList(equipment);
+        Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
+        
+        when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
+
+        Page<EquipmentDto> result = equipmentService.findEquipment(
+            "Treadmill", 
+            "TM-2024", 
+            "Life Fitness", 
+            EquipmentStatus.AVAILABLE, 
+            "Cardio", 
+            pageable
+        );
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(equipmentRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void findEquipment_shouldReturnAllWhenNoFilterProvided() {
+        List<Equipment> allEquipment = Arrays.asList(equipment, createSecondEquipment());
+        Page<Equipment> allEquipmentPage = new PageImpl<>(allEquipment, pageable, allEquipment.size());
+        
+        when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(allEquipmentPage);
+
+        Page<EquipmentDto> result = equipmentService.findEquipment(null, null, null, null, null, pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        verify(equipmentRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void findEquipment_shouldHandleCaseInsensitiveSearch() {
+        List<Equipment> filteredList = Arrays.asList(equipment);
+        Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
+        
+        when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
+
+        Page<EquipmentDto> result = equipmentService.findEquipment("TREADMILL", null, null, null, null, pageable);
+
+        assertNotNull(result);
+        verify(equipmentRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    // Helper method to create a second equipment for testing
+    private Equipment createSecondEquipment() {
+        Equipment second = new Equipment();
+        second.setId(2L);
+        second.setName("Weight Bench");
+        second.setSerialNumber("WB-2024-001");
+        second.setStatus(EquipmentStatus.AVAILABLE);
+        second.setLocation("Strength Area");
+        second.setPurchaseDate(LocalDate.of(2024, 2, 10));
+        second.setManufacturer("Rogue Fitness");
+        second.setCategory(EquipmentCategory.STRENGTH);
+        second.setMaintenanceInterval(180);
+        second.setLastMaintenanceDate(LocalDate.of(2024, 9, 1));
+        second.setArchived(false);
+        return second;
     }
 }

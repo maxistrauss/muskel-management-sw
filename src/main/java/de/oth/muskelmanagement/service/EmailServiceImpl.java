@@ -10,6 +10,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class EmailServiceImpl implements EmailService {
 
@@ -84,6 +87,28 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             logger.error("Failed to send activation email to: {}", toEmail, e);
             throw new RuntimeException("Failed to send activation email", e);
+        }
+    }
+
+    @Override
+    public void sendSubscriptionExpiryReminder(String toEmail, String userName, String tarifName, LocalDate expiryDate, long daysRemaining) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Your Subscription is Expiring Soon - MuskelManagement");
+
+            String htmlContent = buildExpiryReminderEmailTemplate(userName, tarifName, expiryDate, daysRemaining);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Subscription expiry reminder email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send expiry reminder email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send expiry reminder email", e);
         }
     }
 
@@ -397,5 +422,142 @@ public class EmailServiceImpl implements EmailService {
             </body>
             </html>
             """.formatted(userName != null ? userName : "User");
+    }
+
+    private String buildExpiryReminderEmailTemplate(String userName, String tarifName, LocalDate expiryDate, long daysRemaining) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        String formattedDate = expiryDate.format(formatter);
+        
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    .header {
+                        background-color: #f59e0b;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        font-size: 24px;
+                    }
+                    .content {
+                        background-color: #f9fafb;
+                        padding: 30px;
+                        border-radius: 0 0 5px 5px;
+                    }
+                    .expiry-box {
+                        background-color: white;
+                        border-left: 4px solid #f59e0b;
+                        border-radius: 5px;
+                        padding: 20px;
+                        margin: 20px 0;
+                        text-align: center;
+                    }
+                    .expiry-box h2 {
+                        color: #f59e0b;
+                        margin-top: 0;
+                        font-size: 28px;
+                    }
+                    .days-remaining {
+                        font-size: 48px;
+                        font-weight: bold;
+                        color: #ef4444;
+                        margin: 10px 0;
+                    }
+                    .cta-button {
+                        display: inline-block;
+                        background-color: #3b82f6;
+                        color: white;
+                        padding: 15px 30px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        font-weight: bold;
+                        margin: 20px 0;
+                    }
+                    .info {
+                        background-color: #dbeafe;
+                        border-left: 4px solid #3b82f6;
+                        padding: 15px;
+                        margin: 20px 0;
+                        border-radius: 3px;
+                    }
+                    .footer {
+                        text-align: center;
+                        margin-top: 20px;
+                        color: #6b7280;
+                        font-size: 12px;
+                    }
+                    strong {
+                        color: #1f2937;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>MuskelManagement</h1>
+                        <p style="margin: 5px 0 0 0;">Subscription Expiry Reminder</p>
+                    </div>
+                    <div class="content">
+                        <p>Hello %s,</p>
+                        
+                        <p>This is a friendly reminder that your subscription is expiring soon!</p>
+                        
+                        <div class="expiry-box">
+                            <h2>⏰ Time Running Out</h2>
+                            <div class="days-remaining">%d</div>
+                            <p style="margin: 0; font-size: 18px;">days remaining</p>
+                        </div>
+                        
+                        <div class="info">
+                            <strong>📋 Subscription Details:</strong><br/>
+                            <strong>Plan:</strong> %s<br/>
+                            <strong>Expiry Date:</strong> %s
+                        </div>
+                        
+                        <p style="text-align: center;">
+                            <strong>Don't miss out on your fitness journey!</strong><br/>
+                            Renew your subscription today to continue enjoying all the benefits.
+                        </p>
+                        
+                        <div style="text-align: center;">
+                            <a href="http://localhost:8080/member/tarifs" class="cta-button">
+                                Renew Subscription Now
+                            </a>
+                        </div>
+                        
+                        <p style="margin-top: 30px;">If you have any questions or need assistance, please don't hesitate to contact us.</p>
+                        
+                        <p>Best regards,<br/>
+                           Your MuskelManagement Team</p>
+                    </div>
+                    <div class="footer">
+                        <p>This email was generated automatically. Please do not reply to it.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(
+                userName != null ? userName : "Member",
+                daysRemaining,
+                tarifName != null ? tarifName : "Your Plan",
+                formattedDate
+            );
     }
 }

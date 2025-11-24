@@ -43,3 +43,6 @@ package-lock.json
 ### Database ###
 *.mv.db
 *.trace.db
+
+### Documentation ###
+docs/
