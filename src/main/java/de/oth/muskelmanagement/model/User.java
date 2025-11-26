@@ -17,6 +17,10 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
     private String membershipType;
+    
+    @ManyToOne
+    @JoinColumn(name = "membership_id")
+    private Membership membership;
 
     private String password;
 
@@ -83,6 +87,14 @@ public class User {
 
     public void setMembershipType(String membershipType) {
         this.membershipType = membershipType;
+    }
+
+    public Membership getMembership() {
+        return membership;
+    }
+
+    public void setMembership(Membership membership) {
+        this.membership = membership;
     }
 
     public String getPassword() {
