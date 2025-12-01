@@ -24,11 +24,18 @@ public class AdminController {
     private final UserService userService;
     private final CourseService courseService;
     private final de.oth.muskelmanagement.service.RoomService roomService;
+    private final de.oth.muskelmanagement.repository.UserRepository userRepository;
+    private final de.oth.muskelmanagement.repository.RoomRepository roomRepository;
 
-    public AdminController(UserService userService, CourseService courseService, de.oth.muskelmanagement.service.RoomService roomService) {
+    public AdminController(UserService userService, CourseService courseService,
+                          de.oth.muskelmanagement.service.RoomService roomService,
+                          de.oth.muskelmanagement.repository.UserRepository userRepository,
+                          de.oth.muskelmanagement.repository.RoomRepository roomRepository) {
         this.userService = userService;
         this.courseService = courseService;
         this.roomService = roomService;
+        this.userRepository = userRepository;
+        this.roomRepository = roomRepository;
     }
 
     @GetMapping("/users")
@@ -135,7 +142,21 @@ public class AdminController {
         existing.setDescription(course.getDescription());
         existing.setCapacity(course.getCapacity());
         existing.setActive(course.isActive());
-        existing.setTrainer(course.getTrainer());
+        
+        // Load trainer from repository if ID is provided
+        if (course.getTrainer() != null && course.getTrainer().getId() != null) {
+            existing.setTrainer(userRepository.findById(course.getTrainer().getId()).orElse(null));
+        } else {
+            existing.setTrainer(null);
+        }
+        
+        // Load room from repository if ID is provided
+        if (course.getRoom() != null && course.getRoom().getId() != null) {
+            existing.setRoom(roomRepository.findById(course.getRoom().getId()).orElse(null));
+        } else {
+            existing.setRoom(null);
+        }
+        
         courseService.save(existing);
         return "redirect:/admin/courses";
     }

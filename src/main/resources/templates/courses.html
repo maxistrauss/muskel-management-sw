@@ -14,7 +14,7 @@
             <div th:each="course : ${coursePage.content}" class="border rounded p-4 bg-white">
                 <h2 class="text-xl font-semibold" th:text="${course.name}"></h2>
                 <p class="text-gray-600" th:text="${#strings.length(course.description) > 120 ? #strings.substring(course.description,0,120) + '...' : course.description}"></p>
-                <p class="text-sm text-gray-500 mt-2">Room: <span th:text="${course.room != null ? course.room.name : '-'}"></span></p>
+                <p class="text-sm text-gray-500 mt-2">Room: <span th:text="${course.room != null && course.room.active ? course.room.name : '-'}"></span></p>
                 <div class="mt-2 flex justify-between items-center">
                     <a class="text-blue-500 hover:text-blue-700" th:href="@{/courses/{id}(id=${course.id})}">View</a>
                     <span class="text-sm text-gray-500" th:text="${course.capacity + ' seats'}"></span>
