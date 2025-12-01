@@ -17,6 +17,26 @@
                        class="w-full border rounded px-3 py-2" required/>
             </div>
             <div class="mb-4">
+                <label class="block text-gray-700">Trainer</label>
+                <select name="trainer.id" class="w-full border rounded px-3 py-2">
+                    <option value="">-- No Trainer --</option>
+                    <option th:each="trainer : ${trainers}" 
+                            th:value="${trainer.id}" 
+                            th:text="${trainer.firstName} + ' ' + ${trainer.lastName}"
+                            th:selected="${course.trainer != null && course.trainer.id == trainer.id}"></option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Room</label>
+                <select name="room.id" class="w-full border rounded px-3 py-2">
+                    <option value="">-- No Room --</option>
+                    <option th:each="room : ${rooms}"
+                            th:value="${room.id}"
+                            th:text="${room.name}"
+                            th:selected="${course.room != null && course.room.id == room.id}"></option>
+                </select>
+            </div>
+            <div class="mb-4">
                 <label class="block text-gray-700">Capacity</label>
                 <input type="number" name="capacity" th:value="${course.capacity}"
                        class="w-full border rounded px-3 py-2" min="0"/>

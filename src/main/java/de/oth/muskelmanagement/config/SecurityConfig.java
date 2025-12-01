@@ -41,6 +41,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/trainer/**").hasRole("TRAINER")
                         .requestMatchers("/member/**").hasRole("MEMBER")
                         .requestMatchers("/login", "/register", "/verify-2fa", "/verify-2fa/resend", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                         .anyRequest().authenticated())

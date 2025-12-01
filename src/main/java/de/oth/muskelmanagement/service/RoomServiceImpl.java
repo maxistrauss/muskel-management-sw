@@ -26,10 +26,12 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final EquipmentRepository equipmentRepository;
+    private final de.oth.muskelmanagement.repository.CourseRepository courseRepository;
 
-    public RoomServiceImpl(RoomRepository roomRepository, EquipmentRepository equipmentRepository) {
+    public RoomServiceImpl(RoomRepository roomRepository, EquipmentRepository equipmentRepository, de.oth.muskelmanagement.repository.CourseRepository courseRepository) {
         this.roomRepository = roomRepository;
         this.equipmentRepository = equipmentRepository;
+        this.courseRepository = courseRepository;
     }
 
     @Override
@@ -90,8 +92,22 @@ public class RoomServiceImpl implements RoomService {
         // First unassign all equipment from this room
         unassignEquipmentFromRoom(id);
         
+        // Unassign room from any courses that reference it (set to null)
+        unassignCoursesFromRoom(id);
+
         // Then delete the room
         roomRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void unassignCoursesFromRoom(Long roomId) {
+        de.oth.muskelmanagement.model.Room room = roomRepository.findById(roomId).orElse(null);
+        if (room == null) return;
+        List<de.oth.muskelmanagement.model.Course> courses = courseRepository.findByRoom(room);
+        for (de.oth.muskelmanagement.model.Course c : courses) {
+            c.setRoom(null);
+            courseRepository.save(c);
+        }
     }
 
     @Override

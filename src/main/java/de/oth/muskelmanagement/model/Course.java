@@ -22,6 +22,14 @@ public class Course {
 
     private boolean active = true;
 
+    @ManyToOne
+    @JoinColumn(name = "trainer_id")
+    private User trainer;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Enrollment> enrollments = new ArrayList<>();
 
@@ -73,6 +81,22 @@ public class Course {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public User getTrainer() {
+        return trainer;
+    }
+
+    public void setTrainer(User trainer) {
+        this.trainer = trainer;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
     }
 
     public List<Enrollment> getEnrollments() {

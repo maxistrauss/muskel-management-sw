@@ -14,11 +14,30 @@
             <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="/admin/courses/new">Add Course</a>
         </div>
 
+        <!-- Filter by Trainer -->
+        <div class="mb-6">
+            <form method="get" action="/admin/courses" class="flex gap-2 items-end">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Filter by Trainer:</label>
+                    <select name="trainerId" class="border rounded px-3 py-2 text-sm">
+                        <option value="">-- All Trainers --</option>
+                        <option th:each="trainer : ${trainers}" 
+                                th:value="${trainer.id}" 
+                                th:text="${trainer.firstName} + ' ' + ${trainer.lastName}"
+                                th:selected="${selectedTrainerId != null && selectedTrainerId == trainer.id}"></option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm">Filter</button>
+                <a href="/admin/courses" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm">Reset</a>
+            </form>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white">
                 <thead class="bg-gray-800 text-white">
                 <tr>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Name</th>
+                    <th class="py-3 px-4 uppercase font-semibold text-sm">Trainer</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Capacity</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Description</th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">Status</th>
@@ -26,8 +45,9 @@
                 </tr>
                 </thead>
                 <tbody class="text-gray-700">
-                <tr th:each="course : ${coursePage.content}">
+                <tr th:each="course : ${courses}">
                     <td class="py-3 px-4 font-semibold" th:text="${course.name}"></td>
+                    <td class="py-3 px-4" th:text="${course.trainer != null ? course.trainer.firstName + ' ' + course.trainer.lastName : '-'}"></td>
                     <td class="py-3 px-4" th:text="${course.capacity}"></td>
                     <td class="py-3 px-4" th:text="${#strings.length(course.description) > 80 ? #strings.substring(course.description, 0, 80) + '...' : course.description}"></td>
                     <td class="py-3 px-4">
@@ -46,7 +66,7 @@
 
         <div class="flex justify-between items-center mt-6">
             <div class="text-sm text-gray-700">
-                Showing <span th:text="${coursePage.number * coursePage.size + 1}"></span> to <span th:text="${(coursePage.number * coursePage.numberOfElements)}"></span> of <span th:text="${coursePage.totalElements}"></span> entries
+                Showing <span th:text="${courses.size()}"></span> of <span th:text="${totalItems}"></span> entries
             </div>
         </div>
     </div>

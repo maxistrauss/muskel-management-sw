@@ -51,10 +51,23 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
+        // Get trainer user if exists
+        de.oth.muskelmanagement.model.User trainer = userRepository.findByEmail("trainer@example.com");
+
         de.oth.muskelmanagement.model.Course yoga = new de.oth.muskelmanagement.model.Course("Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true);
+        if (trainer != null) {
+            yoga.setTrainer(trainer);
+        }
+        // assign yoga studio if available
+        roomRepository.findByName("Yoga Studio").ifPresent(r -> yoga.setRoom(r));
         courseRepository.save(yoga);
 
         de.oth.muskelmanagement.model.Course hiit = new de.oth.muskelmanagement.model.Course("HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true);
+        if (trainer != null) {
+            hiit.setTrainer(trainer);
+        }
+        // assign cardio room if available
+        roomRepository.findByName("Cardio Room").ifPresent(r -> hiit.setRoom(r));
         courseRepository.save(hiit);
 
         de.oth.muskelmanagement.model.Course Difigano = new de.oth.muskelmanagement.model.Course("Difigano", "Beckenbodentraining, muss ned schmecke muss wirke.", 2, true);
@@ -63,7 +76,6 @@ public class DataInitializer implements CommandLineRunner {
         // Optionally enroll seeded users
         try {
             de.oth.muskelmanagement.model.User member = userRepository.findByEmail("member@example.com");
-            de.oth.muskelmanagement.model.User trainer = userRepository.findByEmail("trainer@example.com");
             if (member != null) {
                 var e1 = new de.oth.muskelmanagement.model.Enrollment(member, yoga);
                 enrollmentRepository.save(e1);

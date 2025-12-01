@@ -30,13 +30,19 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final de.oth.muskelmanagement.repository.CourseRepository courseRepository;
+    private final de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository;
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder, EmailService emailService) {
+            PasswordEncoder passwordEncoder, EmailService emailService,
+            de.oth.muskelmanagement.repository.CourseRepository courseRepository,
+            de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.courseRepository = courseRepository;
+        this.enrollmentRepository = enrollmentRepository;
     }
 
     @Override
@@ -173,6 +179,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
+        // Before deleting user, remove as trainer from any courses and delete enrollments
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            // Unassign trainer role from courses
+            List<de.oth.muskelmanagement.model.Course> courses = courseRepository.findByTrainer(user);
+            for (de.oth.muskelmanagement.model.Course c : courses) {
+                c.setTrainer(null);
+                courseRepository.save(c);
+            }
+
+            // Remove enrollments
+            var enrollments = enrollmentRepository.findByUser(user);
+            for (var e : enrollments) {
+                enrollmentRepository.delete(e);
+            }
+        }
         userRepository.deleteById(id);
     }
 

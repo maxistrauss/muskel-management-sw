@@ -23,10 +23,12 @@ public class AdminController {
 
     private final UserService userService;
     private final CourseService courseService;
+    private final de.oth.muskelmanagement.service.RoomService roomService;
 
-    public AdminController(UserService userService, CourseService courseService) {
+    public AdminController(UserService userService, CourseService courseService, de.oth.muskelmanagement.service.RoomService roomService) {
         this.userService = userService;
         this.courseService = courseService;
+        this.roomService = roomService;
     }
 
     @GetMapping("/users")
@@ -54,19 +56,50 @@ public class AdminController {
 
     // --- Courses management ---
     @GetMapping("/courses")
-    public String listCourses(Model model, @PageableDefault(size = 10) Pageable pageable) {
+    public String listCourses(Model model, @PageableDefault(size = 10) Pageable pageable, 
+                             @RequestParam(required = false) Long trainerId) {
         var page = courseService.findAll(pageable);
+        var courses = page.getContent();
+        
+        // Filter by trainer if trainerId is provided
+        if (trainerId != null) {
+            courses = courses.stream()
+                    .filter(course -> course.getTrainer() != null && course.getTrainer().getId().equals(trainerId))
+                    .toList();
+        }
+        
         model.addAttribute("coursePage", page);
-        model.addAttribute("courses", page.getContent());
+        model.addAttribute("courses", courses);
         model.addAttribute("currentPage", page.getNumber() + 1);
         model.addAttribute("totalPages", page.getTotalPages());
         model.addAttribute("totalItems", page.getTotalElements());
+        
+        // Add trainers to model for dropdown filter
+        var allUsers = userService.findAll(Pageable.unpaged());
+        var trainers = allUsers.getContent().stream()
+                .filter(userDto -> userDto.getRoles() != null && userDto.getRoles().contains("ROLE_TRAINER"))
+                .toList();
+        model.addAttribute("trainers", trainers);
+        model.addAttribute("selectedTrainerId", trainerId);
+        
         return "admin/courses";
     }
 
     @GetMapping("/courses/new")
     public String showCreateCourseForm(Model model) {
         model.addAttribute("course", new Course());
+        
+        // Add trainers to model for dropdown
+        var allUsers = userService.findAll(Pageable.unpaged());
+        var trainers = allUsers.getContent().stream()
+                .filter(userDto -> userDto.getRoles() != null && userDto.getRoles().contains("ROLE_TRAINER"))
+                .toList();
+        model.addAttribute("trainers", trainers);
+        
+        // Add rooms for selection
+        var rooms = roomService.findActiveRooms();
+        model.addAttribute("rooms", rooms);
+        
         return "admin/course-form";
     }
 
@@ -80,6 +113,18 @@ public class AdminController {
     public String showEditCourseForm(@PathVariable Long id, Model model) {
         Course course = courseService.findById(id);
         model.addAttribute("course", course);
+        
+        // Add trainers to model for dropdown
+        var allUsers = userService.findAll(Pageable.unpaged());
+        var trainers = allUsers.getContent().stream()
+                .filter(userDto -> userDto.getRoles() != null && userDto.getRoles().contains("ROLE_TRAINER"))
+                .toList();
+        model.addAttribute("trainers", trainers);
+        
+        // Add rooms for selection
+        var rooms = roomService.findActiveRooms();
+        model.addAttribute("rooms", rooms);
+        
         return "admin/course-form";
     }
 
@@ -90,6 +135,7 @@ public class AdminController {
         existing.setDescription(course.getDescription());
         existing.setCapacity(course.getCapacity());
         existing.setActive(course.isActive());
+        existing.setTrainer(course.getTrainer());
         courseService.save(existing);
         return "redirect:/admin/courses";
     }
