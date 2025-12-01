@@ -21,14 +21,18 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final RoomRepository roomRepository;
     private final MembershipRepository membershipRepository;
+    private final de.oth.muskelmanagement.repository.CourseRepository courseRepository;
+    private final de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
-            RoomRepository roomRepository, MembershipRepository membershipRepository, PasswordEncoder passwordEncoder) {
+            RoomRepository roomRepository, MembershipRepository membershipRepository, de.oth.muskelmanagement.repository.CourseRepository courseRepository, de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
         this.membershipRepository = membershipRepository;
+        this.courseRepository = courseRepository;
+        this.enrollmentRepository = enrollmentRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -39,6 +43,42 @@ public class DataInitializer implements CommandLineRunner {
         initializeUsers();
         migrateUsersToMemberships();
         initializeRooms();
+        initializeCourses();
+    }
+
+    private void initializeCourses() {
+        if (courseRepository.count() > 0) {
+            return;
+        }
+
+        de.oth.muskelmanagement.model.Course yoga = new de.oth.muskelmanagement.model.Course("Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true);
+        courseRepository.save(yoga);
+
+        de.oth.muskelmanagement.model.Course hiit = new de.oth.muskelmanagement.model.Course("HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true);
+        courseRepository.save(hiit);
+
+        de.oth.muskelmanagement.model.Course Difigano = new de.oth.muskelmanagement.model.Course("Difigano", "Beckenbodentraining, muss ned schmecke muss wirke.", 2, true);
+        courseRepository.save(Difigano);
+
+        // Optionally enroll seeded users
+        try {
+            de.oth.muskelmanagement.model.User member = userRepository.findByEmail("member@example.com");
+            de.oth.muskelmanagement.model.User trainer = userRepository.findByEmail("trainer@example.com");
+            if (member != null) {
+                var e1 = new de.oth.muskelmanagement.model.Enrollment(member, yoga);
+                enrollmentRepository.save(e1);
+                yoga.addEnrollment(e1);
+                courseRepository.save(yoga);
+            }
+            if (trainer != null) {
+                var e2 = new de.oth.muskelmanagement.model.Enrollment(trainer, hiit);
+                enrollmentRepository.save(e2);
+                hiit.addEnrollment(e2);
+                courseRepository.save(hiit);
+            }
+        } catch (Exception ex) {
+            // ignore seeding enrollment errors
+        }
     }
 
     private void initializeMemberships() {

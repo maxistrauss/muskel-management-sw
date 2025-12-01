@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Course Form</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-4" th:text="${course.id} == null ? 'Create Course' : 'Edit Course'"></h1>
+        <form th:action="${course.id} == null ? @{/admin/courses/new} : @{/admin/courses/edit/{id}(id=${course.id})}" method="post">
+            <div class="mb-4">
+                <label class="block text-gray-700">Name</label>
+                <input type="text" name="name" th:value="${course.name}"
+                       class="w-full border rounded px-3 py-2" required/>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Capacity</label>
+                <input type="number" name="capacity" th:value="${course.capacity}"
+                       class="w-full border rounded px-3 py-2" min="0"/>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Description</label>
+                <textarea name="description" class="w-full border rounded px-3 py-2" rows="6" th:text="${course.description}"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" name="active" th:checked="${course.active}" class="mr-2"/>
+                    <span>Active</span>
+                </label>
+            </div>
+            <div class="flex space-x-2">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="submit">Save</button>
+                <a class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded" href="/admin/courses">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

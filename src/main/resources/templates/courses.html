@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Courses</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container mx-auto mt-8">
+    <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold mb-6">Available Courses</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div th:each="course : ${coursePage.content}" class="border rounded p-4 bg-white">
+                <h2 class="text-xl font-semibold" th:text="${course.name}"></h2>
+                <p class="text-gray-600" th:text="${#strings.length(course.description) > 120 ? #strings.substring(course.description,0,120) + '...' : course.description}"></p>
+                <div class="mt-2 flex justify-between items-center">
+                    <a class="text-blue-500 hover:text-blue-700" th:href="@{/courses/{id}(id=${course.id})}">View</a>
+                    <span class="text-sm text-gray-500" th:text="${course.capacity + ' seats'}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

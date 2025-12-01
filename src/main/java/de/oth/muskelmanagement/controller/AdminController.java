@@ -1,6 +1,8 @@
 package de.oth.muskelmanagement.controller;
 
 import de.oth.muskelmanagement.service.UserService;
+import de.oth.muskelmanagement.service.CourseService;
+import de.oth.muskelmanagement.model.Course;
 import de.oth.muskelmanagement.service.dto.UserDto;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -20,9 +22,11 @@ import java.util.Arrays;
 public class AdminController {
 
     private final UserService userService;
+    private final CourseService courseService;
 
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, CourseService courseService) {
         this.userService = userService;
+        this.courseService = courseService;
     }
 
     @GetMapping("/users")
@@ -46,6 +50,54 @@ public class AdminController {
         model.addAttribute("membershipType", membershipType);
 
         return "admin/users";
+    }
+
+    // --- Courses management ---
+    @GetMapping("/courses")
+    public String listCourses(Model model, @PageableDefault(size = 10) Pageable pageable) {
+        var page = courseService.findAll(pageable);
+        model.addAttribute("coursePage", page);
+        model.addAttribute("courses", page.getContent());
+        model.addAttribute("currentPage", page.getNumber() + 1);
+        model.addAttribute("totalPages", page.getTotalPages());
+        model.addAttribute("totalItems", page.getTotalElements());
+        return "admin/courses";
+    }
+
+    @GetMapping("/courses/new")
+    public String showCreateCourseForm(Model model) {
+        model.addAttribute("course", new Course());
+        return "admin/course-form";
+    }
+
+    @PostMapping("/courses/new")
+    public String createCourse(@ModelAttribute("course") Course course) {
+        courseService.save(course);
+        return "redirect:/admin/courses";
+    }
+
+    @GetMapping("/courses/edit/{id}")
+    public String showEditCourseForm(@PathVariable Long id, Model model) {
+        Course course = courseService.findById(id);
+        model.addAttribute("course", course);
+        return "admin/course-form";
+    }
+
+    @PostMapping("/courses/edit/{id}")
+    public String updateCourse(@PathVariable Long id, @ModelAttribute("course") Course course) {
+        Course existing = courseService.findById(id);
+        existing.setName(course.getName());
+        existing.setDescription(course.getDescription());
+        existing.setCapacity(course.getCapacity());
+        existing.setActive(course.isActive());
+        courseService.save(existing);
+        return "redirect:/admin/courses";
+    }
+
+    @GetMapping("/courses/delete/{id}")
+    public String deleteCourse(@PathVariable Long id) {
+        courseService.deleteById(id);
+        return "redirect:/admin/courses";
     }
 
     @GetMapping("/users/new")
