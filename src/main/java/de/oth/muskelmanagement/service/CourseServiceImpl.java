@@ -3,6 +3,7 @@ package de.oth.muskelmanagement.service;
 import de.oth.muskelmanagement.model.*;
 import de.oth.muskelmanagement.repository.CourseRepository;
 import de.oth.muskelmanagement.repository.EnrollmentRepository;
+import de.oth.muskelmanagement.repository.ExerciseRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -17,12 +19,14 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+    private final ExerciseRepository exerciseRepository;
 
     public CourseServiceImpl(CourseRepository courseRepository, EnrollmentRepository enrollmentRepository,
-                             UserRepository userRepository) {
+                             UserRepository userRepository, ExerciseRepository exerciseRepository) {
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
+        this.exerciseRepository = exerciseRepository;
     }
 
     @Override
@@ -88,5 +92,33 @@ public class CourseServiceImpl implements CourseService {
     public List<Enrollment> listEnrollments(Long courseId) {
         Course course = findById(courseId);
         return enrollmentRepository.findByCourse(course);
+    }
+
+    @Override
+    @Transactional
+    public Course addExerciseToCourse(Long courseId, Long exerciseId) {
+        Course course = findById(courseId);
+        Exercise exercise = exerciseRepository.findById(exerciseId)
+                .orElseThrow(() -> new RuntimeException("Exercise not found with id: " + exerciseId));
+        
+        course.addExercise(exercise);
+        return courseRepository.save(course);
+    }
+
+    @Override
+    @Transactional
+    public Course removeExerciseFromCourse(Long courseId, Long exerciseId) {
+        Course course = findById(courseId);
+        Exercise exercise = exerciseRepository.findById(exerciseId)
+                .orElseThrow(() -> new RuntimeException("Exercise not found with id: " + exerciseId));
+        
+        course.removeExercise(exercise);
+        return courseRepository.save(course);
+    }
+
+    @Override
+    public Set<Exercise> getExercisesByCourse(Long courseId) {
+        Course course = findById(courseId);
+        return course.getExercises();
     }
 }

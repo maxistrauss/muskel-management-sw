@@ -1,5 +1,7 @@
 package de.oth.muskelmanagement.config;
 
+import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,6 +15,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  */
 @ControllerAdvice
 public class GlobalControllerAdvice {
+
+    private final UserService userService;
+
+    public GlobalControllerAdvice(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * Adds the current request URI to the model for all controller methods.
@@ -61,5 +69,35 @@ public class GlobalControllerAdvice {
             }
         }
         return "U"; // Default fallback
+    }
+
+    /**
+     * Adds the current user object to the model for all controller methods.
+     * This allows templates to access the full user data via ${currentUser}.
+     *
+     * @return the current User object or null if not authenticated
+     */
+    @ModelAttribute("currentUser")
+    public User currentUser() {
+        String email = currentUserEmail();
+        if (email != null) {
+            return userService.findByEmail(email);
+        }
+        return null;
+    }
+
+    /**
+     * Adds the current user's full name to the model for all controller methods.
+     * This allows templates to display user's full name via ${currentUserFullName}.
+     *
+     * @return the current user's full name (firstname + lastname)
+     */
+    @ModelAttribute("currentUserFullName")
+    public String currentUserFullName() {
+        User user = currentUser();
+        if (user != null) {
+            return user.getFirstName() + " " + user.getLastName();
+        }
+        return null;
     }
 }

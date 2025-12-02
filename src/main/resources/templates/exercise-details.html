@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${exercise.name}">Exercise Details</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+<div class="container mx-auto mt-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Back Button -->
+        <div class="mb-4">
+            <a th:href="@{/member/exercises}" class="text-blue-500 hover:text-blue-700 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Exercises
+            </a>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- Exercise Name and Tags -->
+            <div class="p-6 border-b">
+                <h1 class="text-3xl font-bold mb-4 capitalize" th:text="${exercise.name}"></h1>
+                
+                <!-- Tags -->
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 capitalize">
+                        <strong>Body Part:</strong> <span th:text="${exercise.bodyPart}"></span>
+                    </span>
+                    <span class="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 capitalize">
+                        <strong>Equipment:</strong> <span th:text="${exercise.equipment}"></span>
+                    </span>
+                    <span class="px-3 py-1 text-sm rounded-full bg-purple-100 text-purple-800 capitalize">
+                        <strong>Target:</strong> <span th:text="${exercise.target}"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Exercise GIF/Video -->
+            <div class="p-6 bg-gray-50">
+                <h2 class="text-xl font-semibold mb-4">Exercise Demonstration</h2>
+                <div class="flex justify-center bg-white rounded-lg p-4">
+                    <img th:src="${exercise.gifUrl}" 
+                         th:alt="${exercise.name}" 
+                         class="max-w-full h-auto rounded-lg shadow-md"
+                         style="max-height: 500px;"/>
+                </div>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="p-6 border-t" th:if="${!#lists.isEmpty(exercise.instructions)}">
+                <h2 class="text-xl font-semibold mb-4">Instructions</h2>
+                <ol class="list-decimal list-inside space-y-2">
+                    <li th:each="instruction, iterStat : ${exercise.instructions}" 
+                        class="text-gray-700 leading-relaxed">
+                        <span th:text="${instruction}"></span>
+                    </li>
+                </ol>
+            </div>
+            
+            <!-- Secondary Muscles -->
+            <div class="p-6 border-t" th:if="${!#lists.isEmpty(exercise.secondaryMuscles)}">
+                <h2 class="text-xl font-semibold mb-4">Secondary Muscles</h2>
+                <div class="flex flex-wrap gap-2">
+                    <span th:each="muscle : ${exercise.secondaryMuscles}" 
+                          class="px-3 py-1 text-sm rounded-full bg-orange-100 text-orange-800 capitalize"
+                          th:text="${muscle}"></span>
+                </div>
+            </div>
+            
+            <!-- Additional Info -->
+            <div class="p-6 border-t bg-gray-50">
+                <h2 class="text-xl font-semibold mb-4">Additional Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Exercise ID</p>
+                        <p class="font-medium" th:text="${exercise.externalId}"></p>
+                    </div>
+                    <div th:if="${exercise.createdAt != null}">
+                        <p class="text-sm text-gray-600">Added to Database</p>
+                        <p class="font-medium" th:text="${#temporals.format(exercise.createdAt, 'dd MMM yyyy HH:mm')}"></p>
+                    </div>
+                    <div th:if="${exercise.lastSyncedAt != null}">
+                        <p class="text-sm text-gray-600">Last Synced</p>
+                        <p class="font-medium" th:text="${#temporals.format(exercise.lastSyncedAt, 'dd MMM yyyy HH:mm')}"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Related Exercises Links -->
+            <div class="p-6 border-t">
+                <h2 class="text-xl font-semibold mb-4">Find Similar Exercises</h2>
+                <div class="flex flex-wrap gap-2">
+                    <a th:href="@{/member/exercises(bodyPart=${exercise.bodyPart})}"
+                       class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded">
+                        Same Body Part
+                    </a>
+                    <a th:href="@{/member/exercises(equipment=${exercise.equipment})}"
+                       class="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded">
+                        Same Equipment
+                    </a>
+                    <a th:href="@{/member/exercises(target=${exercise.target})}"
+                       class="px-4 py-2 bg-purple-500 hover:bg-purple-700 text-white rounded">
+                        Same Target Muscle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

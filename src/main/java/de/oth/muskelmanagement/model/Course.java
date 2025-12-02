@@ -2,7 +2,9 @@ package de.oth.muskelmanagement.model;
 
 import jakarta.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "courses")
@@ -32,6 +34,14 @@ public class Course {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Enrollment> enrollments = new ArrayList<>();
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "course_exercises",
+        joinColumns = @JoinColumn(name = "course_id"),
+        inverseJoinColumns = @JoinColumn(name = "exercise_id")
+    )
+    private Set<Exercise> exercises = new HashSet<>();
 
     public Course() {
     }
@@ -115,5 +125,23 @@ public class Course {
     public void removeEnrollment(Enrollment e) {
         enrollments.remove(e);
         e.setCourse(null);
+    }
+
+    public Set<Exercise> getExercises() {
+        return exercises;
+    }
+
+    public void setExercises(Set<Exercise> exercises) {
+        this.exercises = exercises;
+    }
+
+    public void addExercise(Exercise exercise) {
+        exercises.add(exercise);
+        exercise.getCourses().add(this);
+    }
+
+    public void removeExercise(Exercise exercise) {
+        exercises.remove(exercise);
+        exercise.getCourses().remove(this);
     }
 }

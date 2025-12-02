@@ -8,6 +8,10 @@ import de.oth.muskelmanagement.repository.RoleRepository;
 import de.oth.muskelmanagement.repository.RoomRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.repository.MembershipRepository;
+import de.oth.muskelmanagement.repository.ExerciseRepository;
+import de.oth.muskelmanagement.service.ExerciseService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -17,22 +21,32 @@ import java.util.Set;
 @Component
 public class DataInitializer implements CommandLineRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RoomRepository roomRepository;
     private final MembershipRepository membershipRepository;
     private final de.oth.muskelmanagement.repository.CourseRepository courseRepository;
     private final de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository;
+    private final ExerciseRepository exerciseRepository;
+    private final ExerciseService exerciseService;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
-            RoomRepository roomRepository, MembershipRepository membershipRepository, de.oth.muskelmanagement.repository.CourseRepository courseRepository, de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository, PasswordEncoder passwordEncoder) {
+            RoomRepository roomRepository, MembershipRepository membershipRepository,
+            de.oth.muskelmanagement.repository.CourseRepository courseRepository,
+            de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
+            ExerciseRepository exerciseRepository, ExerciseService exerciseService,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
         this.membershipRepository = membershipRepository;
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.exerciseRepository = exerciseRepository;
+        this.exerciseService = exerciseService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -44,6 +58,7 @@ public class DataInitializer implements CommandLineRunner {
         migrateUsersToMemberships();
         initializeRooms();
         initializeCourses();
+        initializeExercises();
     }
 
     private void initializeCourses() {
@@ -189,5 +204,30 @@ public class DataInitializer implements CommandLineRunner {
 
         Room storage = new Room("Equipment Storage", 0, "Climate controlled, Shelving units, Maintenance area", true);
         roomRepository.save(storage);
+    }
+
+    private void initializeExercises() {
+        if (exerciseRepository.count() > 0) {
+            log.info("Exercises already initialized. Skipping exercise loading.");
+            return;
+        }
+
+        log.info("Loading exercises from local JSON file (data/exercises.json)...");
+
+        try {
+            int loadedCount = exerciseService.loadExercisesFromJson();
+            
+            if (loadedCount > 0) {
+                log.info("Successfully loaded {} exercises from JSON file", loadedCount);
+            } else {
+                log.warn("No exercises were loaded from JSON file.");
+                log.warn("Please ensure data/exercises.json exists and contains valid exercise data.");
+                log.warn("You can manually trigger API sync later via POST /api/exercises/sync");
+            }
+        } catch (Exception e) {
+            log.error("Error loading exercises from JSON: {}", e.getMessage());
+            log.warn("Exercise initialization failed. You can manually sync exercises from the admin panel.");
+            log.warn("The application will continue to run, but the exercise library will be empty.");
+        }
     }
 }
