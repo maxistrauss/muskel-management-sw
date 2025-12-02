@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Layout Fragment</title>
+</head>
+<body>
+<!-- Main Content Wrapper Fragment -->
+<!-- This fragment wraps content with the proper margin for the sidebar -->
+<div th:fragment="content-wrapper" class="lg:ml-64">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Content will be inserted here -->
+        <th:block th:replace="${content}"/>
+    </div>
+</div>
+
+<!-- Alternative: Direct content wrapper without container (for full-width pages) -->
+<div th:fragment="content-wrapper-full" class="lg:ml-64 p-4 sm:p-6 lg:p-8">
+    <!-- Content will be inserted here -->
+    <th:block th:replace="${content}"/>
+</div>
+</body>
+</html>

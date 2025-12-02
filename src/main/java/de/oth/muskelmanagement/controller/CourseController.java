@@ -1,6 +1,7 @@
 package de.oth.muskelmanagement.controller;
 
 import de.oth.muskelmanagement.model.Course;
+import de.oth.muskelmanagement.model.Exercise;
 import de.oth.muskelmanagement.service.CourseService;
 import de.oth.muskelmanagement.service.UserService;
 import org.springframework.data.web.PageableDefault;
@@ -9,9 +10,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Set;
 
 @Controller
-@RequestMapping("/courses")
+@RequestMapping("/member/courses")
 public class CourseController {
 
     private final CourseService courseService;
@@ -34,6 +36,11 @@ public class CourseController {
     public String details(@PathVariable Long id, Model model, Principal principal) {
         Course course = courseService.findById(id);
         model.addAttribute("course", course);
+        
+        // Get course exercises
+        Set<Exercise> exercises = courseService.getExercisesByCourse(id);
+        model.addAttribute("exercises", exercises);
+        
         boolean enrolled = false;
         if (principal != null) {
             var user = userService.findByEmail(principal.getName());
@@ -53,10 +60,10 @@ public class CourseController {
         // Only users with ROLE_MEMBER may enroll themselves
         boolean isMember = user.getRoles().stream().anyMatch(r -> "ROLE_MEMBER".equals(r.getName()));
         if (!isMember) {
-            return "redirect:/courses/" + id + "?error=not_member";
+            return "redirect:/member/courses/" + id + "?error=not_member";
         }
         courseService.addMember(id, user.getId());
-        return "redirect:/courses/" + id;
+        return "redirect:/member/courses/" + id;
     }
 
     @PostMapping("/{id}/unenroll")
@@ -65,9 +72,9 @@ public class CourseController {
         var user = userService.findByEmail(principal.getName());
         boolean isMember = user.getRoles().stream().anyMatch(r -> "ROLE_MEMBER".equals(r.getName()));
         if (!isMember) {
-            return "redirect:/courses/" + id + "?error=not_member";
+            return "redirect:/member/courses/" + id + "?error=not_member";
         }
         courseService.removeMember(id, user.getId());
-        return "redirect:/courses/" + id;
+        return "redirect:/member/courses/" + id;
     }
 }

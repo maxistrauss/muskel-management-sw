@@ -7,6 +7,7 @@
 <body class="bg-gray-100">
 <div th:replace="fragments/navbar :: navbar"></div>
 
+<div class="lg:ml-64">
 <div class="container mx-auto mt-8">
     <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 class="text-2xl font-bold mb-4" th:text="'Add Member to ' + ${course.name}"></h1>
@@ -28,3 +29,4 @@
 </div>
 </body>
 </html>
+

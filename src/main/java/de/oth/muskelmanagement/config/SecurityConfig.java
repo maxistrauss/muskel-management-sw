@@ -39,11 +39,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
+                        // Admin endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        
+                        // Exercise API sync endpoints (ADMIN only)
+                        .requestMatchers("/api/exercises/sync/**").hasRole("ADMIN")
+                        .requestMatchers("/api/exercises/sync").hasRole("ADMIN")
+                        .requestMatchers("/api/exercises/stats").hasRole("ADMIN")
+                        
+                        // Course-Exercise management (ADMIN and TRAINER only can add exercises to courses)
+                        .requestMatchers("/api/exercises/courses/**").hasAnyRole("ADMIN", "TRAINER")
+                        
+                        // Trainer endpoints
                         .requestMatchers("/trainer/**").hasRole("TRAINER")
+                        
+                        // Member endpoints (includes courses and exercises)
+                        // All users with ROLE_MEMBER (which includes TRAINER and ADMIN) can access
                         .requestMatchers("/member/**").hasRole("MEMBER")
-                        .requestMatchers("/login", "/register", "/verify-2fa", "/verify-2fa/resend", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
+                        
+                        // API endpoints for courses and exercises (for AJAX calls)
+                        .requestMatchers("/api/courses", "/api/courses/**").hasRole("MEMBER")
+                        .requestMatchers("/api/exercises", "/api/exercises/*", "/api/exercises/filters").hasRole("MEMBER")
+                        
+                        // Public endpoints (no authentication required)
+                        .requestMatchers("/login", "/register", "/verify-2fa", "/verify-2fa/resend",
+                                        "/css/**", "/js/**", "/images/**", "/h2-console/**",
+                                        "/exercise-image").permitAll()
+                        
+                        // All other requests require authentication
                         .anyRequest().authenticated())
                 .formLogin(formLogin -> formLogin
                         .loginPage("/login")
