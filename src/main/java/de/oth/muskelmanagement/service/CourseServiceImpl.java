@@ -121,4 +121,24 @@ public class CourseServiceImpl implements CourseService {
         Course course = findById(courseId);
         return course.getExercises();
     }
+
+    @Override
+    @Transactional
+    public Course bulkAssignExercises(Long courseId, List<Long> exerciseIds) {
+        Course course = findById(courseId);
+        
+        // Clear existing exercise assignments
+        course.getExercises().clear();
+        
+        // Add new exercise assignments
+        if (exerciseIds != null && !exerciseIds.isEmpty()) {
+            for (Long exerciseId : exerciseIds) {
+                Exercise exercise = exerciseRepository.findById(exerciseId)
+                        .orElseThrow(() -> new RuntimeException("Exercise not found with id: " + exerciseId));
+                course.addExercise(exercise);
+            }
+        }
+        
+        return courseRepository.save(course);
+    }
 }
