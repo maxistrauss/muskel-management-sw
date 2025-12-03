@@ -112,6 +112,55 @@
                        type="submit"/>
             </div>
         </form>
+        
+        <!-- Membership Confirmation PDF Section -->
+        <div class="mt-8 p-6 border-t-2 border-gray-200" th:if="${user.id != null}">
+            <h2 class="text-2xl font-bold mb-4">Membership Confirmation</h2>
+            
+            <div th:if="${activeSubscription != null}">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-gray-700 mb-2">
+                        <strong>Active Subscription:</strong> <span th:text="${activeSubscription.tarifName}"></span>
+                    </p>
+                    <p class="text-sm text-gray-700 mb-2">
+                        <strong>Period:</strong>
+                        <span th:text="${#temporals.format(activeSubscription.startDate, 'dd.MM.yyyy')}"></span> -
+                        <span th:text="${#temporals.format(activeSubscription.endDate, 'dd.MM.yyyy')}"></span>
+                    </p>
+                    <p class="text-sm text-gray-700">
+                        <strong>Status:</strong>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold"
+                              th:text="${activeSubscription.status}"></span>
+                    </p>
+                </div>
+                
+                <form method="post" th:action="@{/admin/membership-confirmations/generate}">
+                    <input type="hidden" name="userId" th:value="${user.id}"/>
+                    <input type="hidden" name="subscriptionId" th:value="${activeSubscription.id}"/>
+                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            type="submit">
+                        📄 Generate Membership Confirmation PDF
+                    </button>
+                </form>
+                
+                <p class="mt-2 text-xs text-gray-500">
+                    This will create an official PDF document confirming the member's active subscription.
+                </p>
+            </div>
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded p-4" th:unless="${activeSubscription != null}">
+                <p class="text-sm text-gray-700">
+                    ⚠️ This user does not have an active subscription. Membership confirmations can only be generated for users with active subscriptions.
+                </p>
+            </div>
+            
+            <div class="mt-4">
+                <a class="text-blue-500 hover:text-blue-700 text-sm"
+                   th:href="@{/admin/membership-confirmations(userId=${user.id})}">
+                    View all confirmations for this user →
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 </body>

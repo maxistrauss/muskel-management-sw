@@ -25,4 +25,5 @@ public interface CourseService {
     Course addExerciseToCourse(Long courseId, Long exerciseId);
     Course removeExerciseFromCourse(Long courseId, Long exerciseId);
     Set<Exercise> getExercisesByCourse(Long courseId);
+    Course bulkAssignExercises(Long courseId, List<Long> exerciseIds);
 }
