@@ -29,20 +29,17 @@ public class ExerciseServiceImpl implements ExerciseService {
     private static final Logger log = LoggerFactory.getLogger(ExerciseServiceImpl.class);
 
     private final ExerciseRepository exerciseRepository;
-    private final ExerciseDbApiService exerciseDbApiService;
     private final ResourceLoader resourceLoader;
     private final ObjectMapper objectMapper;
     private final String imageBaseUrl;
     private final int imageResolution;
 
     public ExerciseServiceImpl(ExerciseRepository exerciseRepository,
-                               ExerciseDbApiService exerciseDbApiService,
                                ResourceLoader resourceLoader,
                                ObjectMapper objectMapper,
                                @Value("${exercisedb.api.image-base-url:https://exercisedb.p.rapidapi.com/image}") String imageBaseUrl,
                                @Value("${exercisedb.api.image-resolution:720}") int imageResolution) {
         this.exerciseRepository = exerciseRepository;
-        this.exerciseDbApiService = exerciseDbApiService;
         this.resourceLoader = resourceLoader;
         this.objectMapper = objectMapper;
         this.imageBaseUrl = imageBaseUrl;
@@ -163,94 +160,10 @@ public class ExerciseServiceImpl implements ExerciseService {
         return exerciseRepository.count();
     }
 
-    @Override
-    @Transactional
-    public int syncAllExercisesFromApi() {
-        log.info("Starting sync of all exercises from ExerciseDB API");
-        List<ExerciseApiResponseDto> apiExercises = exerciseDbApiService.fetchAllExercises();
-        
-        int syncedCount = 0;
-        for (ExerciseApiResponseDto dto : apiExercises) {
-            try {
-                syncExerciseFromDto(dto);
-                syncedCount++;
-            } catch (Exception e) {
-                log.error("Error syncing exercise with ID {}: {}", dto.getId(), e.getMessage());
-            }
-        }
-        
-        log.info("Successfully synced {} exercises", syncedCount);
-        return syncedCount;
-    }
 
-    @Override
-    @Transactional
-    public Exercise syncExerciseById(String externalId) {
-        log.info("Syncing exercise with external ID: {}", externalId);
-        return exerciseDbApiService.fetchExerciseById(externalId)
-                .map(this::syncExerciseFromDto)
-                .orElse(null);
-    }
 
-    @Override
-    @Transactional
-    public int syncExercisesByBodyPart(String bodyPart) {
-        log.info("Syncing exercises for body part: {}", bodyPart);
-        List<ExerciseApiResponseDto> apiExercises = exerciseDbApiService.fetchExercisesByBodyPart(bodyPart);
-        
-        int syncedCount = 0;
-        for (ExerciseApiResponseDto dto : apiExercises) {
-            try {
-                syncExerciseFromDto(dto);
-                syncedCount++;
-            } catch (Exception e) {
-                log.error("Error syncing exercise with ID {}: {}", dto.getId(), e.getMessage());
-            }
-        }
-        
-        log.info("Successfully synced {} exercises for body part: {}", syncedCount, bodyPart);
-        return syncedCount;
-    }
 
-    @Override
-    @Transactional
-    public int syncExercisesByEquipment(String equipment) {
-        log.info("Syncing exercises for equipment: {}", equipment);
-        List<ExerciseApiResponseDto> apiExercises = exerciseDbApiService.fetchExercisesByEquipment(equipment);
-        
-        int syncedCount = 0;
-        for (ExerciseApiResponseDto dto : apiExercises) {
-            try {
-                syncExerciseFromDto(dto);
-                syncedCount++;
-            } catch (Exception e) {
-                log.error("Error syncing exercise with ID {}: {}", dto.getId(), e.getMessage());
-            }
-        }
-        
-        log.info("Successfully synced {} exercises for equipment: {}", syncedCount, equipment);
-        return syncedCount;
-    }
 
-    @Override
-    @Transactional
-    public int syncExercisesByTarget(String target) {
-        log.info("Syncing exercises for target muscle: {}", target);
-        List<ExerciseApiResponseDto> apiExercises = exerciseDbApiService.fetchExercisesByTarget(target);
-        
-        int syncedCount = 0;
-        for (ExerciseApiResponseDto dto : apiExercises) {
-            try {
-                syncExerciseFromDto(dto);
-                syncedCount++;
-            } catch (Exception e) {
-                log.error("Error syncing exercise with ID {}: {}", dto.getId(), e.getMessage());
-            }
-        }
-        
-        log.info("Successfully synced {} exercises for target muscle: {}", syncedCount, target);
-        return syncedCount;
-    }
 
     /**
      * Load exercises from local JSON file (data/exercises.json)

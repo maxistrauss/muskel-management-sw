@@ -103,61 +103,6 @@ public class ExerciseRestController {
         return ResponseEntity.ok(exercises);
     }
 
-    // API Sync Endpoints (Admin only)
-    @PostMapping("/sync")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> syncAllExercises() {
-        int syncedCount = exerciseService.syncAllExercisesFromApi();
-        Map<String, Object> response = new HashMap<>();
-        response.put("syncedCount", syncedCount);
-        response.put("totalExercises", exerciseService.count());
-        response.put("message", "Successfully synced " + syncedCount + " exercises from ExerciseDB API");
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/sync/{externalId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Exercise> syncExerciseById(@PathVariable String externalId) {
-        Exercise synced = exerciseService.syncExerciseById(externalId);
-        if (synced != null) {
-            return ResponseEntity.ok(synced);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PostMapping("/sync/bodyPart/{bodyPart}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> syncExercisesByBodyPart(@PathVariable String bodyPart) {
-        int syncedCount = exerciseService.syncExercisesByBodyPart(bodyPart);
-        Map<String, Object> response = new HashMap<>();
-        response.put("syncedCount", syncedCount);
-        response.put("bodyPart", bodyPart);
-        response.put("message", "Successfully synced " + syncedCount + " exercises for body part: " + bodyPart);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/sync/equipment/{equipment}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> syncExercisesByEquipment(@PathVariable String equipment) {
-        int syncedCount = exerciseService.syncExercisesByEquipment(equipment);
-        Map<String, Object> response = new HashMap<>();
-        response.put("syncedCount", syncedCount);
-        response.put("equipment", equipment);
-        response.put("message", "Successfully synced " + syncedCount + " exercises for equipment: " + equipment);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/sync/target/{target}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> syncExercisesByTarget(@PathVariable String target) {
-        int syncedCount = exerciseService.syncExercisesByTarget(target);
-        Map<String, Object> response = new HashMap<>();
-        response.put("syncedCount", syncedCount);
-        response.put("target", target);
-        response.put("message", "Successfully synced " + syncedCount + " exercises for target muscle: " + target);
-        return ResponseEntity.ok(response);
-    }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
