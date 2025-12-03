@@ -36,19 +36,15 @@ public class AdminController {
     private final UserService userService;
     private final CourseService courseService;
     private final RoomService roomService;
-    private final UserRepository userRepository;
-    private final RoomRepository roomRepository;
     private final ExerciseService exerciseService;
     private final SubscriptionService subscriptionService;
 
 
-    public AdminController(UserService userService, CourseService courseService, RoomService roomService, UserRepository userRepository, RoomRepository roomRepository, SubscriptionService subscriptionService, ExerciseService exerciseService) {
+    public AdminController(UserService userService, CourseService courseService, RoomService roomService, SubscriptionService subscriptionService, ExerciseService exerciseService) {
         this.userService = userService;
         this.courseService = courseService;
         this.exerciseService = exerciseService;
         this.roomService = roomService;
-        this.userRepository = userRepository;
-        this.roomRepository = roomRepository;
         this.subscriptionService = subscriptionService;
     }
 
@@ -157,16 +153,16 @@ public class AdminController {
         existing.setCapacity(course.getCapacity());
         existing.setActive(course.isActive());
         
-        // Load trainer from repository if ID is provided
+        // Load trainer from service if ID is provided
         if (course.getTrainer() != null && course.getTrainer().getId() != null) {
-            existing.setTrainer(userRepository.findById(course.getTrainer().getId()).orElse(null));
+            existing.setTrainer(userService.findEntityById(course.getTrainer().getId()));
         } else {
             existing.setTrainer(null);
         }
         
-        // Load room from repository if ID is provided
+        // Load room from service if ID is provided
         if (course.getRoom() != null && course.getRoom().getId() != null) {
-            existing.setRoom(roomRepository.findById(course.getRoom().getId()).orElse(null));
+            existing.setRoom(roomService.findEntityById(course.getRoom().getId()));
         } else {
             existing.setRoom(null);
         }

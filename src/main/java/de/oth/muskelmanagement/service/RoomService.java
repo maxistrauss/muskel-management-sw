@@ -11,6 +11,8 @@ public interface RoomService {
     
     Room save(RoomDto roomDto);
     
+    Room findEntityById(Long id);
+    
     Page<RoomDto> findAll(Pageable pageable);
     
     RoomDto findById(Long id);

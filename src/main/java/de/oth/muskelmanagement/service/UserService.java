@@ -13,6 +13,8 @@ public interface UserService {
 
     User findByEmail(String email);
 
+    User findEntityById(Long id);
+
     Page<UserDto> findAll(Pageable pageable);
 
     UserDto findById(Long id);
