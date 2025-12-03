@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 <html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+    <!DOCTYPE html>
 <head>
     <title>Navbar Fragment</title>
 </head>
@@ -33,7 +33,7 @@
             <nav class="flex-1 space-y-2">
                 <!-- Member Menu -->
                 <div sec:authorize="hasRole('MEMBER')">
-                    <p class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Member</p>
+                    <p class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Member</p>
                     <a
                         href="/"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
@@ -82,8 +82,8 @@
                 </div>
 
                 <!-- Trainer Menu -->
-                <div class="pt-4" sec:authorize="hasRole('TRAINER')">
-                    <p class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Trainer</p>
+                <div class="pt-2" sec:authorize="hasRole('TRAINER')">
+                    <p class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Trainer</p>
                     <a
                         href="/trainer/courses"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
@@ -96,8 +96,8 @@
                 </div>
 
                 <!-- Admin Menu -->
-                <div class="pt-4" sec:authorize="hasRole('ADMIN')">
-                    <p class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</p>
+                <div class="pt-2" sec:authorize="hasRole('ADMIN')">
+                    <p class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</p>
                     <a
                         href="/admin/users"
                         class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
@@ -134,9 +134,13 @@
                         </svg>
                         Tarifs
                     </a>
-                    <a class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-200"
-                       href="/admin/membership-confirmations"
-                       th:classappend="${currentUri.contains('/admin/membership-confirmations') ? 'bg-gray-200 text-gray-900' : ''}">
+                    <a
+                        href="/admin/membership-confirmations"
+                        class="flex items-center px-3 py-2 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
+                        th:classappend="${currentUri.contains('/admin/membership-confirmations') ? 'bg-gray-700 text-white' : ''}">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
                         Membership Confirmations
                     </a>
                     <a

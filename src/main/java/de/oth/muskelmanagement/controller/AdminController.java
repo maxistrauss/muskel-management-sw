@@ -1,5 +1,8 @@
 package de.oth.muskelmanagement.controller;
 
+import de.oth.muskelmanagement.repository.RoomRepository;
+import de.oth.muskelmanagement.repository.UserRepository;
+import de.oth.muskelmanagement.service.RoomService;
 import de.oth.muskelmanagement.service.SubscriptionService;
 import de.oth.muskelmanagement.service.UserService;
 import de.oth.muskelmanagement.service.CourseService;
@@ -26,16 +29,14 @@ public class AdminController {
 
     private final UserService userService;
     private final CourseService courseService;
-    private final de.oth.muskelmanagement.service.RoomService roomService;
-    private final de.oth.muskelmanagement.repository.UserRepository userRepository;
-    private final de.oth.muskelmanagement.repository.RoomRepository roomRepository;
+    private final RoomService roomService;
+    private final UserRepository userRepository;
+    private final RoomRepository roomRepository;
+
     private final SubscriptionService subscriptionService;
 
-    public AdminController(UserService userService, CourseService courseService,
-                          de.oth.muskelmanagement.service.RoomService roomService,
-                          de.oth.muskelmanagement.repository.UserRepository userRepository,
-                          de.oth.muskelmanagement.repository.RoomRepository roomRepository) {
-    public AdminController(UserService userService, SubscriptionService subscriptionService) {
+
+    public AdminController(UserService userService, CourseService courseService, RoomService roomService, UserRepository userRepository, RoomRepository roomRepository, SubscriptionService subscriptionService) {
         this.userService = userService;
         this.courseService = courseService;
         this.roomService = roomService;
