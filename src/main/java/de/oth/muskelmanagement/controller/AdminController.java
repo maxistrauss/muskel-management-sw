@@ -2,7 +2,9 @@ package de.oth.muskelmanagement.controller;
 
 import de.oth.muskelmanagement.service.UserService;
 import de.oth.muskelmanagement.service.CourseService;
+import de.oth.muskelmanagement.service.ExerciseService;
 import de.oth.muskelmanagement.model.Course;
+import de.oth.muskelmanagement.model.Exercise;
 import de.oth.muskelmanagement.service.dto.UserDto;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -13,9 +15,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -23,16 +29,19 @@ public class AdminController {
 
     private final UserService userService;
     private final CourseService courseService;
+    private final ExerciseService exerciseService;
     private final de.oth.muskelmanagement.service.RoomService roomService;
     private final de.oth.muskelmanagement.repository.UserRepository userRepository;
     private final de.oth.muskelmanagement.repository.RoomRepository roomRepository;
 
     public AdminController(UserService userService, CourseService courseService,
+                          ExerciseService exerciseService,
                           de.oth.muskelmanagement.service.RoomService roomService,
                           de.oth.muskelmanagement.repository.UserRepository userRepository,
                           de.oth.muskelmanagement.repository.RoomRepository roomRepository) {
         this.userService = userService;
         this.courseService = courseService;
+        this.exerciseService = exerciseService;
         this.roomService = roomService;
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
@@ -165,6 +174,66 @@ public class AdminController {
     public String deleteCourse(@PathVariable Long id) {
         courseService.deleteById(id);
         return "redirect:/admin/courses";
+    }
+
+    @GetMapping("/courses/{id}/exercises")
+    public String manageCourseExercises(@PathVariable Long id, Model model,
+                                       @RequestParam(required = false) String bodyPart,
+                                       @RequestParam(required = false) String equipment,
+                                       @RequestParam(required = false) String target) {
+        Course course = courseService.findById(id);
+        model.addAttribute("course", course);
+        
+        // Get all exercises with optional filtering
+        List<Exercise> exercises;
+        if (bodyPart != null && !bodyPart.isEmpty()) {
+            exercises = exerciseService.findByBodyPart(bodyPart);
+        } else if (equipment != null && !equipment.isEmpty()) {
+            exercises = exerciseService.findByEquipment(equipment);
+        } else if (target != null && !target.isEmpty()) {
+            exercises = exerciseService.findByTarget(target);
+        } else {
+            exercises = exerciseService.findAll();
+        }
+        
+        // Get IDs of exercises already assigned to this course
+        Set<Long> courseExerciseIds = course.getExercises().stream()
+                .map(Exercise::getId)
+                .collect(Collectors.toSet());
+        
+        model.addAttribute("exercises", exercises != null ? exercises : List.of());
+        model.addAttribute("courseExerciseIds", courseExerciseIds);
+        
+        // Add filter options - ensure they are never null
+        List<String> bodyParts = exerciseService.findDistinctBodyParts();
+        List<String> equipmentOptions = exerciseService.findDistinctEquipment();
+        List<String> targets = exerciseService.findDistinctTargets();
+        
+        model.addAttribute("bodyParts", bodyParts != null ? bodyParts : List.of());
+        model.addAttribute("equipmentList", equipmentOptions != null ? equipmentOptions : List.of());
+        model.addAttribute("targets", targets != null ? targets : List.of());
+        
+        // Add selected filter values back to model
+        model.addAttribute("selectedBodyPart", bodyPart != null ? bodyPart : "");
+        model.addAttribute("selectedEquipment", equipment != null ? equipment : "");
+        model.addAttribute("selectedTarget", target != null ? target : "");
+        
+        return "admin/course-exercises";
+    }
+
+    @PostMapping("/courses/{id}/exercises")
+    public String saveCourseExercises(@PathVariable Long id,
+                                     @RequestParam(required = false) List<Long> exerciseIds,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            courseService.bulkAssignExercises(id, exerciseIds != null ? exerciseIds : List.of());
+            redirectAttributes.addFlashAttribute("successMessage",
+                "Exercises successfully assigned!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                "Error assigning exercises: " + e.getMessage());
+        }
+        return "redirect:/admin/courses/edit/" + id;
     }
 
     @GetMapping("/users/new")
