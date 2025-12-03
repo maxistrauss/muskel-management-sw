@@ -174,29 +174,29 @@
 </div>
 
 <!-- Sticky Action Bar -->
-<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-30">
-    <div class="lg:ml-64">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <div class="text-sm text-gray-600">
-                    <span id="selectedCountSticky">0</span> exercise(s) selected
-                </div>
-                <div class="flex gap-3">
-                    <a th:href="@{/admin/courses/edit/{id}(id=${course.id})}"
-                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors inline-flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        Cancel
-                    </a>
-                    <button type="submit" form="exerciseForm"
-                            class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Save Selection
-                    </button>
-                </div>
+<div class="fixed bottom-0 left-0 right-0 bg-transparent z-30 pointer-events-none">
+    <div class="lg:ml-64 px-4">
+        <div class="container mx-auto">
+            <div class="bg-white border border-gray-200 shadow-lg rounded-lg 
+                        py-4 px-6 flex justify-between items-center pointer-events-auto">
+            <div class="text-sm text-gray-600">
+                <span id="selectedCountSticky">0</span> exercise(s) selected
+            </div>
+            <div class="flex gap-3">
+                <a th:href="@{/admin/courses/edit/{id}(id=${course.id})}"
+                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors inline-flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Cancel
+                </a>
+                <button type="submit" form="exerciseForm"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Save Selection
+                </button>
             </div>
         </div>
     </div>
@@ -237,3 +237,4 @@
 </script>
 </body>
 </html>
+
