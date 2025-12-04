@@ -111,6 +111,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findEntityById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
     public UserDto findById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         return convertToDto(user);

@@ -52,6 +52,12 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public Room findEntityById(Long id) {
+        return roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+    }
+
+    @Override
     public RoomDto findById(Long id) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));

@@ -49,38 +49,4 @@ public interface ExerciseService {
      */
     int loadExercisesFromJson();
     
-    // API Sync Operations
-    /**
-     * Sync all exercises from ExerciseDB API to local database
-     * @return Number of exercises synced
-     */
-    int syncAllExercisesFromApi();
-    
-    /**
-     * Sync a single exercise from ExerciseDB API by its external ID
-     * @param externalId The ExerciseDB API ID
-     * @return The synced exercise or null if not found
-     */
-    Exercise syncExerciseById(String externalId);
-    
-    /**
-     * Sync exercises by body part from ExerciseDB API
-     * @param bodyPart The body part to sync
-     * @return Number of exercises synced
-     */
-    int syncExercisesByBodyPart(String bodyPart);
-    
-    /**
-     * Sync exercises by equipment from ExerciseDB API
-     * @param equipment The equipment type to sync
-     * @return Number of exercises synced
-     */
-    int syncExercisesByEquipment(String equipment);
-    
-    /**
-     * Sync exercises by target muscle from ExerciseDB API
-     * @param target The target muscle to sync
-     * @return Number of exercises synced
-     */
-    int syncExercisesByTarget(String target);
 }
