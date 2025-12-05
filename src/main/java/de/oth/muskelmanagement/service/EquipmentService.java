@@ -1,8 +1,8 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.Equipment;
-import de.oth.muskelmanagement.model.EquipmentStatus;
-import de.oth.muskelmanagement.service.dto.EquipmentDto;
+import de.oth.muskelmanagement.dto.EquipmentDto;
+import de.oth.muskelmanagement.model.entity.Equipment;
+import de.oth.muskelmanagement.model.enums.EquipmentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

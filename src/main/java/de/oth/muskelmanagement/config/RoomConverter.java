@@ -1,6 +1,6 @@
 package de.oth.muskelmanagement.config;
 
-import de.oth.muskelmanagement.model.Room;
+import de.oth.muskelmanagement.model.entity.Room;
 import de.oth.muskelmanagement.repository.RoomRepository;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;

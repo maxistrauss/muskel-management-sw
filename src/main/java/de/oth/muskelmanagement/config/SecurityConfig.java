@@ -2,8 +2,8 @@ package de.oth.muskelmanagement.config;
 
 import de.oth.muskelmanagement.config.handler.CustomAccessDeniedHandler;
 import de.oth.muskelmanagement.config.handler.CustomAuthenticationFailureHandler;
-import de.oth.muskelmanagement.model.Role;
-import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.model.entity.Role;
+import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +15,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.ArrayList;

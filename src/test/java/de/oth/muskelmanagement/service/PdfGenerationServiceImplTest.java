@@ -1,9 +1,14 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.*;
+import de.oth.muskelmanagement.model.entity.MembershipConfirmation;
+import de.oth.muskelmanagement.model.entity.Subscription;
+import de.oth.muskelmanagement.model.entity.Tarif;
+import de.oth.muskelmanagement.model.entity.User;
+import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.MembershipConfirmationRepository;
 import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
+import de.oth.muskelmanagement.service.impl.PdfGenerationServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +26,6 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -362,3 +366,4 @@ class PdfGenerationServiceImplTest {
                 pdfGenerationService.getPdfContent(confirmationId));
     }
 }
+

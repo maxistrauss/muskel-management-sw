@@ -1,16 +1,16 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.Equipment;
-import de.oth.muskelmanagement.model.EquipmentCategory;
-import de.oth.muskelmanagement.model.EquipmentStatus;
-import de.oth.muskelmanagement.model.Room;
+import de.oth.muskelmanagement.dto.RoomDto;
+import de.oth.muskelmanagement.model.entity.Equipment;
+import de.oth.muskelmanagement.model.entity.Room;
+import de.oth.muskelmanagement.model.enums.EquipmentCategory;
+import de.oth.muskelmanagement.model.enums.EquipmentStatus;
 import de.oth.muskelmanagement.repository.EquipmentRepository;
 import de.oth.muskelmanagement.repository.RoomRepository;
-import de.oth.muskelmanagement.service.dto.RoomDto;
+import de.oth.muskelmanagement.service.impl.RoomServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -357,3 +357,4 @@ class RoomServiceImplTest {
         verify(equipmentRepository, never()).save(any(Equipment.class));
     }
 }
+

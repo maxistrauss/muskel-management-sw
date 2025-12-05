@@ -1,6 +1,6 @@
 package de.oth.muskelmanagement.repository;
 
-import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 

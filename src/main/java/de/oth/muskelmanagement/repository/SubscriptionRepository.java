@@ -1,7 +1,7 @@
 package de.oth.muskelmanagement.repository;
 
-import de.oth.muskelmanagement.model.Subscription;
-import de.oth.muskelmanagement.model.SubscriptionStatus;
+import de.oth.muskelmanagement.model.entity.Subscription;
+import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

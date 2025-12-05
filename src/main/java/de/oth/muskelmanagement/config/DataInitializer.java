@@ -1,6 +1,9 @@
 package de.oth.muskelmanagement.config;
 
-import de.oth.muskelmanagement.model.*;
+import de.oth.muskelmanagement.model.entity.*;
+import de.oth.muskelmanagement.model.enums.EquipmentCategory;
+import de.oth.muskelmanagement.model.enums.EquipmentStatus;
+import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.*;
 import de.oth.muskelmanagement.service.ExerciseService;
 import org.slf4j.Logger;
@@ -165,9 +168,10 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // Get trainer user if exists
-        de.oth.muskelmanagement.model.User trainer = userRepository.findByEmail("trainer@example.com");
+        de.oth.muskelmanagement.model.entity.User trainer = userRepository.findByEmail("trainer@example.com");
 
-        de.oth.muskelmanagement.model.Course yoga = new de.oth.muskelmanagement.model.Course("Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true);
+        de.oth.muskelmanagement.model.entity.Course yoga = new de.oth.muskelmanagement.model.entity.Course(
+                "Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true);
         if (trainer != null) {
             yoga.setTrainer(trainer);
         }
@@ -175,7 +179,8 @@ public class DataInitializer implements CommandLineRunner {
         roomRepository.findByName("Yoga Studio").ifPresent(r -> yoga.setRoom(r));
         courseRepository.save(yoga);
 
-        de.oth.muskelmanagement.model.Course hiit = new de.oth.muskelmanagement.model.Course("HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true);
+        de.oth.muskelmanagement.model.entity.Course hiit = new de.oth.muskelmanagement.model.entity.Course(
+                "HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true);
         if (trainer != null) {
             hiit.setTrainer(trainer);
         }
@@ -183,20 +188,21 @@ public class DataInitializer implements CommandLineRunner {
         roomRepository.findByName("Cardio Room").ifPresent(r -> hiit.setRoom(r));
         courseRepository.save(hiit);
 
-        de.oth.muskelmanagement.model.Course pelvicFloor = new de.oth.muskelmanagement.model.Course("Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true);
+        de.oth.muskelmanagement.model.entity.Course pelvicFloor = new de.oth.muskelmanagement.model.entity.Course(
+                "Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true);
         courseRepository.save(pelvicFloor);
 
         // Optionally enroll seeded users
         try {
-            de.oth.muskelmanagement.model.User member = userRepository.findByEmail("member@example.com");
+            de.oth.muskelmanagement.model.entity.User member = userRepository.findByEmail("member@example.com");
             if (member != null) {
-                var e1 = new de.oth.muskelmanagement.model.Enrollment(member, yoga);
+                var e1 = new de.oth.muskelmanagement.model.entity.Enrollment(member, yoga);
                 enrollmentRepository.save(e1);
                 yoga.addEnrollment(e1);
                 courseRepository.save(yoga);
             }
             if (trainer != null) {
-                var e2 = new de.oth.muskelmanagement.model.Enrollment(trainer, hiit);
+                var e2 = new de.oth.muskelmanagement.model.entity.Enrollment(trainer, hiit);
                 enrollmentRepository.save(e2);
                 hiit.addEnrollment(e2);
                 courseRepository.save(hiit);

@@ -1,7 +1,7 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.Room;
-import de.oth.muskelmanagement.service.dto.RoomDto;
+import de.oth.muskelmanagement.dto.RoomDto;
+import de.oth.muskelmanagement.model.entity.Room;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

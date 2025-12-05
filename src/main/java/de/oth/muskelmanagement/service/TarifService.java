@@ -1,7 +1,7 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.Tarif;
-import de.oth.muskelmanagement.service.dto.TarifDto;
+import de.oth.muskelmanagement.dto.TarifDto;
+import de.oth.muskelmanagement.model.entity.Tarif;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

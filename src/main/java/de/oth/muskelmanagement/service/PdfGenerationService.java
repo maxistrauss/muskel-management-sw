@@ -1,6 +1,6 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.MembershipConfirmation;
+import de.oth.muskelmanagement.model.entity.MembershipConfirmation;
 
 import java.io.IOException;
 import java.util.List;

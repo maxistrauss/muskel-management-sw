@@ -1,6 +1,6 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.Exercise;
+import de.oth.muskelmanagement.model.entity.Exercise;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

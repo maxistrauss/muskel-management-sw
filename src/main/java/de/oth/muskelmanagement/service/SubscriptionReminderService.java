@@ -1,7 +1,7 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.Subscription;
-import de.oth.muskelmanagement.model.SubscriptionStatus;
+import de.oth.muskelmanagement.model.entity.Subscription;
+import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

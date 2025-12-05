@@ -1,6 +1,6 @@
 package de.oth.muskelmanagement.config;
 
-import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;

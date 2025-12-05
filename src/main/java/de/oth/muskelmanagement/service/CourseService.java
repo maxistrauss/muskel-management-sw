@@ -1,9 +1,9 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.Course;
-import de.oth.muskelmanagement.model.Enrollment;
-import de.oth.muskelmanagement.model.Exercise;
-import de.oth.muskelmanagement.model.AttendanceStatus;
+import de.oth.muskelmanagement.model.entity.Course;
+import de.oth.muskelmanagement.model.entity.Enrollment;
+import de.oth.muskelmanagement.model.entity.Exercise;
+import de.oth.muskelmanagement.model.enums.AttendanceStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

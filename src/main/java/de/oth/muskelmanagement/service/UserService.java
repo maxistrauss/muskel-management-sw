@@ -1,8 +1,8 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.User;
-import de.oth.muskelmanagement.service.dto.RegistrationDto;
-import de.oth.muskelmanagement.service.dto.UserDto;
+import de.oth.muskelmanagement.dto.RegistrationDto;
+import de.oth.muskelmanagement.dto.UserDto;
+import de.oth.muskelmanagement.model.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

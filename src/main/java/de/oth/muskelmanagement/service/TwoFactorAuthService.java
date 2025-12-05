@@ -1,6 +1,6 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.model.entity.User;
 
 public interface TwoFactorAuthService {
     String generateAndSendCode(User user);

@@ -1,8 +1,8 @@
 package de.oth.muskelmanagement.repository;
 
-import de.oth.muskelmanagement.model.Equipment;
-import de.oth.muskelmanagement.model.EquipmentStatus;
-import de.oth.muskelmanagement.model.Room;
+import de.oth.muskelmanagement.model.entity.Equipment;
+import de.oth.muskelmanagement.model.entity.Room;
+import de.oth.muskelmanagement.model.enums.EquipmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 

@@ -1,0 +1,164 @@
+package de.oth.muskelmanagement.service.impl;
+
+import de.oth.muskelmanagement.dto.SubscriptionDto;
+import de.oth.muskelmanagement.model.entity.Subscription;
+import de.oth.muskelmanagement.model.entity.Tarif;
+import de.oth.muskelmanagement.model.entity.User;
+import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
+import de.oth.muskelmanagement.repository.SubscriptionRepository;
+import de.oth.muskelmanagement.repository.TarifRepository;
+import de.oth.muskelmanagement.repository.UserRepository;
+import de.oth.muskelmanagement.service.SubscriptionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+public class SubscriptionServiceImpl implements SubscriptionService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SubscriptionServiceImpl.class);
+
+    private final SubscriptionRepository subscriptionRepository;
+    private final UserRepository userRepository;
+    private final TarifRepository tarifRepository;
+
+    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository, UserRepository userRepository,
+            TarifRepository tarifRepository) {
+        this.subscriptionRepository = subscriptionRepository;
+        this.userRepository = userRepository;
+        this.tarifRepository = tarifRepository;
+    }
+
+    @Override
+    @Transactional
+    public SubscriptionDto subscribe(Long userId, Long tarifId) {
+        logger.info("Creating subscription for user {} with tarif {}", userId, tarifId);
+
+        // Check if user exists
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        // Check if tarif exists and is active
+        Tarif tarif = tarifRepository.findById(tarifId)
+                .orElseThrow(() -> new RuntimeException("Tarif not found with id: " + tarifId));
+
+        if (!tarif.isActive()) {
+            throw new RuntimeException("Cannot subscribe to inactive tarif: " + tarif.getName());
+        }
+
+        // Check if user already has an active subscription
+        if (subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)) {
+            throw new RuntimeException("User already has an active subscription");
+        }
+
+        // Create new subscription
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusMonths(tarif.getDurationMonths());
+
+        Subscription subscription = new Subscription();
+        subscription.setUser(user);
+        subscription.setTarif(tarif);
+        subscription.setStartDate(startDate);
+        subscription.setEndDate(endDate);
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription.setAutoRenew(false);
+
+        Subscription savedSubscription = subscriptionRepository.save(subscription);
+        logger.info("Subscription created successfully with id: {}", savedSubscription.getId());
+
+        return convertToDto(savedSubscription);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<SubscriptionDto> getActiveSubscription(Long userId) {
+        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE).map(this::convertToDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SubscriptionDto> getUserSubscriptionHistory(Long userId) {
+        return subscriptionRepository.findByUserIdOrderByCreatedAtDesc(userId).stream().map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void cancelSubscription(Long subscriptionId) {
+        logger.info("Cancelling subscription with id: {}", subscriptionId);
+
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new RuntimeException("Subscription not found with id: " + subscriptionId));
+
+        if (subscription.getStatus() == SubscriptionStatus.EXPIRED) {
+            throw new RuntimeException("Cannot cancel expired subscription");
+        }
+
+        if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
+            throw new RuntimeException("Subscription is already cancelled");
+        }
+
+        subscription.setStatus(SubscriptionStatus.CANCELLED);
+        subscriptionRepository.save(subscription);
+
+        logger.info("Subscription {} cancelled successfully", subscriptionId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean canSubscribe(Long userId) {
+        return !subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE);
+    }
+
+    @Override
+    @Transactional
+    public void updateExpiredSubscriptions() {
+        logger.info("Updating expired subscriptions");
+
+        LocalDate today = LocalDate.now();
+        List<Subscription> expiredSubscriptions = subscriptionRepository.findByStatusAndEndDateBefore(
+                SubscriptionStatus.ACTIVE, today);
+
+        for (Subscription subscription : expiredSubscriptions) {
+            subscription.setStatus(SubscriptionStatus.EXPIRED);
+            subscriptionRepository.save(subscription);
+            logger.info("Subscription {} marked as expired", subscription.getId());
+        }
+
+        logger.info("Updated {} expired subscriptions", expiredSubscriptions.size());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SubscriptionDto getSubscriptionById(Long id) {
+        Subscription subscription = subscriptionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Subscription not found with id: " + id));
+        return convertToDto(subscription);
+    }
+
+    private SubscriptionDto convertToDto(Subscription subscription) {
+        SubscriptionDto dto = new SubscriptionDto();
+        dto.setId(subscription.getId());
+        dto.setUserId(subscription.getUser().getId());
+        dto.setUserEmail(subscription.getUser().getEmail());
+        dto.setUserName(subscription.getUser().getFirstName() + " " + subscription.getUser().getLastName());
+        dto.setTarifId(subscription.getTarif().getId());
+        dto.setTarifName(subscription.getTarif().getName());
+        dto.setTarifPrice(subscription.getTarif().getPrice());
+        dto.setTarifDuration(subscription.getTarif().getDurationMonths());
+        dto.setTarifDescription(subscription.getTarif().getDescription());
+        dto.setStartDate(subscription.getStartDate());
+        dto.setEndDate(subscription.getEndDate());
+        dto.setStatus(subscription.getStatus());
+        dto.setAutoRenew(subscription.getAutoRenew());
+        dto.setCreatedAt(subscription.getCreatedAt());
+        dto.setUpdatedAt(subscription.getUpdatedAt());
+        return dto;
+    }
+}

@@ -1,8 +1,8 @@
 package de.oth.muskelmanagement.repository;
 
-import de.oth.muskelmanagement.model.Enrollment;
-import de.oth.muskelmanagement.model.Course;
-import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.model.entity.Course;
+import de.oth.muskelmanagement.model.entity.Enrollment;
+import de.oth.muskelmanagement.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

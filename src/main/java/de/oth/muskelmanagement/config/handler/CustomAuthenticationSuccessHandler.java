@@ -1,6 +1,6 @@
 package de.oth.muskelmanagement.config.handler;
 
-import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.service.TwoFactorAuthService;
 import de.oth.muskelmanagement.service.UserService;
 import jakarta.servlet.ServletException;

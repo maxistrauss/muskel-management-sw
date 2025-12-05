@@ -1,10 +1,11 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.model.Role;
-import de.oth.muskelmanagement.model.User;
+import de.oth.muskelmanagement.dto.UserDto;
+import de.oth.muskelmanagement.model.entity.Role;
+import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.repository.RoleRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
-import de.oth.muskelmanagement.service.dto.UserDto;
+import de.oth.muskelmanagement.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,9 +20,7 @@ import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -390,3 +389,4 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).deleteById(1L);
     }
 }
+

@@ -1,6 +1,6 @@
 package de.oth.muskelmanagement.service;
 
-import de.oth.muskelmanagement.service.dto.SubscriptionDto;
+import de.oth.muskelmanagement.dto.SubscriptionDto;
 
 import java.util.List;
 import java.util.Optional;
