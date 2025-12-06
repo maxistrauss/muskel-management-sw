@@ -34,6 +34,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ExerciseService exerciseService;
     private final PasswordEncoder passwordEncoder;
     private final TrainingPlanRepository trainingPlanRepository;
+    private final FitnessMeasurementRepository fitnessMeasurementRepository;
 
     public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
             RoomRepository roomRepository, MembershipRepository membershipRepository,
@@ -42,7 +43,7 @@ public class DataInitializer implements CommandLineRunner {
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
             de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
             ExerciseRepository exerciseRepository, ExerciseService exerciseService, PasswordEncoder passwordEncoder,
-            TrainingPlanRepository trainingPlanRepository) {
+            TrainingPlanRepository trainingPlanRepository, FitnessMeasurementRepository fitnessMeasurementRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
@@ -56,6 +57,7 @@ public class DataInitializer implements CommandLineRunner {
         this.exerciseService = exerciseService;
         this.passwordEncoder = passwordEncoder;
         this.trainingPlanRepository = trainingPlanRepository;
+        this.fitnessMeasurementRepository = fitnessMeasurementRepository;
     }
 
     @Override
@@ -71,6 +73,44 @@ public class DataInitializer implements CommandLineRunner {
         initializeExercises();
         initializeSubscriptions();
         initializeTrainingPlans();
+        initializeFitnessMeasurements();
+    }
+
+    private void initializeFitnessMeasurements() {
+        if (fitnessMeasurementRepository.count() > 0) {
+            return;
+        }
+
+        User member = userRepository.findByEmail("member@example.com");
+        if (member != null) {
+            // -6 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(6), 90.0, 25.0, 38.0,
+                            "Initial assessment. Goal: Weight loss and muscle gain."));
+            // -5 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(5), 88.5, 24.2, 38.5,
+                            "Good start, diet adherence is high."));
+            // -4 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(4), 87.2, 23.5, 39.0,
+                            "Strength increasing, weight dropping steadily."));
+            // -3 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(3), 86.0, 22.8, 39.5,
+                            "Halfway check-in. Adjusting macro split."));
+            // -2 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(2), 84.8, 21.5, 40.2,
+                            "Visible definition appearing."));
+            // -1 month
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(1), 83.5, 20.5, 41.0,
+                            "Excellent progress. Increased cardio intensity."));
+            // Current
+            fitnessMeasurementRepository.save(new FitnessMeasurement(member, LocalDate.now(), 82.0, 19.5, 41.5,
+                    "Hit target weight for this phase. Moving to maintenance."));
+        }
     }
 
     private void initializeTrainingPlans() {

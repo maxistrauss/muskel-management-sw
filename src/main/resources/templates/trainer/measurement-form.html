@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Measurement Entry</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+    <div class="container mx-auto mt-8 p-4">
+        <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold mb-6">
+                <span th:if="${isEdit}">Edit Measurement</span>
+                <span th:unless="${isEdit}">New Measurement</span>
+                for <span th:text="${member.firstName} + ' ' + ${member.lastName}">Member</span>
+            </h1>
+
+            <form method="post"
+                  th:action="${isEdit} ? @{/trainer/measurements/{id}/edit(id=${measurement.id})} : @{/trainer/members/{id}/measurements/create(id=${member.id})}" th:object="${measurement}">
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="date">Date</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="date" required th:field="*{date}" type="date">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="weight">Weight (kg)</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="weight" min="0" step="0.1" th:field="*{weight}" type="number">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="bodyFat">Body Fat (%)</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="bodyFat" min="0" step="0.1" th:field="*{bodyFatPercentage}" type="number">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="muscleMass">Muscle Mass (%)</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="muscleMass" min="0" step="0.1" th:field="*{muscleMassPercentage}" type="number">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="notes">Notes</label>
+                    <textarea
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="notes" rows="3" th:field="*{notes}"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                       th:href="@{/trainer/members/{id}/measurements(id=${member.id})}">Cancel</a>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" type="submit">Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
