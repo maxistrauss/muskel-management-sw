@@ -13,34 +13,36 @@ public class SubscriptionDto {
     private Long userId;
     private String userEmail;
     private String userName;
-    private Long tarifId;
-    private String tarifName;
-    private BigDecimal tarifPrice;
-    private Integer tarifDuration;
-    private String tarifDescription;
+    private Long pricingId;
+    private String pricingName;
+    private BigDecimal pricingPrice;
+    private Integer pricingDuration;
+    private String pricingDescription;
     private LocalDate startDate;
     private LocalDate endDate;
     private SubscriptionStatus status;
     private Boolean autoRenew;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String paypalOrderId;
+    private String paymentStatus;
 
     public SubscriptionDto() {
     }
 
-    public SubscriptionDto(Long id, Long userId, String userEmail, String userName, Long tarifId, String tarifName,
-            BigDecimal tarifPrice, Integer tarifDuration, String tarifDescription, LocalDate startDate,
+    public SubscriptionDto(Long id, Long userId, String userEmail, String userName, Long pricingId, String pricingName,
+            BigDecimal pricingPrice, Integer pricingDuration, String pricingDescription, LocalDate startDate,
             LocalDate endDate, SubscriptionStatus status, Boolean autoRenew, LocalDateTime createdAt,
             LocalDateTime updatedAt) {
         this.id = id;
         this.userId = userId;
         this.userEmail = userEmail;
         this.userName = userName;
-        this.tarifId = tarifId;
-        this.tarifName = tarifName;
-        this.tarifPrice = tarifPrice;
-        this.tarifDuration = tarifDuration;
-        this.tarifDescription = tarifDescription;
+        this.pricingId = pricingId;
+        this.pricingName = pricingName;
+        this.pricingPrice = pricingPrice;
+        this.pricingDuration = pricingDuration;
+        this.pricingDescription = pricingDescription;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
@@ -116,44 +118,44 @@ public class SubscriptionDto {
         this.userName = userName;
     }
 
-    public Long getTarifId() {
-        return tarifId;
+    public Long getPricingId() {
+        return pricingId;
     }
 
-    public void setTarifId(Long tarifId) {
-        this.tarifId = tarifId;
+    public void setPricingId(Long pricingId) {
+        this.pricingId = pricingId;
     }
 
-    public String getTarifName() {
-        return tarifName;
+    public String getPricingName() {
+        return pricingName;
     }
 
-    public void setTarifName(String tarifName) {
-        this.tarifName = tarifName;
+    public void setPricingName(String pricingName) {
+        this.pricingName = pricingName;
     }
 
-    public BigDecimal getTarifPrice() {
-        return tarifPrice;
+    public BigDecimal getPricingPrice() {
+        return pricingPrice;
     }
 
-    public void setTarifPrice(BigDecimal tarifPrice) {
-        this.tarifPrice = tarifPrice;
+    public void setPricingPrice(BigDecimal pricingPrice) {
+        this.pricingPrice = pricingPrice;
     }
 
-    public Integer getTarifDuration() {
-        return tarifDuration;
+    public Integer getPricingDuration() {
+        return pricingDuration;
     }
 
-    public void setTarifDuration(Integer tarifDuration) {
-        this.tarifDuration = tarifDuration;
+    public void setPricingDuration(Integer pricingDuration) {
+        this.pricingDuration = pricingDuration;
     }
 
-    public String getTarifDescription() {
-        return tarifDescription;
+    public String getPricingDescription() {
+        return pricingDescription;
     }
 
-    public void setTarifDescription(String tarifDescription) {
-        this.tarifDescription = tarifDescription;
+    public void setPricingDescription(String pricingDescription) {
+        this.pricingDescription = pricingDescription;
     }
 
     public LocalDate getStartDate() {
@@ -202,5 +204,21 @@ public class SubscriptionDto {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getPaypalOrderId() {
+        return paypalOrderId;
+    }
+
+    public void setPaypalOrderId(String paypalOrderId) {
+        this.paypalOrderId = paypalOrderId;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 }

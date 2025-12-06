@@ -36,6 +36,9 @@ dependencies {
     // PDF Generation with OpenHTMLToPDF
     implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
     implementation 'com.openhtmltopdf:openhtmltopdf-slf4j:1.0.10'
+    
+    // PayPal SDK
+    implementation 'com.paypal.sdk:checkout-sdk:1.0.2'
 }
 
 node {

@@ -2,7 +2,7 @@ package de.oth.muskelmanagement.service;
 
 import de.oth.muskelmanagement.model.entity.MembershipConfirmation;
 import de.oth.muskelmanagement.model.entity.Subscription;
-import de.oth.muskelmanagement.model.entity.Tarif;
+import de.oth.muskelmanagement.model.entity.Pricing;
 import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.MembershipConfirmationRepository;
@@ -56,7 +56,7 @@ class PdfGenerationServiceImplTest {
     Path tempDir;
 
     private User testUser;
-    private Tarif testTarif;
+    private Pricing testPricing;
     private Subscription testSubscription;
 
     @BeforeEach
@@ -78,16 +78,16 @@ class PdfGenerationServiceImplTest {
         testUser.setLastName("Doe");
         testUser.setEmail("john.doe@example.com");
 
-        testTarif = new Tarif();
-        testTarif.setId(1L);
-        testTarif.setName("Premium");
-        testTarif.setPrice(new BigDecimal("49.99"));
-        testTarif.setDurationMonths(12);
+        testPricing = new Pricing();
+        testPricing.setId(1L);
+        testPricing.setName("Premium");
+        testPricing.setPrice(new BigDecimal("49.99"));
+        testPricing.setDurationMonths(12);
 
         testSubscription = new Subscription();
         testSubscription.setId(1L);
         testSubscription.setUser(testUser);
-        testSubscription.setTarif(testTarif);
+        testSubscription.setPricing(testPricing);
         testSubscription.setStartDate(LocalDate.now());
         testSubscription.setEndDate(LocalDate.now().plusMonths(12));
         testSubscription.setStatus(SubscriptionStatus.ACTIVE);

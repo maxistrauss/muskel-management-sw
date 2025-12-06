@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Tarif Form</title>
+    <title>Pricing Form</title>
     <link rel="stylesheet" th:href="@{/css/output.css}"/>
 </head>
 <body class="bg-gray-100">
@@ -11,10 +11,10 @@
 <div class="lg:ml-64">
 <div class="container mx-auto mt-8">
     <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold mb-6" th:if="${tarif.id == null}">Create Tarif</h1>
-        <h1 class="text-3xl font-bold mb-6" th:if="${tarif.id != null}">Edit Tarif</h1>
+        <h1 class="text-3xl font-bold mb-6" th:if="${pricing.id == null}">Create Subscription</h1>
+        <h1 class="text-3xl font-bold mb-6" th:if="${pricing.id != null}">Edit Subscription</h1>
         <form method="post"
-              th:action="${tarif.id == null} ? @{/admin/tarifs/new} : @{/admin/tarifs/edit/{id}(id=${tarif.id})}" th:object="${tarif}">
+              th:action="${pricing.id == null} ? @{/admin/pricing/new} : @{/admin/pricing/edit/{id}(id=${pricing.id})}" th:object="${pricing}">
 
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name:</label>
@@ -50,7 +50,7 @@
                 </label>
             </div>
             <div>
-                <input class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" th:value="${tarif.id == null} ? 'Create' : 'Update'"
+                <input class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" th:value="${pricing.id == null} ? 'Create Subscription' : 'Update Subscription'"
                        type="submit"/>
             </div>
         </form>

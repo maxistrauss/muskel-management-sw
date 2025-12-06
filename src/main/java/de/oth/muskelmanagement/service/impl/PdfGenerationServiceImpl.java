@@ -149,8 +149,8 @@ public class PdfGenerationServiceImpl implements PdfGenerationService {
         data.put("email", user.getEmail());
         data.put("startDate", subscription.getStartDate());
         data.put("endDate", subscription.getEndDate());
-        data.put("membershipType", subscription.getTarif().getName());
-        data.put("price", subscription.getTarif().getPrice());
+        data.put("membershipType", subscription.getPricing().getName());
+        data.put("price", subscription.getPricing().getPrice());
         data.put("generatedDate", LocalDate.now());
         data.put("gymName", "MuskelManagement Fitness Studio");
         return data;

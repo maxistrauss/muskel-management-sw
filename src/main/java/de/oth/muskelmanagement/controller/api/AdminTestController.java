@@ -1,11 +1,11 @@
 package de.oth.muskelmanagement.controller.api;
 
 import de.oth.muskelmanagement.model.entity.Subscription;
-import de.oth.muskelmanagement.model.entity.Tarif;
+import de.oth.muskelmanagement.model.entity.Pricing;
 import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.SubscriptionRepository;
-import de.oth.muskelmanagement.repository.TarifRepository;
+import de.oth.muskelmanagement.repository.PricingRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.SubscriptionReminderService;
 import org.slf4j.Logger;
@@ -33,15 +33,15 @@ public class AdminTestController {
     private final SubscriptionReminderService reminderService;
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
-    private final TarifRepository tarifRepository;
+    private final PricingRepository pricingRepository;
 
     public AdminTestController(SubscriptionReminderService reminderService,
             SubscriptionRepository subscriptionRepository, UserRepository userRepository,
-            TarifRepository tarifRepository) {
+            PricingRepository pricingRepository) {
         this.reminderService = reminderService;
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
-        this.tarifRepository = tarifRepository;
+        this.pricingRepository = pricingRepository;
     }
 
     /**
@@ -90,17 +90,17 @@ public class AdminTestController {
      *
      * @param userId
      *         User ID to create subscription for
-     * @param tarifId
-     *         Tarif ID to use
+     * @param pricingId
+     *         Pricing ID to use
      * @param daysUntilExpiry
      *         Number of days until subscription expires
      * @return Response with created subscription details
      */
     @PostMapping("/create-test-subscription")
     public ResponseEntity<Map<String, Object>> createTestSubscription(@RequestParam Long userId,
-            @RequestParam Long tarifId, @RequestParam(defaultValue = "5") Integer daysUntilExpiry) {
+            @RequestParam Long pricingId, @RequestParam(defaultValue = "5") Integer daysUntilExpiry) {
 
-        logger.info("Creating test subscription for user {} with tarif {}, expiring in {} days", userId, tarifId,
+        logger.info("Creating test subscription for user {} with pricing {}, expiring in {} days", userId, pricingId,
                 daysUntilExpiry);
 
         Map<String, Object> response = new HashMap<>();
@@ -110,9 +110,9 @@ public class AdminTestController {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-            // Validate tarif
-            Tarif tarif = tarifRepository.findById(tarifId)
-                    .orElseThrow(() -> new RuntimeException("Tarif not found with id: " + tarifId));
+            // Validate pricing
+            Pricing pricing = pricingRepository.findById(pricingId)
+                    .orElseThrow(() -> new RuntimeException("Pricing not found with id: " + pricingId));
 
             // Check if user already has an active subscription
             if (subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)) {
@@ -127,7 +127,7 @@ public class AdminTestController {
 
             Subscription testSubscription = new Subscription();
             testSubscription.setUser(user);
-            testSubscription.setTarif(tarif);
+            testSubscription.setPricing(pricing);
             testSubscription.setStartDate(startDate);
             testSubscription.setEndDate(endDate);
             testSubscription.setStatus(SubscriptionStatus.ACTIVE);
@@ -142,7 +142,7 @@ public class AdminTestController {
             response.put("userId", userId);
             response.put("userEmail", user.getEmail());
             response.put("userName", user.getFirstName() + " " + user.getLastName());
-            response.put("tarifName", tarif.getName());
+            response.put("pricingName", pricing.getName());
             response.put("startDate", startDate.toString());
             response.put("endDate", endDate.toString());
             response.put("daysUntilExpiry", daysUntilExpiry);
@@ -193,7 +193,7 @@ public class AdminTestController {
             details.put("userId", sub.getUser().getId());
             details.put("userEmail", sub.getUser().getEmail());
             details.put("userName", sub.getUser().getFirstName() + " " + sub.getUser().getLastName());
-            details.put("tarifName", sub.getTarif().getName());
+            details.put("pricingName", sub.getPricing().getName());
             details.put("endDate", sub.getEndDate().toString());
             details.put("daysRemaining", java.time.temporal.ChronoUnit.DAYS.between(today, sub.getEndDate()));
             details.put("reminderSent", sub.getReminderSent());

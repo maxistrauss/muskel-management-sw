@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Tarif Management</title>
+    <title>Pricing Management</title>
     <link rel="stylesheet" th:href="@{/css/output.css}"/>
 </head>
 <body class="bg-gray-100">
@@ -12,13 +12,13 @@
 <div class="container mx-auto mt-8">
     <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold">Tarif Management</h1>
-            <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="/admin/tarifs/new">Create
-                Tarif</a>
+            <h1 class="text-3xl font-bold">Pricing Management</h1>
+            <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="/admin/pricing/new">Create
+                Subscription</a>
         </div>
 
         <!-- Search/Filter Form -->
-        <form class="mb-6 p-4 border rounded-lg bg-gray-50" method="get" th:action="@{/admin/tarifs}">
+        <form class="mb-6 p-4 border rounded-lg bg-gray-50" method="get" th:action="@{/admin/pricing}">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name:</label>
@@ -40,7 +40,7 @@
                         type="submit">Search
                 </button>
                 <a class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded ml-2"
-                   th:href="@{/admin/tarifs}">Clear</a>
+                   th:href="@{/admin/pricing}">Clear</a>
             </div>
         </form>
 
@@ -57,17 +57,17 @@
                 </tr>
                 </thead>
                 <tbody class="text-gray-700">
-                <tr th:each="tarif : ${tarifPage.content}">
-                    <td class="py-3 px-4" th:text="${tarif.name}"></td>
-                    <td class="py-3 px-4" th:text="${#numbers.formatDecimal(tarif.price, 0, 2)} + ' €'"></td>
-                    <td class="py-3 px-4" th:text="${tarif.durationMonths}"></td>
-                    <td class="py-3 px-4" th:text="${tarif.description}"></td>
-                    <td class="py-3 px-4" th:text="${tarif.active}"></td>
+                <tr th:each="pricing : ${pricingPage.content}">
+                    <td class="py-3 px-4" th:text="${pricing.name}"></td>
+                    <td class="py-3 px-4" th:text="${#numbers.formatDecimal(pricing.price, 0, 2)} + ' €'"></td>
+                    <td class="py-3 px-4" th:text="${pricing.durationMonths}"></td>
+                    <td class="py-3 px-4" th:text="${pricing.description}"></td>
+                    <td class="py-3 px-4" th:text="${pricing.active}"></td>
                     <td class="py-3 px-4">
                         <div><a class="text-blue-500 hover:text-blue-700"
-                                th:href="@{/admin/tarifs/edit/{id}(id=${tarif.id})}">Edit</a></div>
+                                th:href="@{/admin/pricing/edit/{id}(id=${pricing.id})}">Edit</a></div>
                         <div><a class="text-red-500 hover:text-red-700"
-                                th:href="@{/admin/tarifs/delete/{id}(id=${tarif.id})}">Delete</a></div>
+                                th:href="@{/admin/pricing/delete/{id}(id=${pricing.id})}">Delete</a></div>
                     </td>
                 </tr>
                 </tbody>
@@ -76,29 +76,29 @@
 
         <!-- Pagination Controls -->
         <div class="flex justify-between items-center mt-6">
-            <div class="flex items-center space-x-2" th:if="${tarifPage.totalPages > 0}">
+            <div class="flex items-center space-x-2" th:if="${pricingPage.totalPages > 0}">
                 <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-l-lg"
-                   th:href="@{/admin/tarifs(page=${tarifPage.number - 1}, size=${tarifPage.size}, sort=${tarifPage.sort.toString()}, name=${name}, active=${active})}"
-                   th:if="${tarifPage.hasPrevious()}">Previous</a>
+                   th:href="@{/admin/pricing(page=${pricingPage.number - 1}, size=${pricingPage.size}, sort=${pricingPage.sort.toString()}, name=${name}, active=${active})}"
+                   th:if="${pricingPage.hasPrevious()}">Previous</a>
                 <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-l-lg"
-                      th:unless="${tarifPage.hasPrevious()}">Previous</span>
+                      th:unless="${pricingPage.hasPrevious()}">Previous</span>
 
-                <div th:each="i : ${#numbers.sequence(0, tarifPage.totalPages - 1)}">
+                <div th:each="i : ${#numbers.sequence(0, pricingPage.totalPages - 1)}">
                     <a class="px-3 py-2 leading-tight border border-gray-300"
-                       th:classappend="${i == tarifPage.number ? 'bg-blue-500 text-white' : 'text-gray-700 bg-white hover:bg-gray-100'}"
-                       th:href="@{/admin/tarifs(page=${i}, size=${tarifPage.size}, sort=${tarifPage.sort.toString()}, name=${name}, active=${active})}">[[${i + 1}]]</a>
+                       th:classappend="${i == pricingPage.number ? 'bg-blue-500 text-white' : 'text-gray-700 bg-white hover:bg-gray-100'}"
+                       th:href="@{/admin/pricing(page=${i}, size=${pricingPage.size}, sort=${pricingPage.sort.toString()}, name=${name}, active=${active})}">[[${i + 1}]]</a>
                 </div>
 
                 <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-r-lg"
-                   th:href="@{/admin/tarifs(page=${tarifPage.number + 1}, size=${tarifPage.size}, sort=${tarifPage.sort.toString()}, name=${name}, active=${active})}"
-                   th:if="${tarifPage.hasNext()}">Next</a>
+                   th:href="@{/admin/pricing(page=${pricingPage.number + 1}, size=${pricingPage.size}, sort=${pricingPage.sort.toString()}, name=${name}, active=${active})}"
+                   th:if="${pricingPage.hasNext()}">Next</a>
                 <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-r-lg"
-                      th:unless="${tarifPage.hasNext()}">Next</span>
+                      th:unless="${pricingPage.hasNext()}">Next</span>
             </div>
             <div class="text-sm text-gray-700">
-                Showing <span th:text="${tarifPage.number * tarifPage.size + 1}"></span> to <span
-                    th:text="${(tarifPage.number * tarifPage.size + tarifPage.numberOfElements)}"></span> of <span
-                    th:text="${tarifPage.totalElements}"></span> entries
+                Showing <span th:text="${pricingPage.number * pricingPage.size + 1}"></span> to <span
+                    th:text="${(pricingPage.number * pricingPage.size + pricingPage.numberOfElements)}"></span> of <span
+                    th:text="${pricingPage.totalElements}"></span> entries
             </div>
         </div>
     </div>

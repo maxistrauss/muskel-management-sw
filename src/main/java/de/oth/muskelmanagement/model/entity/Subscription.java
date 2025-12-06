@@ -19,8 +19,8 @@ public class Subscription {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tarif_id", nullable = false)
-    private Tarif tarif;
+    @JoinColumn(name = "pricing_id", nullable = false)
+    private Pricing pricing;
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -38,6 +38,12 @@ public class Subscription {
     @Column(name = "reminder_sent", nullable = false)
     private Boolean reminderSent = false;
 
+    @Column(name = "paypal_order_id")
+    private String paypalOrderId;
+
+    @Column(name = "payment_status")
+    private String paymentStatus = "PENDING"; // PENDING, PAID, FAILED
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -47,9 +53,9 @@ public class Subscription {
     public Subscription() {
     }
 
-    public Subscription(User user, Tarif tarif, LocalDate startDate, LocalDate endDate, SubscriptionStatus status) {
+    public Subscription(User user, Pricing pricing, LocalDate startDate, LocalDate endDate, SubscriptionStatus status) {
         this.user = user;
-        this.tarif = tarif;
+        this.pricing = pricing;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
@@ -82,12 +88,12 @@ public class Subscription {
         this.user = user;
     }
 
-    public Tarif getTarif() {
-        return tarif;
+    public Pricing getPricing() {
+        return pricing;
     }
 
-    public void setTarif(Tarif tarif) {
-        this.tarif = tarif;
+    public void setPricing(Pricing pricing) {
+        this.pricing = pricing;
     }
 
     public LocalDate getStartDate() {
@@ -144,5 +150,21 @@ public class Subscription {
 
     public void setReminderSent(Boolean reminderSent) {
         this.reminderSent = reminderSent;
+    }
+
+    public String getPaypalOrderId() {
+        return paypalOrderId;
+    }
+
+    public void setPaypalOrderId(String paypalOrderId) {
+        this.paypalOrderId = paypalOrderId;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 }

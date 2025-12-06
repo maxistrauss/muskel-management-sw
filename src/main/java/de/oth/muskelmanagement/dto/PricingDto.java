@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-public class TarifDto {
+public class PricingDto {
 
     private Long id;
 
@@ -26,10 +26,10 @@ public class TarifDto {
 
     private boolean active = true;
 
-    public TarifDto() {
+    public PricingDto() {
     }
 
-    public TarifDto(Long id, String name, BigDecimal price, Integer durationMonths, String description,
+    public PricingDto(Long id, String name, BigDecimal price, Integer durationMonths, String description,
             boolean active) {
         this.id = id;
         this.name = name;

@@ -5,8 +5,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "tarifs")
-public class Tarif {
+@Table(name = "pricings")
+public class Pricing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,10 +25,10 @@ public class Tarif {
 
     private boolean active = true;
 
-    public Tarif() {
+    public Pricing() {
     }
 
-    public Tarif(String name, BigDecimal price, Integer durationMonths, String description, boolean active) {
+    public Pricing(String name, BigDecimal price, Integer durationMonths, String description, boolean active) {
         this.name = name;
         this.price = price;
         this.durationMonths = durationMonths;

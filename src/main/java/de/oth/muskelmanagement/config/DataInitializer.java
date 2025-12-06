@@ -25,7 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final RoomRepository roomRepository;
     private final MembershipRepository membershipRepository;
-    private final TarifRepository tarifRepository;
+    private final PricingRepository pricingRepository;
     private final EquipmentRepository equipmentRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final de.oth.muskelmanagement.repository.CourseRepository courseRepository;
@@ -37,7 +37,7 @@ public class DataInitializer implements CommandLineRunner {
 
     public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
             RoomRepository roomRepository, MembershipRepository membershipRepository,
-            TarifRepository tarifRepository, EquipmentRepository equipmentRepository,
+            PricingRepository pricingRepository, EquipmentRepository equipmentRepository,
             SubscriptionRepository subscriptionRepository,
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
             de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
@@ -47,7 +47,7 @@ public class DataInitializer implements CommandLineRunner {
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
         this.membershipRepository = membershipRepository;
-        this.tarifRepository = tarifRepository;
+        this.pricingRepository = pricingRepository;
         this.equipmentRepository = equipmentRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.courseRepository = courseRepository;
@@ -62,7 +62,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         initializeRoles();
         initializeMemberships();
-        initializeTarifs();
+        initializePricings();
         initializeUsers();
         migrateUsersToMemberships();
         initializeRooms();
@@ -123,19 +123,19 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void initializeTarifs() {
-        if (tarifRepository.count() > 0) {
+    private void initializePricings() {
+        if (pricingRepository.count() > 0) {
             return;
         }
 
-        Tarif basic = new Tarif("Basic", new BigDecimal("29.99"), 1, "Monthly membership with basic access", true);
-        tarifRepository.save(basic);
+        Pricing basic = new Pricing("Basic", new BigDecimal("29.99"), 1, "Monthly membership with basic access", true);
+        pricingRepository.save(basic);
 
-        Tarif premium = new Tarif("Premium", new BigDecimal("59.99"), 12, "Annual membership with full access and additional services", true);
-        tarifRepository.save(premium);
+        Pricing premium = new Pricing("Premium", new BigDecimal("59.99"), 12, "Annual membership with full access and additional services", true);
+        pricingRepository.save(premium);
 
-        Tarif student = new Tarif("Student", new BigDecimal("19.99"), 1, "Discounted monthly membership for students", true);
-        tarifRepository.save(student);
+        Pricing student = new Pricing("Student", new BigDecimal("19.99"), 1, "Discounted monthly membership for students", true);
+        pricingRepository.save(student);
     }
 
     private void initializeEquipment() {
@@ -199,16 +199,16 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        // Find the member user and basic tarif
+        // Find the member user and basic pricing
         User member = userRepository.findByEmail("member@example.com");
-        Tarif basicTarif = tarifRepository.findByName("Basic");
+        Pricing basicPricing = pricingRepository.findByName("Basic");
 
-        if (member != null && basicTarif != null) {
+        if (member != null && basicPricing != null) {
             Subscription subscription = new Subscription();
             subscription.setUser(member);
-            subscription.setTarif(basicTarif);
+            subscription.setPricing(basicPricing);
             subscription.setStartDate(LocalDate.now());
-            subscription.setEndDate(LocalDate.now().plusMonths(basicTarif.getDurationMonths()));
+            subscription.setEndDate(LocalDate.now().plusMonths(basicPricing.getDurationMonths()));
             subscription.setStatus(SubscriptionStatus.ACTIVE);
             subscription.setAutoRenew(false);
             subscriptionRepository.save(subscription);

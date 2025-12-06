@@ -62,7 +62,7 @@ public class SubscriptionReminderService {
                 // Send reminder email
                 String userName = subscription.getUser().getFirstName() + " " + subscription.getUser().getLastName();
                 String userEmail = subscription.getUser().getEmail();
-                String tarifName = subscription.getTarif().getName();
+                String tarifName = subscription.getPricing().getName();
 
                 emailService.sendSubscriptionExpiryReminder(
                         userEmail,

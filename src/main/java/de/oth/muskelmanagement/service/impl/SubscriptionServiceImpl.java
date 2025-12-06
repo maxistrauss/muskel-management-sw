@@ -2,11 +2,11 @@ package de.oth.muskelmanagement.service.impl;
 
 import de.oth.muskelmanagement.dto.SubscriptionDto;
 import de.oth.muskelmanagement.model.entity.Subscription;
-import de.oth.muskelmanagement.model.entity.Tarif;
+import de.oth.muskelmanagement.model.entity.Pricing;
 import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.SubscriptionRepository;
-import de.oth.muskelmanagement.repository.TarifRepository;
+import de.oth.muskelmanagement.repository.PricingRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.SubscriptionService;
 import org.slf4j.Logger;
@@ -26,30 +26,30 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
-    private final TarifRepository tarifRepository;
+    private final PricingRepository pricingRepository;
 
     public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository, UserRepository userRepository,
-            TarifRepository tarifRepository) {
+            PricingRepository pricingRepository) {
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
-        this.tarifRepository = tarifRepository;
+        this.pricingRepository = pricingRepository;
     }
 
     @Override
     @Transactional
-    public SubscriptionDto subscribe(Long userId, Long tarifId) {
-        logger.info("Creating subscription for user {} with tarif {}", userId, tarifId);
+    public SubscriptionDto subscribe(Long userId, Long pricingId) {
+        logger.info("Creating subscription for user {} with pricing {}", userId, pricingId);
 
         // Check if user exists
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-        // Check if tarif exists and is active
-        Tarif tarif = tarifRepository.findById(tarifId)
-                .orElseThrow(() -> new RuntimeException("Tarif not found with id: " + tarifId));
+        // Check if pricing exists and is active
+        Pricing pricing = pricingRepository.findById(pricingId)
+                .orElseThrow(() -> new RuntimeException("Pricing not found with id: " + pricingId));
 
-        if (!tarif.isActive()) {
-            throw new RuntimeException("Cannot subscribe to inactive tarif: " + tarif.getName());
+        if (!pricing.isActive()) {
+            throw new RuntimeException("Cannot subscribe to inactive pricing: " + pricing.getName());
         }
 
         // Check if user already has an active subscription
@@ -59,11 +59,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         // Create new subscription
         LocalDate startDate = LocalDate.now();
-        LocalDate endDate = startDate.plusMonths(tarif.getDurationMonths());
+        LocalDate endDate = startDate.plusMonths(pricing.getDurationMonths());
 
         Subscription subscription = new Subscription();
         subscription.setUser(user);
-        subscription.setTarif(tarif);
+        subscription.setPricing(pricing);
         subscription.setStartDate(startDate);
         subscription.setEndDate(endDate);
         subscription.setStatus(SubscriptionStatus.ACTIVE);
@@ -142,23 +142,38 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         return convertToDto(subscription);
     }
 
+    @Override
+    @Transactional
+    public void markAsPaid(Long subscriptionId, String paypalOrderId) {
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new RuntimeException("Subscription not found with id: " + subscriptionId));
+        
+        subscription.setPaypalOrderId(paypalOrderId);
+        subscription.setPaymentStatus("PAID");
+        subscriptionRepository.save(subscription);
+        
+        logger.info("Subscription {} marked as paid with PayPal order {}", subscriptionId, paypalOrderId);
+    }
+
     private SubscriptionDto convertToDto(Subscription subscription) {
         SubscriptionDto dto = new SubscriptionDto();
         dto.setId(subscription.getId());
         dto.setUserId(subscription.getUser().getId());
         dto.setUserEmail(subscription.getUser().getEmail());
         dto.setUserName(subscription.getUser().getFirstName() + " " + subscription.getUser().getLastName());
-        dto.setTarifId(subscription.getTarif().getId());
-        dto.setTarifName(subscription.getTarif().getName());
-        dto.setTarifPrice(subscription.getTarif().getPrice());
-        dto.setTarifDuration(subscription.getTarif().getDurationMonths());
-        dto.setTarifDescription(subscription.getTarif().getDescription());
+        dto.setPricingId(subscription.getPricing().getId());
+        dto.setPricingName(subscription.getPricing().getName());
+        dto.setPricingPrice(subscription.getPricing().getPrice());
+        dto.setPricingDuration(subscription.getPricing().getDurationMonths());
+        dto.setPricingDescription(subscription.getPricing().getDescription());
         dto.setStartDate(subscription.getStartDate());
         dto.setEndDate(subscription.getEndDate());
         dto.setStatus(subscription.getStatus());
         dto.setAutoRenew(subscription.getAutoRenew());
         dto.setCreatedAt(subscription.getCreatedAt());
         dto.setUpdatedAt(subscription.getUpdatedAt());
+        dto.setPaypalOrderId(subscription.getPaypalOrderId());
+        dto.setPaymentStatus(subscription.getPaymentStatus());
         return dto;
     }
 }

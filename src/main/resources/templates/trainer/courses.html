@@ -10,7 +10,10 @@
 <div class="lg:ml-64">
 <div class="container mx-auto mt-8">
     <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold mb-6">My Courses</h1>
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">My Courses</h1>
+            <a href="/trainer/courses/new" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Course</a>
+        </div>
         
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white">
@@ -34,8 +37,12 @@
                               th:text="${course.active ? 'Active' : 'Inactive'}"></span>
                     </td>
                     <td class="py-3 px-4">
-                        <div><a class="text-blue-500 hover:text-blue-700" th:href="@{/trainer/courses/{id}/participants(id=${course.id})}">View Participants</a></div>
-                        <div><a class="text-green-500 hover:text-green-700" th:href="@{/trainer/courses/{id}/add-member(id=${course.id})}">Add Member</a></div>
+                        <div class="flex space-x-2">
+                            <a class="text-blue-500 hover:text-blue-700" th:href="@{/trainer/courses/{id}/participants(id=${course.id})}">View Participants</a>
+                            <a class="text-green-500 hover:text-green-700" th:href="@{/trainer/courses/{id}/add-member(id=${course.id})}">Add Member</a>
+                            <a class="text-yellow-500 hover:text-yellow-700" th:href="@{/trainer/courses/edit/{id}(id=${course.id})}">Edit</a>
+                            <a class="text-red-500 hover:text-red-700" th:href="@{/trainer/courses/delete/{id}(id=${course.id})}" onclick="return confirm('Are you sure you want to delete this course?');">Delete</a>
+                        </div>
                     </td>
                 </tr>
                 </tbody>

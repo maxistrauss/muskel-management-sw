@@ -57,4 +57,11 @@ public interface SubscriptionService {
      * @throws RuntimeException if not found
      */
     SubscriptionDto getSubscriptionById(Long id);
+    
+    /**
+     * Mark subscription as paid with PayPal order ID
+     * @param subscriptionId The subscription ID
+     * @param paypalOrderId The PayPal order ID
+     */
+    void markAsPaid(Long subscriptionId, String paypalOrderId);
 }

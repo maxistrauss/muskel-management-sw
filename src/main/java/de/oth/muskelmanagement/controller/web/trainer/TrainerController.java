@@ -4,14 +4,17 @@ import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Course;
 import de.oth.muskelmanagement.model.entity.Enrollment;
 import de.oth.muskelmanagement.service.CourseService;
+import de.oth.muskelmanagement.service.RoomService;
 import de.oth.muskelmanagement.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -20,10 +23,74 @@ public class TrainerController {
 
     private final CourseService courseService;
     private final UserService userService;
+    private final RoomService roomService;
 
-    public TrainerController(CourseService courseService, UserService userService) {
+    public TrainerController(CourseService courseService, UserService userService, RoomService roomService) {
         this.courseService = courseService;
         this.userService = userService;
+        this.roomService = roomService;
+    }
+
+    @GetMapping("/courses/new")
+    public String showCreateCourseForm(Model model, Principal principal) {
+        model.addAttribute("course", new Course());
+        var currentUser = userService.findByEmail(principal.getName());
+        model.addAttribute("currentTrainer", currentUser);
+        var rooms = roomService.findActiveRooms();
+        model.addAttribute("rooms", rooms);
+        return "trainer/course-form";
+    }
+
+    @PostMapping("/courses/new")
+    public String createCourse(@ModelAttribute Course course, Principal principal) {
+        var trainer = userService.findByEmail(principal.getName());
+        course.setTrainer(trainer);
+        courseService.save(course);
+        return "redirect:/trainer/courses";
+    }
+
+    @GetMapping("/courses/edit/{id}")
+    public String showEditCourseForm(@PathVariable Long id, Model model, Principal principal) {
+        Course course = courseService.findById(id);
+        // Check if current user is the trainer of this course
+        var currentTrainer = userService.findByEmail(principal.getName());
+        if (course.getTrainer() != null && !course.getTrainer().getId().equals(currentTrainer.getId())) {
+            throw new AccessDeniedException("You can only edit your own courses");
+        }
+        model.addAttribute("course", course);
+        model.addAttribute("currentTrainer", currentTrainer);
+        var rooms = roomService.findActiveRooms();
+        model.addAttribute("rooms", rooms);
+        return "trainer/course-form";
+    }
+
+    @PostMapping("/courses/edit/{id}")
+    public String updateCourse(@PathVariable Long id, @ModelAttribute Course courseForm, Principal principal) {
+        Course existing = courseService.findById(id);
+        // Check if current user is the trainer of this course
+        var currentTrainer = userService.findByEmail(principal.getName());
+        if (existing.getTrainer() != null && !existing.getTrainer().getId().equals(currentTrainer.getId())) {
+            throw new AccessDeniedException("You can only edit your own courses");
+        }
+        existing.setName(courseForm.getName());
+        existing.setDescription(courseForm.getDescription());
+        existing.setCapacity(courseForm.getCapacity());
+        existing.setActive(courseForm.isActive());
+        existing.setRoom(courseForm.getRoom());
+        courseService.save(existing);
+        return "redirect:/trainer/courses";
+    }
+
+    @GetMapping("/courses/delete/{id}")
+    public String deleteCourse(@PathVariable Long id, Principal principal) {
+        Course course = courseService.findById(id);
+        // Check if current user is the trainer of this course
+        var currentTrainer = userService.findByEmail(principal.getName());
+        if (course.getTrainer() != null && !course.getTrainer().getId().equals(currentTrainer.getId())) {
+            throw new AccessDeniedException("You can only delete your own courses");
+        }
+        courseService.deleteById(id);
+        return "redirect:/trainer/courses";
     }
 
     @GetMapping("/courses")
