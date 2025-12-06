@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Training Plans</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+    <div class="container mx-auto mt-8 p-4">
+        <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <h1 class="text-3xl font-bold mb-6">My Training Plans</h1>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="border rounded-lg p-6 hover:shadow-lg transition bg-gray-50" th:each="plan : ${plans}">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-xl font-bold text-blue-700" th:text="${plan.name}">Plan Name</h2>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
+                              th:text="'v' + ${plan.version}">v1</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 h-12 overflow-hidden" th:text="${plan.description}">Description...</p>
+                    <div class="text-sm text-gray-500 mb-4">
+                        Created: <span th:text="${#temporals.format(plan.creationDate, 'dd.MM.yyyy')}">Date</span><br>
+                        Trainer: <span
+                            th:text="${plan.trainer.firstName} + ' ' + ${plan.trainer.lastName}">Trainer</span>
+                    </div>
+                    <a class="block w-full text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                       th:href="@{/member/plans/{id}(id=${plan.id})}">
+                        View Plan
+                    </a>
+                </div>
+            </div>
+
+            <div class="text-center py-8 text-gray-500" th:if="${#lists.isEmpty(plans)}">
+                You don't have any active training plans yet. Ask your trainer!
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

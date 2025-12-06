@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Training Plans</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+    <div class="container mx-auto mt-8 p-4">
+        <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold">Training Plans for <span
+                        th:text="${member.firstName} + ' ' + ${member.lastName}">Member</span></h1>
+                <a class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                   th:href="@{/trainer/members/{id}/plans/create(id=${member.id})}">
+                    Create New Plan
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-800 text-white">
+                    <tr>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Plan Name</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Version</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Status</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Created By</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Last Modified</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                    <tr class="border-b hover:bg-gray-50" th:each="plan : ${plans}">
+                        <td class="py-3 px-4 font-semibold" th:text="${plan.name}"></td>
+                        <td class="py-3 px-4" th:text="${plan.version}"></td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded text-xs font-semibold"
+                                  th:classappend="${plan.status.name() == 'ACTIVE'} ? 'bg-green-200 text-green-800' : 'bg-gray-300 text-gray-800'"
+                                  th:text="${plan.status}"></span>
+                        </td>
+                        <td class="py-3 px-4" th:text="${plan.trainer.firstName} + ' ' + ${plan.trainer.lastName}"></td>
+                        <td class="py-3 px-4"
+                            th:text="${#temporals.format(plan.lastModifiedDate, 'dd.MM.yyyy HH:mm')}"></td>
+                        <td class="py-3 px-4 flex gap-2">
+                            <a class="text-blue-600 hover:text-blue-800 font-semibold"
+                               th:href="@{/trainer/plans/{id}/edit(id=${plan.id})}"
+                               th:if="${plan.status.name() == 'ACTIVE'}">Edit</a>
+
+                            <form method="post"
+                                  onsubmit="return confirm('Are you sure you want to archive this plan?');" th:action="@{/trainer/plans/{id}/archive(id=${plan.id})}"
+                                  th:if="${plan.status.name() == 'ACTIVE'}">
+                                <button class="text-red-600 hover:text-red-800 font-semibold" type="submit">Archive
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(plans)}">
+                        <td class="py-4 text-center text-gray-500" colspan="6">No training plans found for this
+                            member.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -50,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/exercises/courses/**").hasAnyRole("ADMIN", "TRAINER")
                         
                         // Trainer endpoints
-                        .requestMatchers("/trainer/**").hasRole("TRAINER")
+                        .requestMatchers("/trainer/**").hasAnyRole("TRAINER", "ADMIN")
                         
                         // Member endpoints (includes courses and exercises)
                         // All users with ROLE_MEMBER (which includes TRAINER and ADMIN) can access

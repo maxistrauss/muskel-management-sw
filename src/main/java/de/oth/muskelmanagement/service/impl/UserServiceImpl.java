@@ -271,4 +271,14 @@ public class UserServiceImpl implements UserService {
         user.setTwoFactorEnabled(!user.isTwoFactorEnabled());
         userRepository.save(user);
     }
+
+    @Override
+    public Page<UserDto> findMembersOnly(Pageable pageable) {
+        return userRepository.findPureMembers(pageable).map(this::convertToDto);
+    }
+
+    @Override
+    public Page<UserDto> findNonAdmins(Pageable pageable) {
+        return userRepository.findNonAdmins(pageable).map(this::convertToDto);
+    }
 }

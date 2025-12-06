@@ -67,4 +67,19 @@ public class TrainerController {
         courseService.removeMember(id, userId);
         return "redirect:/trainer/courses/{id}/participants";
     }
+
+    @GetMapping("/members")
+    public String listMembers(Model model, @PageableDefault(size = 20) Pageable pageable,
+            org.springframework.security.core.Authentication authentication) {
+        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        Page<UserDto> users;
+        if (isAdmin) {
+            users = userService.findAll(pageable);
+        } else {
+            users = userService.findNonAdmins(pageable);
+        }
+        model.addAttribute("userPage", users);
+        return "trainer/members";
+    }
 }

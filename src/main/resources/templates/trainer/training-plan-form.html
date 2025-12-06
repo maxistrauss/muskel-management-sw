@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create/Edit Training Plan</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+    <div class="container mx-auto mt-8 p-4">
+        <div class="max-w-5xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold mb-6">
+                <span th:if="${isEdit}">Edit Plan (New Version)</span>
+                <span th:unless="${isEdit}">Create New Training Plan</span>
+                for <span th:text="${member.firstName} + ' ' + ${member.lastName}">Member</span>
+            </h1>
+
+            <form method="post"
+                  th:action="${isEdit} ? @{/trainer/plans/{id}/edit(id=${trainingPlan.id})} : @{/trainer/members/{id}/plans/create(id=${member.id})}" th:object="${trainingPlan}">
+
+                <!-- Basic Info -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Plan Name</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="name" required th:field="*{name}" type="text">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="description">Description</label>
+                    <textarea
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="description" rows="3" th:field="*{description}"></textarea>
+                </div>
+
+                <!-- Exercises Section -->
+                <h2 class="text-xl font-semibold mb-4">Exercises</h2>
+
+                <div class="overflow-x-auto mb-4">
+                    <table class="min-w-full" id="exercisesTable">
+                        <thead class="bg-gray-200">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Exercise</th>
+                            <th class="px-4 py-2 text-left w-24">Sets</th>
+                            <th class="px-4 py-2 text-left w-32">Reps</th>
+                            <th class="px-4 py-2 text-left">Notes</th>
+                            <th class="px-4 py-2"></th>
+                        </tr>
+                        </thead>
+                        <tbody id="exercisesBody">
+                        <!-- Existing Exercises (Edit Mode) -->
+                        <tr class="border-b" th:each="ex, stat : *{exercises}">
+                            <td class="px-4 py-2">
+                                <select class="w-full border rounded px-2 py-1"
+                                        required th:name="|exercises[${stat.index}].exerciseId|">
+                                    <option value="">Select Exercise</option>
+                                    <option th:each="opt : ${exercises}"
+                                            th:selected="${opt.id == ex.exerciseId}"
+                                            th:text="${opt.name}"
+                                            th:value="${opt.id}"></option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input class="w-full border rounded px-2 py-1" min="1"
+                                       required
+                                       th:name="|exercises[${stat.index}].sets|" th:value="${ex.sets}" type="number">
+                            </td>
+                            <td class="px-4 py-2">
+                                <input class="w-full border rounded px-2 py-1" placeholder="e.g. 8-12"
+                                       th:name="|exercises[${stat.index}].reps|"
+                                       th:value="${ex.reps}" type="text">
+                            </td>
+                            <td class="px-4 py-2">
+                                <input class="w-full border rounded px-2 py-1" placeholder="Tips..."
+                                       th:name="|exercises[${stat.index}].notes|"
+                                       th:value="${ex.notes}" type="text">
+                            </td>
+                            <td class="px-4 py-2 text-center">
+                                <button class="text-red-500 hover:text-red-700" onclick="removeRow(this)" type="button">
+                                    Remove
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mb-6" onclick="addExerciseRow()"
+                        type="button">
+                    + Add Exercise
+                </button>
+
+                <div class="flex justify-end gap-4">
+                    <a class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                       th:href="@{/trainer/members/{id}/plans(id=${member.id})}">Cancel</a>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" type="submit">Save Plan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Template for JS -->
+<template id="exerciseRowTemplate">
+    <tr class="border-b">
+        <td class="px-4 py-2">
+            <select class="w-full border rounded px-2 py-1" name="exercises[INDEX].exerciseId" required>
+                <option value="">Select Exercise</option>
+                <th:block th:each="opt : ${exercises}">
+                    <option th:text="${opt.name}" th:value="${opt.id}"></option>
+                </th:block>
+            </select>
+        </td>
+        <td class="px-4 py-2">
+            <input class="w-full border rounded px-2 py-1" min="1" name="exercises[INDEX].sets" required type="number"
+                   value="3">
+        </td>
+        <td class="px-4 py-2">
+            <input class="w-full border rounded px-2 py-1" name="exercises[INDEX].reps" placeholder="e.g. 8-12"
+                   type="text">
+        </td>
+        <td class="px-4 py-2">
+            <input class="w-full border rounded px-2 py-1" name="exercises[INDEX].notes" placeholder="Tips..."
+                   type="text">
+        </td>
+        <td class="px-4 py-2 text-center">
+            <button class="text-red-500 hover:text-red-700" onclick="removeRow(this)" type="button">Remove</button>
+        </td>
+    </tr>
+</template>
+
+<script th:inline="javascript">
+    let exerciseIndex = [[${trainingPlan.exercises != null ? trainingPlan.exercises.size() : 0}]];
+
+    function addExerciseRow() {
+        const template = document.getElementById('exerciseRowTemplate');
+        const clone = template.content.cloneNode(true);
+
+        // Update names with index
+        const inputs = clone.querySelectorAll('select, input');
+        inputs.forEach(input => {
+            input.name = input.name.replace('INDEX', exerciseIndex);
+        });
+
+        document.getElementById('exercisesBody').appendChild(clone);
+        exerciseIndex++;
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('tr');
+        row.remove();
+    }
+</script>
+</body>
+</html>

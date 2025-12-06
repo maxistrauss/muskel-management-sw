@@ -32,4 +32,8 @@ public interface UserService {
     void disableTwoFactor(Long userId);
 
     void toggleTwoFactor(Long userId);
+
+    Page<UserDto> findMembersOnly(Pageable pageable);
+
+    Page<UserDto> findNonAdmins(Pageable pageable);
 }

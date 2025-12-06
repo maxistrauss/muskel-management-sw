@@ -33,6 +33,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ExerciseRepository exerciseRepository;
     private final ExerciseService exerciseService;
     private final PasswordEncoder passwordEncoder;
+    private final TrainingPlanRepository trainingPlanRepository;
 
     public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
             RoomRepository roomRepository, MembershipRepository membershipRepository,
@@ -40,8 +41,8 @@ public class DataInitializer implements CommandLineRunner {
             SubscriptionRepository subscriptionRepository,
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
             de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
-            ExerciseRepository exerciseRepository, ExerciseService exerciseService,
-            PasswordEncoder passwordEncoder) {
+            ExerciseRepository exerciseRepository, ExerciseService exerciseService, PasswordEncoder passwordEncoder,
+            TrainingPlanRepository trainingPlanRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
@@ -54,6 +55,7 @@ public class DataInitializer implements CommandLineRunner {
         this.exerciseRepository = exerciseRepository;
         this.exerciseService = exerciseService;
         this.passwordEncoder = passwordEncoder;
+        this.trainingPlanRepository = trainingPlanRepository;
     }
 
     @Override
@@ -68,6 +70,57 @@ public class DataInitializer implements CommandLineRunner {
         initializeCourses();
         initializeExercises();
         initializeSubscriptions();
+        initializeTrainingPlans();
+    }
+
+    private void initializeTrainingPlans() {
+        if (trainingPlanRepository.count() > 0) {
+            return;
+        }
+
+        User trainer = userRepository.findByEmail("trainer@example.com");
+        User member = userRepository.findByEmail("member@example.com");
+        var exercises = exerciseRepository.findAll();
+
+        if (trainer != null && member != null && !exercises.isEmpty()) {
+            TrainingPlan beginnerPlan = new TrainingPlan("Beginner Strength",
+                    "A foundational plan to build muscle and learn proper form.", member, trainer);
+
+            // Add up to 3 exercises
+            int count = 0;
+            for (Exercise ex : exercises) {
+                if (count >= 3)
+                    break;
+                TrainingPlanExercise tpe = new TrainingPlanExercise();
+                tpe.setExercise(ex);
+                tpe.setSets(3);
+                tpe.setReps("8-12");
+                tpe.setNotes("Focus on form.");
+                tpe.setOrderIndex(count);
+                beginnerPlan.addExercise(tpe);
+                count++;
+            }
+            trainingPlanRepository.save(beginnerPlan);
+
+            TrainingPlan cardioPlan = new TrainingPlan("Cardio Blast",
+                    "Improve your endurance with this high-energy routine.", member, trainer);
+
+            // Add next 2 exercises if available
+            int start = count;
+            for (int i = start; i < exercises.size(); i++) {
+                if (i >= start + 2)
+                    break;
+                Exercise ex = exercises.get(i);
+                TrainingPlanExercise tpe = new TrainingPlanExercise();
+                tpe.setExercise(ex);
+                tpe.setSets(4);
+                tpe.setReps("15-20");
+                tpe.setNotes("Keep heart rate up.");
+                tpe.setOrderIndex(i - start);
+                cardioPlan.addExercise(tpe);
+            }
+            trainingPlanRepository.save(cardioPlan);
+        }
     }
 
     private void initializeTarifs() {
