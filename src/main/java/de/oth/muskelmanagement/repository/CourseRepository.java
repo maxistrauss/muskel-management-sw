@@ -10,5 +10,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByTrainer(User trainer);
 
     List<Course> findByRoom(de.oth.muskelmanagement.model.entity.Room room);
+
+    List<Course> findByName(String name);
 }
 

@@ -35,15 +35,16 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final TrainingPlanRepository trainingPlanRepository;
     private final FitnessMeasurementRepository fitnessMeasurementRepository;
+    private final ReviewRepository reviewRepository;
 
-    public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
-            RoomRepository roomRepository, MembershipRepository membershipRepository,
-            PricingRepository pricingRepository, EquipmentRepository equipmentRepository,
-            SubscriptionRepository subscriptionRepository,
+    public DataInitializer(UserRepository userRepository, RoleRepository roleRepository, RoomRepository roomRepository,
+            MembershipRepository membershipRepository, PricingRepository pricingRepository,
+            EquipmentRepository equipmentRepository, SubscriptionRepository subscriptionRepository,
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
             de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
             ExerciseRepository exerciseRepository, ExerciseService exerciseService, PasswordEncoder passwordEncoder,
-            TrainingPlanRepository trainingPlanRepository, FitnessMeasurementRepository fitnessMeasurementRepository) {
+            TrainingPlanRepository trainingPlanRepository, FitnessMeasurementRepository fitnessMeasurementRepository,
+            ReviewRepository reviewRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
@@ -58,6 +59,7 @@ public class DataInitializer implements CommandLineRunner {
         this.passwordEncoder = passwordEncoder;
         this.trainingPlanRepository = trainingPlanRepository;
         this.fitnessMeasurementRepository = fitnessMeasurementRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @Override
@@ -73,6 +75,29 @@ public class DataInitializer implements CommandLineRunner {
         initializeSubscriptions();
         initializeTrainingPlans();
         initializeFitnessMeasurements();
+        initializeReviews();
+    }
+
+    private void initializeReviews() {
+        if (reviewRepository.count() > 0) {
+            return;
+        }
+
+        User member = userRepository.findByEmail("member@example.com");
+        Course yoga = courseRepository.findByName("Yoga Basics").stream().findFirst().orElse(null);
+        Course hiit = courseRepository.findByName("HIIT Cardio").stream().findFirst().orElse(null);
+
+        if (member != null) {
+            if (yoga != null) {
+                reviewRepository.save(
+                        new Review(yoga, member, 5, "Absolutely loved this course! Very relaxing but effective."));
+                reviewRepository.save(new Review(yoga, member, 4, "Great instructor, but the room was a bit cold."));
+            }
+            if (hiit != null) {
+                reviewRepository.save(new Review(hiit, member, 5, "Intense workout! Exactly what I needed."));
+                reviewRepository.save(new Review(hiit, member, 3, "Good exercises, but too fast-paced for beginners."));
+            }
+        }
     }
 
     private void initializePricings() {
