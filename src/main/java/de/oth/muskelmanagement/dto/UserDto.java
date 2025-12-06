@@ -20,8 +20,10 @@ public class UserDto {
     @Email(message = "Please provide a valid email address")
     private String email;
 
-    @NotBlank(message = "Membership type cannot be blank")
-    private String membershipType;
+    private String membershipName; // For display
+
+    @jakarta.validation.constraints.NotNull(message = "Membership type is required")
+    private Long membershipId; // For binding
 
     private String password;
 
@@ -37,13 +39,15 @@ public class UserDto {
     public UserDto() {
     }
 
-    public UserDto(Long id, String firstName, String lastName, String email, String membershipType, String password,
+    public UserDto(Long id, String firstName, String lastName, String email, String membershipName, Long membershipId,
+            String password,
             boolean enabled, String deactivationReason, boolean twoFactorEnabled, Set<String> roles) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.membershipType = membershipType;
+        this.membershipName = membershipName;
+        this.membershipId = membershipId;
         this.password = password;
         this.enabled = enabled;
         this.deactivationReason = deactivationReason;
@@ -83,12 +87,20 @@ public class UserDto {
         this.email = email;
     }
 
-    public String getMembershipType() {
-        return membershipType;
+    public String getMembershipName() {
+        return membershipName;
     }
 
-    public void setMembershipType(String membershipType) {
-        this.membershipType = membershipType;
+    public void setMembershipName(String membershipName) {
+        this.membershipName = membershipName;
+    }
+
+    public Long getMembershipId() {
+        return membershipId;
+    }
+
+    public void setMembershipId(Long membershipId) {
+        this.membershipId = membershipId;
     }
 
     public String getPassword() {

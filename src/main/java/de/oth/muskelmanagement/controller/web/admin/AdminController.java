@@ -32,14 +32,17 @@ public class AdminController {
     private final RoomService roomService;
     private final ExerciseService exerciseService;
     private final SubscriptionService subscriptionService;
+    private final MembershipService membershipService;
 
     public AdminController(UserService userService, CourseService courseService, RoomService roomService,
-            SubscriptionService subscriptionService, ExerciseService exerciseService) {
+            SubscriptionService subscriptionService, ExerciseService exerciseService,
+            MembershipService membershipService) {
         this.userService = userService;
         this.courseService = courseService;
         this.exerciseService = exerciseService;
         this.roomService = roomService;
         this.subscriptionService = subscriptionService;
+        this.membershipService = membershipService;
     }
 
     @GetMapping("/users")
@@ -61,6 +64,7 @@ public class AdminController {
         model.addAttribute("firstName", firstName);
         model.addAttribute("lastName", lastName);
         model.addAttribute("membershipType", membershipType);
+        model.addAttribute("memberships", membershipService.findAll());
 
         return "admin/users";
     }
@@ -226,6 +230,7 @@ public class AdminController {
     public String showCreateUserForm(Model model) {
         model.addAttribute("user", new UserDto());
         model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
+        model.addAttribute("memberships", membershipService.findAll());
         return "admin/user-form";
     }
 
@@ -239,6 +244,7 @@ public class AdminController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
+            model.addAttribute("memberships", membershipService.findAll());
             return "admin/user-form";
         }
         userService.save(userDto);
@@ -253,6 +259,7 @@ public class AdminController {
         }
         model.addAttribute("user", user);
         model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
+        model.addAttribute("memberships", membershipService.findAll());
 
         // Add active subscription if exists for PDF generation
         Optional<SubscriptionDto> activeSubscription = subscriptionService.getActiveSubscription(id);
@@ -278,6 +285,7 @@ public class AdminController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
+            model.addAttribute("memberships", membershipService.findAll());
             return "admin/user-form";
         }
         userDto.setId(id);

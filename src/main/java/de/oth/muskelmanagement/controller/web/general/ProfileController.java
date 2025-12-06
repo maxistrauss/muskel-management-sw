@@ -63,7 +63,8 @@ public class ProfileController {
         // Preserve fields that shouldn't be changed via profile edit
         userDto.setId(currentUser.getId());
         userDto.setEmail(currentUser.getEmail());
-        userDto.setMembershipType(currentUser.getMembershipType());
+        userDto.setMembershipName(currentUser.getMembershipName());
+        userDto.setMembershipId(currentUser.getMembershipId());
         userDto.setRoles(currentUser.getRoles());
         userDto.setEnabled(currentUser.isEnabled());
 
@@ -132,7 +133,10 @@ public class ProfileController {
         userDto.setFirstName(user.getFirstName());
         userDto.setLastName(user.getLastName());
         userDto.setEmail(user.getEmail());
-        userDto.setMembershipType(user.getMembershipType());
+        if (user.getMembership() != null) {
+            userDto.setMembershipName(user.getMembership().getName());
+            userDto.setMembershipId(user.getMembership().getId());
+        }
         userDto.setEnabled(user.isEnabled());
         userDto.setTwoFactorEnabled(user.isTwoFactorEnabled());
         userDto.setRoles(

@@ -58,11 +58,14 @@
                       th:if="${#fields.hasErrors('email')}"></span>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="membershipType">Membership Type:</label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                       id="membershipType" th:field="*{membershipType}" type="text"/>
-                <span class="text-red-500 text-xs italic" th:errors="*{membershipType}"
-                      th:if="${#fields.hasErrors('membershipType')}"></span>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="membershipId">Membership Type:</label>
+                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="membershipId" th:field="*{membershipId}">
+                    <option th:each="membership : ${memberships}" th:text="${membership.name}"
+                            th:value="${membership.id}"></option>
+                </select>
+                <span class="text-red-500 text-xs italic" th:errors="*{membershipId}"
+                      th:if="${#fields.hasErrors('membershipId')}"></span>
             </div>
             <div class="mb-4" th:if="${user.id == null}">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Password:</label>

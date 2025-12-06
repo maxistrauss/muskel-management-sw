@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>User Management</title>
     <link rel="stylesheet" th:href="@{/css/output.css}"/>
@@ -38,8 +38,13 @@
                 <div>
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="membershipType">Membership
                         Type:</label>
-                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                           id="membershipType" name="membershipType" th:value="${membershipType}" type="text"/>
+                    <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="membershipType" name="membershipType">
+                        <option value="">All</option>
+                        <option th:each="membership : ${memberships}" th:selected="${membershipType == membership.name}"
+                                th:text="${membership.name}"
+                                th:value="${membership.name}"></option>
+                    </select>
                 </div>
             </div>
             <div class="mt-4 flex justify-end">
@@ -70,8 +75,8 @@
                            th:with="sortDirection=${userPage.sort.getOrderFor('email') != null and userPage.sort.getOrderFor('email').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">Email</a>
                     </th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">
-                        <a th:href="@{/admin/users(page=${userPage.number}, size=${userPage.size}, sort='membershipType,' + ${sortDirection}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
-                           th:with="sortDirection=${userPage.sort.getOrderFor('membershipType') != null and userPage.sort.getOrderFor('membershipType').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">Membership
+                        <a th:href="@{/admin/users(page=${userPage.number}, size=${userPage.size}, sort='membership.name,' + ${sortDirection}, email=${email}, firstName=${firstName}, lastName=${lastName}, membershipType=${membershipType})}"
+                           th:with="sortDirection=${userPage.sort.getOrderFor('membership.name') != null and userPage.sort.getOrderFor('membership.name').direction.name() == 'ASC' ? 'DESC' : 'ASC'}">Membership
                             Type</a>
                     </th>
                     <th class="py-3 px-4 uppercase font-semibold text-sm">
@@ -92,7 +97,7 @@
                         <span th:text="${user.email}"></span>
                         <span class="font-bold text-blue-600" th:if="${user.email == currentUsername}"> (You)</span>
                     </td>
-                    <td class="py-3 px-4" th:text="${user.membershipType}"></td>
+                    <td class="py-3 px-4" th:text="${user.membershipName}"></td>
                     <td class="py-3 px-4">
                         <th:block th:if="${user.email != currentUsername}">
                             <span th:classappend="${user.enabled} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-600'"

@@ -16,7 +16,6 @@ public class User {
     private String lastName;
     @Column(unique = true, nullable = false)
     private String email;
-    private String membershipType;
 
     @ManyToOne
     @JoinColumn(name = "membership_id")
@@ -39,12 +38,11 @@ public class User {
     public User() {
     }
 
-    public User(String firstName, String lastName, String email, String membershipType, String password,
+    public User(String firstName, String lastName, String email, String password,
             Set<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.membershipType = membershipType;
         this.password = password;
         this.roles = roles;
     }
@@ -79,14 +77,6 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getMembershipType() {
-        return membershipType;
-    }
-
-    public void setMembershipType(String membershipType) {
-        this.membershipType = membershipType;
     }
 
     public Membership getMembership() {

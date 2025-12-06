@@ -34,17 +34,20 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final de.oth.muskelmanagement.repository.CourseRepository courseRepository;
     private final de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository;
+    private final de.oth.muskelmanagement.repository.MembershipRepository membershipRepository;
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
             PasswordEncoder passwordEncoder, EmailService emailService,
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
-            de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository) {
+            de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
+            de.oth.muskelmanagement.repository.MembershipRepository membershipRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.membershipRepository = membershipRepository;
     }
 
     @Override
@@ -53,10 +56,13 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        user.setMembershipType(userDto.getMembershipType());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEnabled(userDto.isEnabled());
         user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
+
+        if (userDto.getMembershipId() != null) {
+            user.setMembership(membershipRepository.findById(userDto.getMembershipId()).orElse(null));
+        }
 
         Set<Role> roles = userDto.getRoles().stream().map(roleName -> {
             Role role = roleRepository.findByName(roleName);
@@ -84,9 +90,12 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(registrationDto.getFirstName());
         user.setLastName(registrationDto.getLastName());
         user.setEmail(registrationDto.getEmail());
-        user.setMembershipType(registrationDto.getMembershipType());
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setEnabled(true); // New registrations are enabled by default
+
+        if (registrationDto.getMembershipId() != null) {
+            user.setMembership(membershipRepository.findById(registrationDto.getMembershipId()).orElse(null));
+        }
 
         // Only assign ROLE_MEMBER for self-registration
         Role memberRole = roleRepository.findByName("ROLE_MEMBER");
@@ -135,9 +144,14 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        user.setMembershipType(userDto.getMembershipType());
         user.setEnabled(userDto.isEnabled());
         user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
+
+        if (userDto.getMembershipId() != null) {
+            user.setMembership(membershipRepository.findById(userDto.getMembershipId()).orElse(null));
+        } else {
+            user.setMembership(null);
+        }
 
         // Handle deactivation reason
         if (!willBeEnabled) {
@@ -214,7 +228,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDto> findUsers(String email, String firstName, String lastName, String membershipType,
+    public Page<UserDto> findUsers(String email, String firstName, String lastName, String membershipName,
             Pageable pageable) {
         Specification<User> spec = (Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -228,8 +242,9 @@ public class UserServiceImpl implements UserService {
             if (StringUtils.hasText(lastName)) {
                 predicates.add(cb.like(cb.lower(root.get("lastName")), "%" + lastName.toLowerCase() + "%"));
             }
-            if (StringUtils.hasText(membershipType)) {
-                predicates.add(cb.like(cb.lower(root.get("membershipType")), "%" + membershipType.toLowerCase() + "%"));
+            if (StringUtils.hasText(membershipName)) {
+                predicates.add(cb.like(cb.lower(root.get("membership").get("name")),
+                        "%" + membershipName.toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -243,7 +258,12 @@ public class UserServiceImpl implements UserService {
         userDto.setFirstName(user.getFirstName());
         userDto.setLastName(user.getLastName());
         userDto.setEmail(user.getEmail());
-        userDto.setMembershipType(user.getMembershipType());
+
+        if (user.getMembership() != null) {
+            userDto.setMembershipName(user.getMembership().getName());
+            userDto.setMembershipId(user.getMembership().getId());
+        }
+        
         userDto.setEnabled(user.isEnabled());
         userDto.setDeactivationReason(user.getDeactivationReason());
         userDto.setTwoFactorEnabled(user.isTwoFactorEnabled());

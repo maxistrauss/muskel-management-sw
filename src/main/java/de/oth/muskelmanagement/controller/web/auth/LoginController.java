@@ -1,6 +1,7 @@
 package de.oth.muskelmanagement.controller.web.auth;
 
 import de.oth.muskelmanagement.dto.RegistrationDto;
+import de.oth.muskelmanagement.service.MembershipService;
 import de.oth.muskelmanagement.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,9 @@ public class LoginController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MembershipService membershipService;
+
     @GetMapping("/login")
     public String login() {
         return "login";
@@ -28,6 +32,7 @@ public class LoginController {
     public String showRegistrationForm(Model model) {
         RegistrationDto registrationDto = new RegistrationDto();
         model.addAttribute("registrationDto", registrationDto);
+        model.addAttribute("memberships", membershipService.findAll());
         return "register";
     }
 
@@ -39,16 +44,19 @@ public class LoginController {
         // Check if user already exists
         if (userService.findByEmail(registrationDto.getEmail()) != null) {
             model.addAttribute("error", "A user with this email already exists!");
+            model.addAttribute("memberships", membershipService.findAll());
             return "register";
         }
 
         // Validate that passwords match
         if (!registrationDto.getPassword().equals(confirmPassword)) {
             model.addAttribute("error", "Passwords do not match!");
+            model.addAttribute("memberships", membershipService.findAll());
             return "register";
         }
 
         if (result.hasErrors()) {
+            model.addAttribute("memberships", membershipService.findAll());
             return "register";
         }
 
@@ -60,6 +68,7 @@ public class LoginController {
             return "redirect:/login";
         } catch (Exception e) {
             model.addAttribute("error", "An error occurred: " + e.getMessage());
+            model.addAttribute("memberships", membershipService.findAll());
             return "register";
         }
     }

@@ -66,7 +66,6 @@ public class DataInitializer implements CommandLineRunner {
         initializeMemberships();
         initializePricings();
         initializeUsers();
-        migrateUsersToMemberships();
         initializeRooms();
         initializeEquipment();
         initializeCourses();
@@ -74,93 +73,6 @@ public class DataInitializer implements CommandLineRunner {
         initializeSubscriptions();
         initializeTrainingPlans();
         initializeFitnessMeasurements();
-    }
-
-    private void initializeFitnessMeasurements() {
-        if (fitnessMeasurementRepository.count() > 0) {
-            return;
-        }
-
-        User member = userRepository.findByEmail("member@example.com");
-        if (member != null) {
-            // -6 months
-            fitnessMeasurementRepository.save(
-                    new FitnessMeasurement(member, LocalDate.now().minusMonths(6), 90.0, 25.0, 38.0,
-                            "Initial assessment. Goal: Weight loss and muscle gain."));
-            // -5 months
-            fitnessMeasurementRepository.save(
-                    new FitnessMeasurement(member, LocalDate.now().minusMonths(5), 88.5, 24.2, 38.5,
-                            "Good start, diet adherence is high."));
-            // -4 months
-            fitnessMeasurementRepository.save(
-                    new FitnessMeasurement(member, LocalDate.now().minusMonths(4), 87.2, 23.5, 39.0,
-                            "Strength increasing, weight dropping steadily."));
-            // -3 months
-            fitnessMeasurementRepository.save(
-                    new FitnessMeasurement(member, LocalDate.now().minusMonths(3), 86.0, 22.8, 39.5,
-                            "Halfway check-in. Adjusting macro split."));
-            // -2 months
-            fitnessMeasurementRepository.save(
-                    new FitnessMeasurement(member, LocalDate.now().minusMonths(2), 84.8, 21.5, 40.2,
-                            "Visible definition appearing."));
-            // -1 month
-            fitnessMeasurementRepository.save(
-                    new FitnessMeasurement(member, LocalDate.now().minusMonths(1), 83.5, 20.5, 41.0,
-                            "Excellent progress. Increased cardio intensity."));
-            // Current
-            fitnessMeasurementRepository.save(new FitnessMeasurement(member, LocalDate.now(), 82.0, 19.5, 41.5,
-                    "Hit target weight for this phase. Moving to maintenance."));
-        }
-    }
-
-    private void initializeTrainingPlans() {
-        if (trainingPlanRepository.count() > 0) {
-            return;
-        }
-
-        User trainer = userRepository.findByEmail("trainer@example.com");
-        User member = userRepository.findByEmail("member@example.com");
-        var exercises = exerciseRepository.findAll();
-
-        if (trainer != null && member != null && !exercises.isEmpty()) {
-            TrainingPlan beginnerPlan = new TrainingPlan("Beginner Strength",
-                    "A foundational plan to build muscle and learn proper form.", member, trainer);
-
-            // Add up to 3 exercises
-            int count = 0;
-            for (Exercise ex : exercises) {
-                if (count >= 3)
-                    break;
-                TrainingPlanExercise tpe = new TrainingPlanExercise();
-                tpe.setExercise(ex);
-                tpe.setSets(3);
-                tpe.setReps("8-12");
-                tpe.setNotes("Focus on form.");
-                tpe.setOrderIndex(count);
-                beginnerPlan.addExercise(tpe);
-                count++;
-            }
-            trainingPlanRepository.save(beginnerPlan);
-
-            TrainingPlan cardioPlan = new TrainingPlan("Cardio Blast",
-                    "Improve your endurance with this high-energy routine.", member, trainer);
-
-            // Add next 2 exercises if available
-            int start = count;
-            for (int i = start; i < exercises.size(); i++) {
-                if (i >= start + 2)
-                    break;
-                Exercise ex = exercises.get(i);
-                TrainingPlanExercise tpe = new TrainingPlanExercise();
-                tpe.setExercise(ex);
-                tpe.setSets(4);
-                tpe.setReps("15-20");
-                tpe.setNotes("Keep heart rate up.");
-                tpe.setOrderIndex(i - start);
-                cardioPlan.addExercise(tpe);
-            }
-            trainingPlanRepository.save(cardioPlan);
-        }
     }
 
     private void initializePricings() {
@@ -329,22 +241,6 @@ public class DataInitializer implements CommandLineRunner {
         membershipRepository.save(trainer);
     }
 
-    private void migrateUsersToMemberships() {
-        Iterable<User> users = userRepository.findAll();
-        for (User u : users) {
-            if (u.getMembership() == null && u.getMembershipType() != null) {
-                String mt = u.getMembershipType();
-                Membership m = membershipRepository.findByName(mt);
-                if (m == null) {
-                    m = new Membership(mt);
-                    membershipRepository.save(m);
-                }
-                u.setMembership(m);
-                userRepository.save(u);
-            }
-        }
-    }
-
     private void initializeRoles() {
         if (roleRepository.count() > 0) {
             return;
@@ -369,16 +265,23 @@ public class DataInitializer implements CommandLineRunner {
         Role trainerRole = roleRepository.findByName("ROLE_TRAINER");
         Role memberRole = roleRepository.findByName("ROLE_MEMBER");
 
-        User admin = new User("Admin", "User", "admin@example.com", "Premium", passwordEncoder.encode("password"),
+        Membership premiumMembership = membershipRepository.findByName("Premium");
+        Membership trainerMembership = membershipRepository.findByName("Trainer");
+        Membership basicMembership = membershipRepository.findByName("Basic");
+
+        User admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("password"),
                 Set.of(adminRole, trainerRole, memberRole));
+        admin.setMembership(premiumMembership);
         userRepository.save(admin);
 
-        User trainer = new User("Trainer", "User", "trainer@example.com", "Trainer", passwordEncoder.encode("password"),
+        User trainer = new User("Trainer", "User", "trainer@example.com", passwordEncoder.encode("password"),
                 Set.of(trainerRole, memberRole));
+        trainer.setMembership(trainerMembership);
         userRepository.save(trainer);
 
-        User member = new User("Member", "User", "member@example.com", "Basic", passwordEncoder.encode("password"),
+        User member = new User("Member", "User", "member@example.com", passwordEncoder.encode("password"),
                 Set.of(memberRole));
+        member.setMembership(basicMembership);
         userRepository.save(member);
     }
 
@@ -424,6 +327,93 @@ public class DataInitializer implements CommandLineRunner {
             log.error("Error loading exercises from JSON: {}", e.getMessage());
             log.warn("Exercise initialization failed.");
             log.warn("The application will continue to run, but the exercise library will be empty.");
+        }
+    }
+
+    private void initializeTrainingPlans() {
+        if (trainingPlanRepository.count() > 0) {
+            return;
+        }
+
+        User trainer = userRepository.findByEmail("trainer@example.com");
+        User member = userRepository.findByEmail("member@example.com");
+        var exercises = exerciseRepository.findAll();
+
+        if (trainer != null && member != null && !exercises.isEmpty()) {
+            TrainingPlan beginnerPlan = new TrainingPlan("Beginner Strength",
+                    "A foundational plan to build muscle and learn proper form.", member, trainer);
+
+            // Add up to 3 exercises
+            int count = 0;
+            for (Exercise ex : exercises) {
+                if (count >= 3)
+                    break;
+                TrainingPlanExercise tpe = new TrainingPlanExercise();
+                tpe.setExercise(ex);
+                tpe.setSets(3);
+                tpe.setReps("8-12");
+                tpe.setNotes("Focus on form.");
+                tpe.setOrderIndex(count);
+                beginnerPlan.addExercise(tpe);
+                count++;
+            }
+            trainingPlanRepository.save(beginnerPlan);
+
+            TrainingPlan cardioPlan = new TrainingPlan("Cardio Blast",
+                    "Improve your endurance with this high-energy routine.", member, trainer);
+
+            // Add next 2 exercises if available
+            int start = count;
+            for (int i = start; i < exercises.size(); i++) {
+                if (i >= start + 2)
+                    break;
+                Exercise ex = exercises.get(i);
+                TrainingPlanExercise tpe = new TrainingPlanExercise();
+                tpe.setExercise(ex);
+                tpe.setSets(4);
+                tpe.setReps("15-20");
+                tpe.setNotes("Keep heart rate up.");
+                tpe.setOrderIndex(i - start);
+                cardioPlan.addExercise(tpe);
+            }
+            trainingPlanRepository.save(cardioPlan);
+        }
+    }
+
+    private void initializeFitnessMeasurements() {
+        if (fitnessMeasurementRepository.count() > 0) {
+            return;
+        }
+
+        User member = userRepository.findByEmail("member@example.com");
+        if (member != null) {
+            // -6 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(6), 90.0, 25.0, 38.0,
+                            "Initial assessment. Goal: Weight loss and muscle gain."));
+            // -5 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(5), 88.5, 24.2, 38.5,
+                            "Good start, diet adherence is high."));
+            // -4 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(4), 87.2, 23.5, 39.0,
+                            "Strength increasing, weight dropping steadily."));
+            // -3 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(3), 86.0, 22.8, 39.5,
+                            "Halfway check-in. Adjusting macro split."));
+            // -2 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(2), 84.8, 21.5, 40.2,
+                            "Visible definition appearing."));
+            // -1 month
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(1), 83.5, 20.5, 41.0,
+                            "Excellent progress. Increased cardio intensity."));
+            // Current
+            fitnessMeasurementRepository.save(new FitnessMeasurement(member, LocalDate.now(), 82.0, 19.5, 41.5,
+                    "Hit target weight for this phase. Moving to maintenance."));
         }
     }
 }
