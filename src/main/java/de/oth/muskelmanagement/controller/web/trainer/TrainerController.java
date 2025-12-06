@@ -3,7 +3,9 @@ package de.oth.muskelmanagement.controller.web.trainer;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Course;
 import de.oth.muskelmanagement.model.entity.Enrollment;
+import de.oth.muskelmanagement.model.entity.Review;
 import de.oth.muskelmanagement.service.CourseService;
+import de.oth.muskelmanagement.service.ReviewService;
 import de.oth.muskelmanagement.service.RoomService;
 import de.oth.muskelmanagement.service.UserService;
 import org.springframework.data.domain.Page;
@@ -24,11 +26,14 @@ public class TrainerController {
     private final CourseService courseService;
     private final UserService userService;
     private final RoomService roomService;
+    private final ReviewService reviewService;
 
-    public TrainerController(CourseService courseService, UserService userService, RoomService roomService) {
+    public TrainerController(CourseService courseService, UserService userService, RoomService roomService,
+            ReviewService reviewService) {
         this.courseService = courseService;
         this.userService = userService;
         this.roomService = roomService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping("/courses/new")
@@ -108,6 +113,15 @@ public class TrainerController {
         model.addAttribute("course", course);
         model.addAttribute("enrollments", enrollments);
         return "trainer/course-participants";
+    }
+
+    @GetMapping("/courses/{id}/reviews")
+    public String viewReviews(@PathVariable Long id, Model model) {
+        Course course = courseService.findById(id);
+        List<Review> reviews = reviewService.getReviewsByCourse(id);
+        model.addAttribute("course", course);
+        model.addAttribute("reviews", reviews);
+        return "trainer/course-reviews";
     }
 
     @GetMapping("/courses/{id}/add-member")

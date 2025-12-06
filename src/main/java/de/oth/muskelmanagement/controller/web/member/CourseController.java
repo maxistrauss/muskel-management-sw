@@ -2,7 +2,9 @@ package de.oth.muskelmanagement.controller.web.member;
 
 import de.oth.muskelmanagement.model.entity.Course;
 import de.oth.muskelmanagement.model.entity.Exercise;
+import de.oth.muskelmanagement.model.entity.Review;
 import de.oth.muskelmanagement.service.CourseService;
+import de.oth.muskelmanagement.service.ReviewService;
 import de.oth.muskelmanagement.service.UserService;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -21,10 +24,12 @@ public class CourseController {
 
     private final CourseService courseService;
     private final UserService userService;
+    private final ReviewService reviewService;
 
-    public CourseController(CourseService courseService, UserService userService) {
+    public CourseController(CourseService courseService, UserService userService, ReviewService reviewService) {
         this.courseService = courseService;
         this.userService = userService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping
@@ -43,6 +48,10 @@ public class CourseController {
         // Get course exercises
         Set<Exercise> exercises = courseService.getExercisesByCourse(id);
         model.addAttribute("exercises", exercises);
+
+        // Get course reviews
+        List<Review> reviews = reviewService.getReviewsByCourse(id);
+        model.addAttribute("reviews", reviews);
 
         boolean enrolled = false;
         if (principal != null) {

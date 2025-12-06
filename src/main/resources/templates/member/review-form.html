@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Review</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+    <div class="container mx-auto mt-8 p-4">
+        <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold mb-6">
+                <span th:if="${isEdit}">Edit Review</span>
+                <span th:unless="${isEdit}">Write Review</span>
+                for <span th:text="${review.courseName}">Course</span>
+            </h1>
+
+            <form method="post"
+                  th:action="${isEdit} ? @{/member/reviews/{id}(id=${review.id})} : @{/member/courses/{id}/reviews(id=${review.courseId})}" th:object="${review}">
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Rating</label>
+                    <div class="flex gap-4">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input class="form-radio text-blue-600 h-5 w-5" th:field="*{rating}" type="radio" value="5">
+                            <span class="ml-2">5 ★</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input class="form-radio text-blue-600 h-5 w-5" th:field="*{rating}" type="radio" value="4">
+                            <span class="ml-2">4 ★</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input class="form-radio text-blue-600 h-5 w-5" th:field="*{rating}" type="radio" value="3">
+                            <span class="ml-2">3 ★</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input class="form-radio text-blue-600 h-5 w-5" th:field="*{rating}" type="radio" value="2">
+                            <span class="ml-2">2 ★</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input class="form-radio text-blue-600 h-5 w-5" th:field="*{rating}" type="radio" value="1">
+                            <span class="ml-2">1 ★</span>
+                        </label>
+                    </div>
+                    <span class="text-red-500 text-xs italic" th:errors="*{rating}"
+                          th:if="${#fields.hasErrors('rating')}"></span>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="comment">Comment</label>
+                    <textarea
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="comment" placeholder="Share your experience..." rows="4"
+                            th:field="*{comment}"></textarea>
+                    <span class="text-red-500 text-xs italic" th:errors="*{comment}"
+                          th:if="${#fields.hasErrors('comment')}"></span>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" href="#"
+                       onclick="history.back()">Cancel</a>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" type="submit">Submit
+                        Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -15,13 +15,19 @@
         <p class="text-sm text-gray-500 mt-2">Capacity: <span th:text="${course.capacity}"></span></p>
         <p class="text-sm text-gray-500 mt-1">Room: <span th:text="${course.room != null && course.room.active ? course.room.name : '-'}"></span></p>
 
-        <div class="mt-6">
+        <div class="mt-6 flex gap-2">
             <form th:if="${!enrolled}" th:action="@{/member/courses/{id}/enroll(id=${course.id})}" method="post">
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Enroll</button>
             </form>
             <form th:if="${enrolled}" th:action="@{/member/courses/{id}/unenroll(id=${course.id})}" method="post">
                 <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Unenroll</button>
             </form>
+
+            <a class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+               th:href="@{/member/courses/{id}/reviews/new(id=${course.id})}"
+               th:if="${enrolled}">
+                Write a Review
+            </a>
         </div>
 
         <!-- Course Exercises Section -->
@@ -60,6 +66,31 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="mt-6 border-t pt-6">
+            <h3 class="text-xl font-semibold mb-4">Reviews</h3>
+            <div class="space-y-4" th:if="${!#lists.isEmpty(reviews)}">
+                <div class="bg-gray-50 p-4 rounded-lg" th:each="review : ${reviews}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-semibold"
+                                  th:text="${review.member.firstName + ' ' + review.member.lastName}">User Name</span>
+                            <span class="text-gray-500 text-sm ml-2"
+                                  th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy')}">Date</span>
+                        </div>
+                        <div class="flex text-yellow-400 text-sm">
+                            <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                <span th:if="${review.rating >= i}">★</span>
+                                <span class="text-gray-300" th:unless="${review.rating >= i}">★</span>
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mt-2" th:text="${review.comment}">Comment</p>
+                </div>
+            </div>
+            <p class="text-gray-500 italic" th:if="${#lists.isEmpty(reviews)}">No reviews yet. Be the first to write
+                one!</p>
         </div>
 
         <div class="mt-6 border-t pt-6">
