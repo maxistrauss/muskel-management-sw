@@ -296,17 +296,14 @@ public class DataInitializer implements CommandLineRunner {
 
         User admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("password"),
                 Set.of(adminRole, trainerRole, memberRole));
-        admin.setMembership(premiumMembership);
         userRepository.save(admin);
 
         User trainer = new User("Trainer", "User", "trainer@example.com", passwordEncoder.encode("password"),
                 Set.of(trainerRole, memberRole));
-        trainer.setMembership(trainerMembership);
         userRepository.save(trainer);
 
         User member = new User("Member", "User", "member@example.com", passwordEncoder.encode("password"),
                 Set.of(memberRole));
-        member.setMembership(basicMembership);
         userRepository.save(member);
     }
 

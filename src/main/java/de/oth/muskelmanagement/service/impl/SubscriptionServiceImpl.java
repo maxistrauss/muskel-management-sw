@@ -1,12 +1,12 @@
 package de.oth.muskelmanagement.service.impl;
 
 import de.oth.muskelmanagement.dto.SubscriptionDto;
-import de.oth.muskelmanagement.model.entity.Subscription;
 import de.oth.muskelmanagement.model.entity.Pricing;
+import de.oth.muskelmanagement.model.entity.Subscription;
 import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
-import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import de.oth.muskelmanagement.repository.PricingRepository;
+import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.SubscriptionService;
 import org.slf4j.Logger;
@@ -153,6 +153,21 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         subscriptionRepository.save(subscription);
         
         logger.info("Subscription {} marked as paid with PayPal order {}", subscriptionId, paypalOrderId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Subscription> findActiveSubscriptionEntity(Long userId) {
+        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Subscription> findAllActiveSubscriptionsEntities(Long userId) {
+        // For now, let's just return the active one, or none.
+        // If a user has multiple active subscriptions (which shouldn't happen by current logic), this needs refinement.
+        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE).map(List::of)
+                .orElse(List.of());
     }
 
     private SubscriptionDto convertToDto(Subscription subscription) {

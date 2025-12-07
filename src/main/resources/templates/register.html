@@ -38,17 +38,6 @@
                 <p class="text-red-500 text-xs italic" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="membershipId">Membership Type:</label>
-                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="membershipId" required th:field="*{membershipId}">
-                    <option disabled selected value="">Select a plan</option>
-                    <option th:each="m : ${memberships}" th:text="|${m.name} (${m.price}€)|"
-                            th:value="${m.id}"></option>
-                </select>
-                <p class="text-red-500 text-xs italic" th:errors="*{membershipId}"
-                   th:if="${#fields.hasErrors('membershipId')}"></p>
-            </div>
-            <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Password:</label>
                 <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                        id="password" name="password" type="password" th:field="*{password}" required/>

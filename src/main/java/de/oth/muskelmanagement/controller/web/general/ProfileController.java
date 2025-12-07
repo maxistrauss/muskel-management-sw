@@ -32,7 +32,7 @@ public class ProfileController {
     @GetMapping
     public String showProfile(Model model, Principal principal) {
         User user = userService.findByEmail(principal.getName());
-        UserDto userDto = convertToDto(user);
+        UserDto userDto = userService.findById(user.getId()); // Get fully populated DTO
         model.addAttribute("user", userDto);
         model.addAttribute("isViewMode", true);
         return "profile";
@@ -41,7 +41,7 @@ public class ProfileController {
     @GetMapping("/edit")
     public String showEditProfile(Model model, Principal principal) {
         User user = userService.findByEmail(principal.getName());
-        UserDto userDto = convertToDto(user);
+        UserDto userDto = userService.findById(user.getId()); // Get fully populated DTO
         model.addAttribute("user", userDto);
         model.addAttribute("isViewMode", false);
         return "profile";
@@ -51,7 +51,8 @@ public class ProfileController {
     public String updateProfile(@ModelAttribute("user") UserDto userDto, BindingResult bindingResult, Model model,
             Principal principal) {
         User user = userService.findByEmail(principal.getName());
-        UserDto currentUser = convertToDto(user);
+        UserDto currentUser = userService.findById(
+                user.getId()); // Get current UserDto, which has active subscription info
 
         // Ensure user can only update their own profile
         if (!currentUser.getId().equals(userDto.getId())) {
@@ -63,8 +64,9 @@ public class ProfileController {
         // Preserve fields that shouldn't be changed via profile edit
         userDto.setId(currentUser.getId());
         userDto.setEmail(currentUser.getEmail());
-        userDto.setMembershipName(currentUser.getMembershipName());
-        userDto.setMembershipId(currentUser.getMembershipId());
+        // Membership/Subscription info is derived, not set directly via profile edit
+        userDto.setActiveSubscriptionPricingName(currentUser.getActiveSubscriptionPricingName());
+        userDto.setActiveSubscriptionStatus(currentUser.getActiveSubscriptionStatus());
         userDto.setRoles(currentUser.getRoles());
         userDto.setEnabled(currentUser.isEnabled());
 
@@ -92,7 +94,7 @@ public class ProfileController {
 
         if (user != null) {
             // Deactivate the user account
-            UserDto userDto = convertToDto(user);
+            UserDto userDto = userService.findById(user.getId()); // Get up-to-date DTO
             userDto.setEnabled(false);
             userService.updateUser(userDto);
 
@@ -116,7 +118,10 @@ public class ProfileController {
         if (user != null) {
             userService.toggleTwoFactor(user.getId());
 
-            if (!user.isTwoFactorEnabled()) {
+            // After toggling, user object might be stale. Get fresh DTO to check status.
+            UserDto updatedUserDto = userService.findById(user.getId());
+
+            if (!updatedUserDto.isTwoFactorEnabled()) { // Check updated status
                 redirectAttributes.addFlashAttribute("success",
                         "Two-Factor Authentication has been enabled. You will receive a code via email on your next login.");
             } else {
@@ -128,19 +133,7 @@ public class ProfileController {
     }
 
     private UserDto convertToDto(User user) {
-        UserDto userDto = new UserDto();
-        userDto.setId(user.getId());
-        userDto.setFirstName(user.getFirstName());
-        userDto.setLastName(user.getLastName());
-        userDto.setEmail(user.getEmail());
-        if (user.getMembership() != null) {
-            userDto.setMembershipName(user.getMembership().getName());
-            userDto.setMembershipId(user.getMembership().getId());
-        }
-        userDto.setEnabled(user.isEnabled());
-        userDto.setTwoFactorEnabled(user.isTwoFactorEnabled());
-        userDto.setRoles(
-                user.getRoles().stream().map(role -> role.getName()).collect(java.util.stream.Collectors.toSet()));
-        return userDto;
+        // Use userService.findById to get a DTO with derived subscription info
+        return userService.findById(user.getId());
     }
 }

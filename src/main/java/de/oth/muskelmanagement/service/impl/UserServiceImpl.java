@@ -3,10 +3,13 @@ package de.oth.muskelmanagement.service.impl;
 import de.oth.muskelmanagement.dto.RegistrationDto;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Role;
+import de.oth.muskelmanagement.model.entity.Subscription;
 import de.oth.muskelmanagement.model.entity.User;
+import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.RoleRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.EmailService;
+import de.oth.muskelmanagement.service.SubscriptionService;
 import de.oth.muskelmanagement.service.UserService;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -34,20 +37,20 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final de.oth.muskelmanagement.repository.CourseRepository courseRepository;
     private final de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository;
-    private final de.oth.muskelmanagement.repository.MembershipRepository membershipRepository;
+    private final SubscriptionService subscriptionService; // Inject SubscriptionService
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
             PasswordEncoder passwordEncoder, EmailService emailService,
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
             de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
-            de.oth.muskelmanagement.repository.MembershipRepository membershipRepository) {
+            SubscriptionService subscriptionService) { // Add to constructor
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
-        this.membershipRepository = membershipRepository;
+        this.subscriptionService = subscriptionService; // Assign
     }
 
     @Override
@@ -59,10 +62,6 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEnabled(userDto.isEnabled());
         user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
-
-        if (userDto.getMembershipId() != null) {
-            user.setMembership(membershipRepository.findById(userDto.getMembershipId()).orElse(null));
-        }
 
         Set<Role> roles = userDto.getRoles().stream().map(roleName -> {
             Role role = roleRepository.findByName(roleName);
@@ -92,10 +91,6 @@ public class UserServiceImpl implements UserService {
         user.setEmail(registrationDto.getEmail());
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setEnabled(true); // New registrations are enabled by default
-
-        if (registrationDto.getMembershipId() != null) {
-            user.setMembership(membershipRepository.findById(registrationDto.getMembershipId()).orElse(null));
-        }
 
         // Only assign ROLE_MEMBER for self-registration
         Role memberRole = roleRepository.findByName("ROLE_MEMBER");
@@ -146,12 +141,6 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userDto.getEmail());
         user.setEnabled(userDto.isEnabled());
         user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
-
-        if (userDto.getMembershipId() != null) {
-            user.setMembership(membershipRepository.findById(userDto.getMembershipId()).orElse(null));
-        } else {
-            user.setMembership(null);
-        }
 
         // Handle deactivation reason
         if (!willBeEnabled) {
@@ -228,7 +217,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDto> findUsers(String email, String firstName, String lastName, String membershipName,
+    public Page<UserDto> findUsers(String email, String firstName, String lastName, String activePlan,
             Pageable pageable) {
         Specification<User> spec = (Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -242,9 +231,12 @@ public class UserServiceImpl implements UserService {
             if (StringUtils.hasText(lastName)) {
                 predicates.add(cb.like(cb.lower(root.get("lastName")), "%" + lastName.toLowerCase() + "%"));
             }
-            if (StringUtils.hasText(membershipName)) {
-                predicates.add(cb.like(cb.lower(root.get("membership").get("name")),
-                        "%" + membershipName.toLowerCase() + "%"));
+            if (StringUtils.hasText(activePlan)) {
+                // Filter by active plan name
+                jakarta.persistence.criteria.Join<User, Subscription> subscriptionJoin = root.join("subscriptions");
+                predicates.add(cb.equal(subscriptionJoin.get("status"), SubscriptionStatus.ACTIVE));
+                predicates.add(cb.like(cb.lower(subscriptionJoin.join("pricing").get("name")),
+                        "%" + activePlan.toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -259,10 +251,12 @@ public class UserServiceImpl implements UserService {
         userDto.setLastName(user.getLastName());
         userDto.setEmail(user.getEmail());
 
-        if (user.getMembership() != null) {
-            userDto.setMembershipName(user.getMembership().getName());
-            userDto.setMembershipId(user.getMembership().getId());
-        }
+        // Derive active subscription info
+        subscriptionService.findActiveSubscriptionEntity(user.getId()).ifPresent(subscription -> {
+            userDto.setActiveSubscriptionPricingName(subscription.getPricing().getName());
+            userDto.setActiveSubscriptionStatus(subscription.getStatus().name());
+            userDto.setActiveSubscriptionStartDate(subscription.getStartDate());
+        });
         
         userDto.setEnabled(user.isEnabled());
         userDto.setDeactivationReason(user.getDeactivationReason());
@@ -290,15 +284,5 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         user.setTwoFactorEnabled(!user.isTwoFactorEnabled());
         userRepository.save(user);
-    }
-
-    @Override
-    public Page<UserDto> findMembersOnly(Pageable pageable) {
-        return userRepository.findPureMembers(pageable).map(this::convertToDto);
-    }
-
-    @Override
-    public Page<UserDto> findNonAdmins(Pageable pageable) {
-        return userRepository.findNonAdmins(pageable).map(this::convertToDto);
     }
 }

@@ -32,28 +32,27 @@ public class AdminController {
     private final RoomService roomService;
     private final ExerciseService exerciseService;
     private final SubscriptionService subscriptionService;
-    private final MembershipService membershipService;
+    private final PricingService pricingService;
 
     public AdminController(UserService userService, CourseService courseService, RoomService roomService,
-            SubscriptionService subscriptionService, ExerciseService exerciseService,
-            MembershipService membershipService) {
+            SubscriptionService subscriptionService, ExerciseService exerciseService, PricingService pricingService) {
         this.userService = userService;
         this.courseService = courseService;
         this.exerciseService = exerciseService;
         this.roomService = roomService;
         this.subscriptionService = subscriptionService;
-        this.membershipService = membershipService;
+        this.pricingService = pricingService;
     }
 
     @GetMapping("/users")
     public String listUsers(Model model, Principal principal, @PageableDefault(size = 10) Pageable pageable,
             @RequestParam(required = false) String email, @RequestParam(required = false) String firstName,
-            @RequestParam(required = false) String lastName, @RequestParam(required = false) String membershipType) {
+            @RequestParam(required = false) String lastName, @RequestParam(required = false) String activePlan) {
 
-        Page<UserDto> userPage = userService.findUsers(email, firstName, lastName, membershipType, pageable);
+        Page<UserDto> userPage = userService.findUsers(email, firstName, lastName, activePlan, pageable);
 
         model.addAttribute("userPage", userPage);
-        model.addAttribute("users", userPage.getContent()); // For compatibility with existing table iteration
+        model.addAttribute("users", userPage.getContent());
         model.addAttribute("currentPage", userPage.getNumber() + 1);
         model.addAttribute("totalPages", userPage.getTotalPages());
         model.addAttribute("totalItems", userPage.getTotalElements());
@@ -63,8 +62,8 @@ public class AdminController {
         model.addAttribute("email", email);
         model.addAttribute("firstName", firstName);
         model.addAttribute("lastName", lastName);
-        model.addAttribute("membershipType", membershipType);
-        model.addAttribute("memberships", membershipService.findAll());
+        model.addAttribute("activePlan", activePlan);
+        model.addAttribute("activePlans", pricingService.findAll());
 
         return "admin/users";
     }
@@ -230,7 +229,6 @@ public class AdminController {
     public String showCreateUserForm(Model model) {
         model.addAttribute("user", new UserDto());
         model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
-        model.addAttribute("memberships", membershipService.findAll());
         return "admin/user-form";
     }
 
@@ -244,7 +242,6 @@ public class AdminController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
-            model.addAttribute("memberships", membershipService.findAll());
             return "admin/user-form";
         }
         userService.save(userDto);
@@ -259,7 +256,6 @@ public class AdminController {
         }
         model.addAttribute("user", user);
         model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
-        model.addAttribute("memberships", membershipService.findAll());
 
         // Add active subscription if exists for PDF generation
         Optional<SubscriptionDto> activeSubscription = subscriptionService.getActiveSubscription(id);
@@ -285,7 +281,6 @@ public class AdminController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", Arrays.asList("ROLE_ADMIN", "ROLE_TRAINER", "ROLE_MEMBER"));
-            model.addAttribute("memberships", membershipService.findAll());
             return "admin/user-form";
         }
         userDto.setId(id);

@@ -150,16 +150,8 @@ public class TrainerController {
     }
 
     @GetMapping("/members")
-    public String listMembers(Model model, @PageableDefault(size = 20) Pageable pageable,
-            org.springframework.security.core.Authentication authentication) {
-        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        Page<UserDto> users;
-        if (isAdmin) {
-            users = userService.findAll(pageable);
-        } else {
-            users = userService.findNonAdmins(pageable);
-        }
+    public String listMembers(Model model, @PageableDefault(size = 20) Pageable pageable) {
+        Page<UserDto> users = userService.findAll(pageable);
         model.addAttribute("userPage", users);
         return "trainer/members";
     }

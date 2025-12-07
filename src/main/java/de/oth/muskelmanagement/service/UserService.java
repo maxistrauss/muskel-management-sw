@@ -25,15 +25,11 @@ public interface UserService {
 
     void changeUserPassword(UserDto user, String newPassword);
 
-    Page<UserDto> findUsers(String email, String firstName, String lastName, String membershipType, Pageable pageable);
-
     void enableTwoFactor(Long userId);
 
     void disableTwoFactor(Long userId);
 
-    void toggleTwoFactor(Long userId);
+    void toggleTwoFactor(Long userId); // Re-added
 
-    Page<UserDto> findMembersOnly(Pageable pageable);
-
-    Page<UserDto> findNonAdmins(Pageable pageable);
+    Page<UserDto> findUsers(String email, String firstName, String lastName, String activePlan, Pageable pageable);
 }

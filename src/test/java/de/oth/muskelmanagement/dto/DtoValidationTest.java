@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DtoValidationTest {
@@ -23,28 +22,12 @@ class DtoValidationTest {
     }
 
     @Test
-    void registrationDto_shouldFailValidation_whenMembershipIdIsNull() {
+    void registrationDto_shouldPassValidation_whenValid() {
         RegistrationDto dto = new RegistrationDto();
         dto.setFirstName("John");
         dto.setLastName("Doe");
         dto.setEmail("john@example.com");
         dto.setPassword("password");
-        dto.setMembershipId(null); // Invalid
-
-        Set<ConstraintViolation<RegistrationDto>> violations = validator.validate(dto);
-
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("membershipId")));
-    }
-
-    @Test
-    void registrationDto_shouldPassValidation_whenMembershipIdIsProvided() {
-        RegistrationDto dto = new RegistrationDto();
-        dto.setFirstName("John");
-        dto.setLastName("Doe");
-        dto.setEmail("john@example.com");
-        dto.setPassword("password");
-        dto.setMembershipId(1L); // Valid
 
         Set<ConstraintViolation<RegistrationDto>> violations = validator.validate(dto);
 
@@ -52,17 +35,15 @@ class DtoValidationTest {
     }
 
     @Test
-    void userDto_shouldFailValidation_whenMembershipIdIsNull() {
+    void userDto_shouldPassValidation_whenValid() {
         UserDto dto = new UserDto();
         dto.setFirstName("John");
         dto.setLastName("Doe");
         dto.setEmail("john@example.com");
         dto.setRoles(Set.of("ROLE_MEMBER"));
-        dto.setMembershipId(null); // Invalid
 
         Set<ConstraintViolation<UserDto>> violations = validator.validate(dto);
 
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("membershipId")));
+        assertTrue(violations.isEmpty());
     }
 }

@@ -64,4 +64,9 @@ public interface SubscriptionService {
      * @param paypalOrderId The PayPal order ID
      */
     void markAsPaid(Long subscriptionId, String paypalOrderId);
+
+    // Methods returning entities directly for internal service use
+    Optional<de.oth.muskelmanagement.model.entity.Subscription> findActiveSubscriptionEntity(Long userId);
+
+    List<de.oth.muskelmanagement.model.entity.Subscription> findAllActiveSubscriptionsEntities(Long userId);
 }

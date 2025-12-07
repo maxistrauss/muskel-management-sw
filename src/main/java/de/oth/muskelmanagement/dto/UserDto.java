@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 public class UserDto {
@@ -17,13 +18,16 @@ public class UserDto {
     private String lastName;
 
     @NotBlank(message = "Email cannot be blank")
+
     @Email(message = "Please provide a valid email address")
+
     private String email;
 
-    private String membershipName; // For display
+    private String activeSubscriptionPricingName; // Derived from active subscription
 
-    @jakarta.validation.constraints.NotNull(message = "Membership type is required")
-    private Long membershipId; // For binding
+    private String activeSubscriptionStatus; // Derived from active subscription
+
+    private java.time.LocalDate activeSubscriptionStartDate; // Derived from active subscription
 
     private String password;
 
@@ -34,81 +38,139 @@ public class UserDto {
     private boolean twoFactorEnabled;
 
     @NotEmpty(message = "User must have at least one role")
+
     private Set<String> roles;
 
     public UserDto() {
+
     }
 
-    public UserDto(Long id, String firstName, String lastName, String email, String membershipName, Long membershipId,
-            String password,
-            boolean enabled, String deactivationReason, boolean twoFactorEnabled, Set<String> roles) {
+    public UserDto(Long id, String firstName, String lastName, String email, String activeSubscriptionPricingName,
+
+            String activeSubscriptionStatus, LocalDate activeSubscriptionStartDate, String password, boolean enabled,
+
+            String deactivationReason, boolean twoFactorEnabled, Set<String> roles) {
+
         this.id = id;
+
         this.firstName = firstName;
+
         this.lastName = lastName;
+
         this.email = email;
-        this.membershipName = membershipName;
-        this.membershipId = membershipId;
+
+        this.activeSubscriptionPricingName = activeSubscriptionPricingName;
+
+        this.activeSubscriptionStatus = activeSubscriptionStatus;
+
+        this.activeSubscriptionStartDate = activeSubscriptionStartDate;
+
         this.password = password;
+
         this.enabled = enabled;
+
         this.deactivationReason = deactivationReason;
+
         this.twoFactorEnabled = twoFactorEnabled;
+
         this.roles = roles;
+
     }
 
     public Long getId() {
+
         return id;
+
     }
 
     public void setId(Long id) {
+
         this.id = id;
+
     }
 
     public String getFirstName() {
+
         return firstName;
+
     }
 
     public void setFirstName(String firstName) {
+
         this.firstName = firstName;
+
     }
 
     public String getLastName() {
+
         return lastName;
+
     }
 
     public void setLastName(String lastName) {
+
         this.lastName = lastName;
+
     }
 
     public String getEmail() {
+
         return email;
+
     }
 
     public void setEmail(String email) {
+
         this.email = email;
+
     }
 
-    public String getMembershipName() {
-        return membershipName;
+    public String getActiveSubscriptionPricingName() {
+
+        return activeSubscriptionPricingName;
+
     }
 
-    public void setMembershipName(String membershipName) {
-        this.membershipName = membershipName;
+    public void setActiveSubscriptionPricingName(String activeSubscriptionPricingName) {
+
+        this.activeSubscriptionPricingName = activeSubscriptionPricingName;
+
     }
 
-    public Long getMembershipId() {
-        return membershipId;
+    public String getActiveSubscriptionStatus() {
+
+        return activeSubscriptionStatus;
+
     }
 
-    public void setMembershipId(Long membershipId) {
-        this.membershipId = membershipId;
+    public void setActiveSubscriptionStatus(String activeSubscriptionStatus) {
+
+        this.activeSubscriptionStatus = activeSubscriptionStatus;
+
+    }
+
+    public LocalDate getActiveSubscriptionStartDate() {
+
+        return activeSubscriptionStartDate;
+
+    }
+
+    public void setActiveSubscriptionStartDate(LocalDate activeSubscriptionStartDate) {
+
+        this.activeSubscriptionStartDate = activeSubscriptionStartDate;
+
     }
 
     public String getPassword() {
+
         return password;
+
     }
 
     public void setPassword(String password) {
+
         this.password = password;
+
     }
 
     public boolean isEnabled() {

@@ -15,9 +15,6 @@ public class RegistrationDto {
     @Email(message = "Please provide a valid email address")
     private String email;
 
-    @jakarta.validation.constraints.NotNull(message = "Membership type is required")
-    private Long membershipId;
-
     @NotBlank(message = "Password cannot be blank")
     private String password;
 
@@ -46,14 +43,6 @@ public class RegistrationDto {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public Long getMembershipId() {
-        return membershipId;
-    }
-
-    public void setMembershipId(Long membershipId) {
-        this.membershipId = membershipId;
     }
 
     public String getPassword() {

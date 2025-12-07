@@ -17,10 +17,6 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @ManyToOne
-    @JoinColumn(name = "membership_id")
-    private Membership membership;
-
     private String password;
 
     private boolean enabled = true;
@@ -34,6 +30,9 @@ public class User {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Subscription> subscriptions;
 
     public User() {
     }
@@ -79,14 +78,6 @@ public class User {
         this.email = email;
     }
 
-    public Membership getMembership() {
-        return membership;
-    }
-
-    public void setMembership(Membership membership) {
-        this.membership = membership;
-    }
-
     public String getPassword() {
         return password;
     }
@@ -125,5 +116,13 @@ public class User {
 
     public void setDeactivationReason(String deactivationReason) {
         this.deactivationReason = deactivationReason;
+    }
+
+    public Set<Subscription> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void setSubscriptions(Set<Subscription> subscriptions) {
+        this.subscriptions = subscriptions;
     }
 }
