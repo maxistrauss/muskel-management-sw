@@ -237,6 +237,119 @@ public class EmailServiceImpl implements EmailService {
                 """.formatted(userName != null ? userName : "User");
     }
 
+    @Override
+    public void sendPasswordChangeConfirmationEmail(String toEmail, String userName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Security Alert: Password Changed - MuskelManagement");
+
+            String htmlContent = buildPasswordChangeConfirmationEmailTemplate(userName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Password change confirmation email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send password change confirmation email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send password change confirmation email", e);
+        }
+    }
+
+    private String buildPasswordChangeConfirmationEmailTemplate(String userName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #3b82f6;
+                            color: white;
+                            padding: 20px;
+                            text-align: center;
+                            border-radius: 5px 5px 0 0;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 24px;
+                        }
+                        .content {
+                            background-color: #f9fafb;
+                            padding: 30px;
+                            border-radius: 0 0 5px 5px;
+                        }
+                        .alert-box {
+                            background-color: white;
+                            border-left: 4px solid #3b82f6;
+                            border-radius: 5px;
+                            padding: 20px;
+                            margin: 20px 0;
+                        }
+                        .warning {
+                            background-color: #fef3c7;
+                            border-left: 4px solid #f59e0b;
+                            padding: 15px;
+                            margin: 20px 0;
+                            border-radius: 3px;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 20px;
+                            color: #6b7280;
+                            font-size: 12px;
+                        }
+                        strong {
+                            color: #1f2937;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                            <p style="margin: 5px 0 0 0;">Security Alert</p>
+                        </div>
+                        <div class="content">
+                            <p>Hello %s,</p>
+                
+                            <div class="alert-box">
+                                <p><strong>Your password was successfully changed.</strong></p>
+                                <p>This is a confirmation that your account password has been updated.</p>
+                            </div>
+                
+                            <div class="warning">
+                                <strong>⚠️ Didn't change your password?</strong><br/>
+                                If you did not make this change, please contact our support team immediately 
+                                and secure your account.
+                            </div>
+                
+                            <p>Best regards,<br/>
+                               Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This email was generated automatically. Please do not reply to it.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName != null ? userName : "User");
+    }
+
     private String buildTwoFactorEmailTemplate(String code, String userName) {
         return """
                 <!DOCTYPE html>

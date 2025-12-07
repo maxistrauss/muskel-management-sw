@@ -176,6 +176,40 @@
                    href="/profile">Cancel</a>
             </div>
         </form>
+
+        <!-- Change Password Form (Edit Mode) -->
+        <div class="mt-8 pt-6 border-t border-gray-300" id="change-password-form" th:if="${!isViewMode}">
+            <h2 class="text-xl font-bold mb-4">Change Password</h2>
+            <form method="post" th:action="@{/profile/change-password}" th:object="${changePasswordDto}">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="oldPassword">Old Password:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="oldPassword" required th:field="*{oldPassword}" type="password"/>
+                    <span class="text-red-500 text-xs italic" th:errors="*{oldPassword}"
+                          th:if="${#fields.hasErrors('oldPassword')}"></span>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="newPassword">New Password:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="newPassword" required th:field="*{newPassword}" type="password"/>
+                    <span class="text-red-500 text-xs italic" th:errors="*{newPassword}"
+                          th:if="${#fields.hasErrors('newPassword')}"></span>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="confirmPassword">Confirm New
+                        Password:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="confirmPassword" required th:field="*{confirmPassword}" type="password"/>
+                    <span class="text-red-500 text-xs italic" th:errors="*{confirmPassword}"
+                          th:if="${#fields.hasErrors('confirmPassword')}"></span>
+                </div>
+                <div class="flex justify-end">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="submit">
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 </body>

@@ -31,5 +31,7 @@ public interface UserService {
 
     void toggleTwoFactor(Long userId); // Re-added
 
+    void changeMyPassword(Long userId, String oldPassword, String newPassword);
+
     Page<UserDto> findUsers(String email, String firstName, String lastName, String activePlan, Pageable pageable);
 }

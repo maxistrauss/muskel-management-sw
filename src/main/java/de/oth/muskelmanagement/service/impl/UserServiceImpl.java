@@ -224,6 +224,34 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         userFromDb.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(userFromDb);
+
+        // Send email confirmation
+        try {
+            emailService.sendPasswordChangeConfirmationEmail(userFromDb.getEmail(), userFromDb.getFirstName());
+        } catch (Exception e) {
+            // Log error but don't fail password change
+            System.err.println("Failed to send password change confirmation email: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void changeMyPassword(Long userId, String oldPassword, String newPassword) {
+        User userFromDb = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(oldPassword, userFromDb.getPassword())) {
+            throw new IllegalArgumentException("Old password does not match.");
+        }
+
+        userFromDb.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userFromDb);
+
+        // Send email confirmation
+        try {
+            emailService.sendPasswordChangeConfirmationEmail(userFromDb.getEmail(), userFromDb.getFirstName());
+        } catch (Exception e) {
+            // Log error but don't fail password change
+            System.err.println("Failed to send password change confirmation email: " + e.getMessage());
+        }
     }
 
     @Override

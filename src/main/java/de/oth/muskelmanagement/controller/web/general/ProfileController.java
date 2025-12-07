@@ -1,10 +1,12 @@
 package de.oth.muskelmanagement.controller.web.general;
 
+import de.oth.muskelmanagement.dto.ChangePasswordDto;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -35,6 +37,7 @@ public class ProfileController {
         UserDto userDto = userService.findById(user.getId()); // Get fully populated DTO
         model.addAttribute("user", userDto);
         model.addAttribute("isViewMode", true);
+        model.addAttribute("changePasswordDto", new ChangePasswordDto()); // Add empty DTO for potential form on page
         return "profile";
     }
 
@@ -44,6 +47,7 @@ public class ProfileController {
         UserDto userDto = userService.findById(user.getId()); // Get fully populated DTO
         model.addAttribute("user", userDto);
         model.addAttribute("isViewMode", false);
+        model.addAttribute("changePasswordDto", new ChangePasswordDto()); // Add empty DTO for form
         return "profile";
     }
 
@@ -58,13 +62,13 @@ public class ProfileController {
         if (!currentUser.getId().equals(userDto.getId())) {
             model.addAttribute("error", "You can only edit your own profile");
             model.addAttribute("isViewMode", false);
+            model.addAttribute("changePasswordDto", new ChangePasswordDto());
             return "profile";
         }
 
         // Preserve fields that shouldn't be changed via profile edit
         userDto.setId(currentUser.getId());
         userDto.setEmail(currentUser.getEmail());
-        // Membership/Subscription info is derived, not set directly via profile edit
         userDto.setActiveSubscriptionPricingName(currentUser.getActiveSubscriptionPricingName());
         userDto.setActiveSubscriptionStatus(currentUser.getActiveSubscriptionStatus());
         userDto.setRoles(currentUser.getRoles());
@@ -74,17 +78,52 @@ public class ProfileController {
         if (userDto.getFirstName() == null || userDto.getFirstName().trim().isEmpty()) {
             model.addAttribute("error", "First name cannot be blank");
             model.addAttribute("isViewMode", false);
+            model.addAttribute("changePasswordDto", new ChangePasswordDto());
             return "profile";
         }
 
         if (userDto.getLastName() == null || userDto.getLastName().trim().isEmpty()) {
             model.addAttribute("error", "Last name cannot be blank");
             model.addAttribute("isViewMode", false);
+            model.addAttribute("changePasswordDto", new ChangePasswordDto());
             return "profile";
         }
 
         userService.updateUser(userDto);
         return "redirect:/profile";
+    }
+
+    @PostMapping("/change-password")
+    public String changePassword(@Valid @ModelAttribute("changePasswordDto") ChangePasswordDto changePasswordDto,
+            BindingResult bindingResult, Model model, Principal principal, RedirectAttributes redirectAttributes) {
+
+        User user = userService.findByEmail(principal.getName());
+        UserDto userDto = userService.findById(user.getId());
+        model.addAttribute("user", userDto); // Re-add userDto to model for template rendering
+        model.addAttribute("isViewMode", false); // Stay in edit mode for password form
+
+        if (bindingResult.hasErrors()) {
+            return "profile"; // Return to profile page with validation errors
+        }
+
+        if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "password.mismatch",
+                    "New password and confirmation do not match");
+            return "profile";
+        }
+
+        try {
+            userService.changeMyPassword(user.getId(), changePasswordDto.getOldPassword(),
+                    changePasswordDto.getNewPassword());
+            redirectAttributes.addFlashAttribute("success", "Your password has been changed successfully.");
+            return "redirect:/profile";
+        } catch (IllegalArgumentException e) {
+            bindingResult.rejectValue("oldPassword", "password.invalid", e.getMessage());
+            return "profile";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "An unexpected error occurred: " + e.getMessage());
+            return "profile";
+        }
     }
 
     @PostMapping("/deactivate")

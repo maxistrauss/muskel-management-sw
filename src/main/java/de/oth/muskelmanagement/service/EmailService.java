@@ -12,4 +12,6 @@ public interface EmailService {
             long daysRemaining);
 
     void sendRegistrationConfirmationEmail(String toEmail, String userName);
+
+    void sendPasswordChangeConfirmationEmail(String toEmail, String userName);
 }
