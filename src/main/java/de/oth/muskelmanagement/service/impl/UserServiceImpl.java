@@ -103,7 +103,17 @@ public class UserServiceImpl implements UserService {
         roles.add(memberRole);
         user.setRoles(roles);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Send registration confirmation email
+        try {
+            emailService.sendRegistrationConfirmationEmail(savedUser.getEmail(), savedUser.getFirstName());
+        } catch (Exception e) {
+            // Log error but don't fail registration
+            System.err.println("Failed to send registration email: " + e.getMessage());
+        }
+
+        return savedUser;
     }
 
     @Override

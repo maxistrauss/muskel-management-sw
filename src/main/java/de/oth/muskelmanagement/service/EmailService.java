@@ -10,4 +10,6 @@ public interface EmailService {
 
     void sendSubscriptionExpiryReminder(String toEmail, String userName, String pricingName, LocalDate expiryDate,
             long daysRemaining);
+
+    void sendRegistrationConfirmationEmail(String toEmail, String userName);
 }
