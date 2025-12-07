@@ -26,7 +26,7 @@ public class EmailServiceImpl implements EmailService {
     private String fromEmail;
 
     @Override
-    public void sendTwoFactorCode(String toEmail, String code, String userName) {
+    public void sendTwoFactorCodeEmail(String toEmail, String code, String userName) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -92,7 +92,8 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendSubscriptionExpiryReminder(String toEmail, String userName, String tarifName, LocalDate expiryDate,
+    public void sendSubscriptionExpiryReminder(String toEmail, String userName, String pricingName,
+            LocalDate expiryDate,
             long daysRemaining) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -102,7 +103,7 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(toEmail);
             helper.setSubject("Your Subscription is Expiring Soon - MuskelManagement");
 
-            String htmlContent = buildExpiryReminderEmailTemplate(userName, tarifName, expiryDate, daysRemaining);
+            String htmlContent = buildExpiryReminderEmailTemplate(userName, pricingName, expiryDate, daysRemaining);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
@@ -426,7 +427,7 @@ public class EmailServiceImpl implements EmailService {
                 """.formatted(userName != null ? userName : "User");
     }
 
-    private String buildExpiryReminderEmailTemplate(String userName, String tarifName, LocalDate expiryDate,
+    private String buildExpiryReminderEmailTemplate(String userName, String pricingName, LocalDate expiryDate,
             long daysRemaining) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         String formattedDate = expiryDate.format(formatter);
@@ -557,6 +558,6 @@ public class EmailServiceImpl implements EmailService {
                 </body>
                 </html>
                 """.formatted(userName != null ? userName : "Member", daysRemaining,
-                tarifName != null ? tarifName : "Your Plan", formattedDate);
+                pricingName != null ? pricingName : "Your Plan", formattedDate);
     }
 }

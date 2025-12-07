@@ -57,7 +57,7 @@ public class TwoFactorAuthServiceImpl implements TwoFactorAuthService {
 
         // Send email with the code
         try {
-            emailService.sendTwoFactorCode(user.getEmail(), code, user.getFirstName());
+            emailService.sendTwoFactorCodeEmail(user.getEmail(), code, user.getFirstName());
             logger.info("2FA code sent successfully to user: {}", user.getEmail());
         } catch (Exception e) {
             logger.error("Failed to send 2FA code to user: {}", user.getEmail(), e);
