@@ -39,13 +39,15 @@
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700">Trainer</label>
-                <select name="trainer.id" class="w-full border rounded px-3 py-2">
+                <select name="trainer.id" class="w-full border rounded px-3 py-2"
+                        th:classappend="${#fields.hasErrors('course.trainer')} ? 'border-red-500'">
                     <option value="">-- No Trainer --</option>
                     <option th:each="trainer : ${trainers}" 
                             th:value="${trainer.id}" 
                             th:text="${trainer.firstName} + ' ' + ${trainer.lastName}"
                             th:selected="${course.trainer != null && course.trainer.id == trainer.id}"></option>
                 </select>
+                <p th:if="${#fields.hasErrors('course.trainer')}" th:errors="*{course.trainer}" class="text-red-500 text-xs mt-1"></p>
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700">Room</label>
@@ -66,6 +68,61 @@
                 <label class="block text-gray-700">Description</label>
                 <textarea name="description" class="w-full border rounded px-3 py-2" rows="6" th:text="${course.description}"></textarea>
             </div>
+             <div class="mb-4">
+                <label class="block text-gray-700">Start Date</label>
+                <input type="date" name="startDate" th:value="${course.startDate}" class="w-full border rounded px-3 py-2" required/>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">End Date</label>
+                <input type="date" name="endDate" th:value="${course.endDate}" class="w-full border rounded px-3 py-2" required/>
+                <p th:if="${#fields.hasErrors('course.endDate')}" th:errors="*{course.endDate}" class="text-red-500 text-xs mt-1"></p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Start Time</label>
+                <input type="time" name="startTime" th:value="${course.startTime}" class="w-full border rounded px-3 py-2" required/>
+                <p th:if="${#fields.hasErrors('course.startTime')}" th:errors="*{course.startTime}" class="text-red-500 text-xs mt-1"></p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Duration (minutes)</label>
+                <input type="number" name="durationMinutes" th:value="${course.durationMinutes}" class="w-full border rounded px-3 py-2" min="1" required/>
+                <p th:if="${#fields.hasErrors('course.durationMinutes')}" th:errors="*{course.durationMinutes}" class="text-red-500 text-xs mt-1"></p>
+            </div>
+            <!-- START: Days of Week Section -->
+            <div class="mb-4">
+                <!-- Display currently selected days in edit mode -->
+                <div th:if="${course.id != null && !#sets.isEmpty(course.daysOfWeek)}" class="mb-4 p-3 bg-gray-50 rounded border">
+                    <label class="block text-sm font-medium text-gray-700">Currently Scheduled Days</label>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <span th:each="d : ${course.daysOfWeek}"
+                              class="bg-blue-100 text-blue-800 text-sm font-semibold px-2.5 py-0.5 rounded-full"
+                              th:text="${d.name().substring(0,1) + d.name().substring(1).toLowerCase()}">
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Show for new courses OR if no days are set for an existing course -->
+                <div th:if="${course.id == null}" class="mb-2">
+                     <label class="block text-gray-700">Days of Week</label>
+                     <p class="text-sm text-gray-500">Select the days this course will run.</p>
+                </div>
+
+                <!-- Show different label for editing -->
+                <div th:if="${course.id != null}" class="mb-2">
+                     <label class="block text-gray-700">Change Scheduled Days</label>
+                     <p class="text-sm text-gray-500">Select new days below to overwrite the current selection. Deselecting all will remove all scheduled days.</p>
+                </div>
+
+                <!-- Checkboxes for input -->
+                <div class="flex flex-wrap pt-2">
+                    <div th:each="day : ${T(de.oth.muskelmanagement.model.enums.DayOfWeek).values()}" class="mr-4">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="daysOfWeek" th:value="${day.name()}" class="mr-2"/>
+                            <span th:text="${day.name().substring(0,1) + day.name().substring(1).toLowerCase()}"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- END: Days of Week Section -->
             <div class="mb-4">
                 <label class="inline-flex items-center">
                     <input type="checkbox" name="active" th:checked="${course.active}" class="mr-2"/>

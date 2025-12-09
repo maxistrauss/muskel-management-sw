@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Set;
 
 @Component
@@ -201,25 +202,46 @@ public class DataInitializer implements CommandLineRunner {
         de.oth.muskelmanagement.model.entity.User trainer = userRepository.findByEmail("trainer@example.com");
 
         de.oth.muskelmanagement.model.entity.Course yoga = new de.oth.muskelmanagement.model.entity.Course(
-                "Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true);
+                "Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true, LocalTime.of(9, 0), 60);
         if (trainer != null) {
             yoga.setTrainer(trainer);
         }
-        // assign yoga studio if available
         roomRepository.findByName("Yoga Studio").ifPresent(r -> yoga.setRoom(r));
+        yoga.setStartDate(LocalDate.now().minusWeeks(4));
+        yoga.setEndDate(LocalDate.now().plusWeeks(8));
+        yoga.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY));
         courseRepository.save(yoga);
 
         de.oth.muskelmanagement.model.entity.Course hiit = new de.oth.muskelmanagement.model.entity.Course(
-                "HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true);
+                "HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true, LocalTime.of(18, 0), 45);
         if (trainer != null) {
             hiit.setTrainer(trainer);
         }
-        // assign cardio room if available
         roomRepository.findByName("Cardio Room").ifPresent(r -> hiit.setRoom(r));
+        hiit.setStartDate(LocalDate.now().minusWeeks(2));
+        hiit.setEndDate(LocalDate.now().plusWeeks(10));
+        hiit.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.TUESDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.THURSDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.SATURDAY));
         courseRepository.save(hiit);
 
+        de.oth.muskelmanagement.model.entity.Course strength = new de.oth.muskelmanagement.model.entity.Course(
+                "Strength Training", "Build muscle and increase strength with progressive overload.", 10, true, LocalTime.of(17, 0), 75);
+        if (trainer != null) {
+            strength.setTrainer(trainer);
+        }
+        roomRepository.findByName("Weight Room").ifPresent(r -> strength.setRoom(r));
+        strength.setStartDate(LocalDate.now().minusWeeks(1));
+        strength.setEndDate(LocalDate.now().plusWeeks(11));
+        strength.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.FRIDAY));
+        courseRepository.save(strength);
+        
         de.oth.muskelmanagement.model.entity.Course pelvicFloor = new de.oth.muskelmanagement.model.entity.Course(
-                "Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true);
+                "Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true, LocalTime.of(10, 0), 90);
+        if (trainer != null) {
+            pelvicFloor.setTrainer(trainer);
+        }
+        pelvicFloor.setStartDate(LocalDate.now().plusWeeks(1));
+        pelvicFloor.setEndDate(LocalDate.now().plusWeeks(3));
+        pelvicFloor.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.SUNDAY));
         courseRepository.save(pelvicFloor);
 
         // Optionally enroll seeded users

@@ -1,7 +1,10 @@
 package de.oth.muskelmanagement.model.entity;
 
+import de.oth.muskelmanagement.model.enums.DayOfWeek;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime; // Added import
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +28,20 @@ public class Course {
 
     private boolean active = true;
 
+    private LocalDate startDate;
+    private LocalDate endDate;
+
+    private LocalTime startTime; // Added
+    private Integer durationMinutes; // Added
+
+    @Enumerated(EnumType.STRING)
+    @ElementCollection(targetClass = DayOfWeek.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "course_days_of_week", joinColumns = @JoinColumn(name = "course_id"))
+    @Column(name = "day_of_week", nullable = false)
+    private Set<DayOfWeek> daysOfWeek = new HashSet<>();
+
     @ManyToOne
-    @JoinColumn(name = "trainer_id")
+    @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
 
     @ManyToOne
@@ -43,11 +58,13 @@ public class Course {
     public Course() {
     }
 
-    public Course(String name, String description, Integer capacity, boolean active) {
+    public Course(String name, String description, Integer capacity, boolean active, LocalTime startTime, Integer durationMinutes) { // Updated constructor
         this.name = name;
         this.description = description;
         this.capacity = capacity;
         this.active = active;
+        this.startTime = startTime; // Added
+        this.durationMinutes = durationMinutes; // Added
     }
 
     public Long getId() {
@@ -88,6 +105,47 @@ public class Course {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    // New getters and setters
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public Integer getDurationMinutes() {
+        return durationMinutes;
+    }
+
+    public void setDurationMinutes(Integer durationMinutes) {
+        this.durationMinutes = durationMinutes;
+    }
+
+    public Set<DayOfWeek> getDaysOfWeek() {
+        return daysOfWeek;
+    }
+
+    public void setDaysOfWeek(Set<DayOfWeek> daysOfWeek) {
+        this.daysOfWeek = daysOfWeek;
     }
 
     public User getTrainer() {
@@ -142,3 +200,4 @@ public class Course {
         exercise.getCourses().remove(this);
     }
 }
+

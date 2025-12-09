@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 @Controller
-@RequestMapping("/member/courses")
+@RequestMapping("/member/course-info")
 public class CourseController {
 
     private final CourseService courseService;
@@ -37,7 +37,24 @@ public class CourseController {
         var page = courseService.findAll(pageable);
         model.addAttribute("coursePage", page);
         model.addAttribute("courses", page.getContent());
-        return "courses";
+        return "member/course-overview";
+    }
+
+    @GetMapping("/overview")
+    public String overview(Model model, @PageableDefault(size = 10) org.springframework.data.domain.Pageable pageable) {
+        return list(model, pageable);
+    }
+
+    @GetMapping("/my")
+    public String myCourses(Model model, Principal principal, @PageableDefault(size = 10) org.springframework.data.domain.Pageable pageable) {
+        if (principal == null) {
+            return "redirect:/login";
+        }
+        var user = userService.findByEmail(principal.getName());
+        var enrolledCourses = courseService.findEnrolledCoursesByUser(user.getId(), pageable);
+        model.addAttribute("enrolledCoursePage", enrolledCourses);
+        model.addAttribute("courses", enrolledCourses.getContent());
+        return "member/my-courses";
     }
 
     @GetMapping("/{id}")
@@ -73,10 +90,10 @@ public class CourseController {
         // Only users with ROLE_MEMBER may enroll themselves
         boolean isMember = user.getRoles().stream().anyMatch(r -> "ROLE_MEMBER".equals(r.getName()));
         if (!isMember) {
-            return "redirect:/member/courses/" + id + "?error=not_member";
+            return "redirect:/member/course-info/" + id + "?error=not_member";
         }
         courseService.addMember(id, user.getId());
-        return "redirect:/member/courses/" + id;
+        return "redirect:/member/course-info/" + id;
     }
 
     @PostMapping("/{id}/unenroll")
@@ -86,9 +103,9 @@ public class CourseController {
         var user = userService.findByEmail(principal.getName());
         boolean isMember = user.getRoles().stream().anyMatch(r -> "ROLE_MEMBER".equals(r.getName()));
         if (!isMember) {
-            return "redirect:/member/courses/" + id + "?error=not_member";
+            return "redirect:/member/course-info/" + id + "?error=not_member";
         }
         courseService.removeMember(id, user.getId());
-        return "redirect:/member/courses/" + id;
+        return "redirect:/member/course-info/" + id;
     }
 }

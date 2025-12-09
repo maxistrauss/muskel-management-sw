@@ -17,7 +17,7 @@
             </h1>
 
             <form method="post"
-                  th:action="${isEdit} ? @{/member/reviews/{id}(id=${review.id})} : @{/member/courses/{id}/reviews(id=${review.courseId})}" th:object="${review}">
+                  th:action="${isEdit} ? @{/member/reviews/{id}(id=${review.id})} : @{/member/course-info/{id}/reviews(id=${review.courseId})}" th:object="${review}">
 
                 <div class="mb-6">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Rating</label>

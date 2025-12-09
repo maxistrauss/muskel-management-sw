@@ -1,5 +1,6 @@
 package de.oth.muskelmanagement.controller.web.admin;
 
+import de.oth.muskelmanagement.dto.CourseDto;
 import de.oth.muskelmanagement.dto.SubscriptionDto;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Course;
@@ -100,7 +101,7 @@ public class AdminController {
 
     @GetMapping("/courses/new")
     public String showCreateCourseForm(Model model) {
-        model.addAttribute("course", new Course());
+        model.addAttribute("course", new CourseDto());
 
         // Add trainers to model for dropdown
         var allUsers = userService.findAll(Pageable.unpaged());
@@ -116,15 +117,25 @@ public class AdminController {
     }
 
     @PostMapping("/courses/new")
-    public String createCourse(@ModelAttribute("course") Course course) {
-        courseService.save(course);
+    public String createCourse(@Valid @ModelAttribute("course") CourseDto courseDto, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            // Re-add necessary model attributes for the form
+            var allUsers = userService.findAll(Pageable.unpaged());
+            var trainers = allUsers.getContent().stream()
+                    .filter(userDto -> userDto.getRoles() != null && userDto.getRoles().contains("ROLE_TRAINER")).toList();
+            model.addAttribute("trainers", trainers);
+            var rooms = roomService.findActiveRooms();
+            model.addAttribute("rooms", rooms);
+            return "admin/course-form";
+        }
+        courseService.saveCourseFromDto(courseDto);
         return "redirect:/admin/courses";
     }
 
     @GetMapping("/courses/edit/{id}")
     public String showEditCourseForm(@PathVariable Long id, Model model) {
-        Course course = courseService.findById(id);
-        model.addAttribute("course", course);
+        CourseDto courseDto = courseService.getCourseDtoById(id);
+        model.addAttribute("course", courseDto);
 
         // Add trainers to model for dropdown
         var allUsers = userService.findAll(Pageable.unpaged());
@@ -140,28 +151,19 @@ public class AdminController {
     }
 
     @PostMapping("/courses/edit/{id}")
-    public String updateCourse(@PathVariable Long id, @ModelAttribute("course") Course course) {
-        Course existing = courseService.findById(id);
-        existing.setName(course.getName());
-        existing.setDescription(course.getDescription());
-        existing.setCapacity(course.getCapacity());
-        existing.setActive(course.isActive());
-
-        // Load trainer from service if ID is provided
-        if (course.getTrainer() != null && course.getTrainer().getId() != null) {
-            existing.setTrainer(userService.findEntityById(course.getTrainer().getId()));
-        } else {
-            existing.setTrainer(null);
+    public String updateCourse(@PathVariable Long id, @Valid @ModelAttribute("course") CourseDto courseDto, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            // Re-add necessary model attributes for the form
+            var allUsers = userService.findAll(Pageable.unpaged());
+            var trainers = allUsers.getContent().stream()
+                    .filter(userDto -> userDto.getRoles() != null && userDto.getRoles().contains("ROLE_TRAINER")).toList();
+            model.addAttribute("trainers", trainers);
+            var rooms = roomService.findActiveRooms();
+            model.addAttribute("rooms", rooms);
+            return "admin/course-form";
         }
 
-        // Load room from service if ID is provided
-        if (course.getRoom() != null && course.getRoom().getId() != null) {
-            existing.setRoom(roomService.findEntityById(course.getRoom().getId()));
-        } else {
-            existing.setRoom(null);
-        }
-
-        courseService.save(existing);
+        courseService.updateCourseFromDto(id, courseDto);
         return "redirect:/admin/courses";
     }
 

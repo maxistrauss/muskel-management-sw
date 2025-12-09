@@ -41,7 +41,7 @@ public class ReviewController {
     }
 
     @PreAuthorize("hasRole('MEMBER')")
-    @GetMapping("/member/courses/{courseId}/reviews/new")
+    @GetMapping("/member/course-info/{courseId}/reviews/new")
     public String createReviewForm(@PathVariable Long courseId, Model model) {
         ReviewDto dto = new ReviewDto();
         dto.setCourseId(courseId);
@@ -54,7 +54,7 @@ public class ReviewController {
     }
 
     @PreAuthorize("hasRole('MEMBER')")
-    @PostMapping("/member/courses/{courseId}/reviews")
+    @PostMapping("/member/course-info/{courseId}/reviews")
     public String createReview(@PathVariable Long courseId, @ModelAttribute ReviewDto reviewDto,
             @AuthenticationPrincipal UserDetails userDetails) {
         User member = userService.findByEmail(userDetails.getUsername());

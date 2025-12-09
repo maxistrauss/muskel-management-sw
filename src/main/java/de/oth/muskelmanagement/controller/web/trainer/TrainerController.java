@@ -82,6 +82,9 @@ public class TrainerController {
         existing.setCapacity(courseForm.getCapacity());
         existing.setActive(courseForm.isActive());
         existing.setRoom(courseForm.getRoom());
+        existing.setStartDate(courseForm.getStartDate());
+        existing.setEndDate(courseForm.getEndDate());
+        existing.setDaysOfWeek(courseForm.getDaysOfWeek());
         courseService.save(existing);
         return "redirect:/trainer/courses";
     }
