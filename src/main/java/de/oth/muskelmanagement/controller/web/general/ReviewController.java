@@ -42,7 +42,17 @@ public class ReviewController {
 
     @PreAuthorize("hasRole('MEMBER')")
     @GetMapping("/member/course-info/{courseId}/reviews/new")
-    public String createReviewForm(@PathVariable Long courseId, Model model) {
+    public String createReviewForm(@PathVariable Long courseId, Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        User member = userService.findByEmail(userDetails.getUsername());
+
+        // Security check: Ensure member is enrolled in the course
+        boolean isEnrolled = courseService.listEnrollments(courseId).stream()
+                .anyMatch(enrollment -> enrollment.getUser().getId().equals(member.getId()));
+
+        if (!isEnrolled) {
+            throw new org.springframework.security.access.AccessDeniedException("You can only review courses you are enrolled in.");
+        }
+
         ReviewDto dto = new ReviewDto();
         dto.setCourseId(courseId);
 

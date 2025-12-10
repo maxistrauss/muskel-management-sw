@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Course Exercises</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+    <div class="container mx-auto mt-8 px-4">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Manage Exercises</h1>
+                    <p class="text-gray-600">
+                        Course: <span class="font-semibold" th:text="${course.name}">Course Name</span>
+                    </p>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Currently assigned: <span class="font-semibold" th:text="${#sets.size(course.exercises)}">0</span> exercises
+                    </p>
+                </div>
+                <a th:href="@{/trainer/courses/edit/{id}(id=${course.id})}"
+                   class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Course Form
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Filter Exercises</h2>
+            <form method="get" th:action="@{/trainer/courses/{id}/exercises(id=${course.id})}" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Body Part Filter -->
+                    <div>
+                        <label for="bodyPart" class="block text-sm font-medium text-gray-700 mb-2">Body Part</label>
+                        <select id="bodyPart" name="bodyPart"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Body Parts</option>
+                            <option th:each="bp : ${bodyParts}"
+                                    th:value="${bp}"
+                                    th:text="${#strings.capitalize(bp)}"
+                                    th:selected="${bp == selectedBodyPart}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Equipment Filter -->
+                    <div>
+                        <label for="equipment" class="block text-sm font-medium text-gray-700 mb-2">Equipment</label>
+                        <select id="equipment" name="equipment"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Equipment</option>
+                            <option th:each="eql : ${equipmentList}"
+                                    th:value="${eql}"
+                                    th:text="${#strings.capitalize(eql)}"
+                                    th:selected="${eq == selectedEquipment}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Target Muscle Filter -->
+                    <div>
+                        <label for="target" class="block text-sm font-medium text-gray-700 mb-2">Target Muscle</label>
+                        <select id="target" name="target"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Targets</option>
+                            <option th:each="tg : ${targets}"
+                                    th:value="${tg}"
+                                    th:text="${#strings.capitalize(tg)}"
+                                    th:selected="${tg == selectedTarget}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                        Apply Filters
+                    </button>
+                    <a th:href="@{/trainer/courses/{id}/exercises(id=${course.id})}"
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors inline-block">
+                        Clear Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Exercise Selection Form -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">Select Exercises</h2>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Choose the exercises you want to assign to this course.
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm" th:onclick="'selectAll()'">
+                        Select All
+                    </button>
+                    <button type="button" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded text-sm" th:onclick="'deselectAll()'">
+                        Deselect All
+                    </button>
+                </div>
+            </div>
+
+            <form method="post" th:action="@{/trainer/courses/{id}/exercises(id=${course.id})}" id="exerciseForm">
+                <!-- Preserve filter parameters as hidden fields -->
+                <input type="hidden" name="bodyPart" th:value="${selectedBodyPart}"/>
+                <input type="hidden" name="equipment" th:value="${selectedEquipment}"/>
+                <input type="hidden" name="target" th:value="${selectedTarget}"/>
+
+                <!-- Exercise Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                    <div th:each="exercise : ${exercises}"
+                         class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <!-- Checkbox -->
+                            <div class="flex items-center h-5 mt-1">
+                                <input type="checkbox"
+                                       name="exerciseIds"
+                                       th:value="${exercise.id}"
+                                       th:checked="${courseExerciseIds.contains(exercise.id)}"
+                                       th:id="${'exercise-' + exercise.id}"
+                                       class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"/>
+                            </div>
+
+                            <!-- Exercise Info -->
+                            <label th:for="${'exercise-' + exercise.id}" class="flex-1 cursor-pointer">
+                                <!-- Exercise Image -->
+                                <div class="h-32 bg-gray-200 rounded-lg mb-3 overflow-hidden">
+                                    <img th:src="${exercise.gifUrl}"
+                                         th:alt="${exercise.name}"
+                                         class="w-full h-full object-cover"/>
+                                </div>
+
+                                <!-- Exercise Name -->
+                                <h4 class="font-semibold text-gray-800 capitalize mb-2 line-clamp-2"
+                                    th:text="${exercise.name}">Exercise Name</h4>
+
+                                <!-- Tags -->
+                                <div class="flex gap-1 flex-wrap">
+                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 capitalize"
+                                          th:text="${exercise.bodyPart}">body part</span>
+                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 capitalize"
+                                          th:text="${exercise.equipment}">equipment</span>
+                                    <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800 capitalize"
+                                          th:text="${exercise.target}">target</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No Exercises Message -->
+                <div th:if="${#lists.isEmpty(exercises)}" class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 16h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No exercises found</h3>
+                    <p class="mt-1 text-sm text-gray-500">Try adjusting your filters or clearing them to see more exercises.</p>
+                </div>
+
+                <!-- Spacer for sticky footer -->
+                <div class="h-24"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Sticky Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-transparent z-30 pointer-events-none">
+    <div class="lg:ml-64 px-4">
+        <div class="container mx-auto">
+            <div class="bg-white border border-gray-200 shadow-lg rounded-lg
+                        py-4 px-6 flex justify-between items-center pointer-events-auto">
+            <div class="text-sm text-gray-600">
+                <span id="selectedCountSticky">0</span> exercise(s) selected
+            </div>
+            <div class="flex gap-3">
+                <a th:href="@{/trainer/courses/edit/{id}(id=${course.id})}"
+                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors inline-flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Cancel
+                </a>
+                <button type="submit" form="exerciseForm"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Save Selection
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Helper functions for selecting/deselecting all checkboxes
+    function selectAll() {
+        document.querySelectorAll('input[name="exerciseIds"]').forEach(function(checkbox) {
+            checkbox.checked = true;
+        });
+        updateSelectedCount();
+    }
+
+    function deselectAll() {
+        document.querySelectorAll('input[name="exerciseIds"]').forEach(function(checkbox) {
+            checkbox.checked = false;
+        });
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const checkedCount = document.querySelectorAll('input[name="exerciseIds"]:checked').length;
+        document.getElementById('selectedCountSticky').textContent = checkedCount;
+    }
+
+    // Update count on page load and when checkboxes change
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSelectedCount();
+
+        // Add change listeners to all checkboxes
+        document.querySelectorAll('input[name="exerciseIds"]').forEach(function(checkbox) {
+            checkbox.addEventListener('change', updateSelectedCount);
+        });
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

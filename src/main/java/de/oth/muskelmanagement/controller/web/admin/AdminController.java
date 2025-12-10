@@ -4,7 +4,9 @@ import de.oth.muskelmanagement.dto.CourseDto;
 import de.oth.muskelmanagement.dto.SubscriptionDto;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Course;
+import de.oth.muskelmanagement.model.entity.Enrollment;
 import de.oth.muskelmanagement.model.entity.Exercise;
+import de.oth.muskelmanagement.model.entity.Review;
 import de.oth.muskelmanagement.service.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -31,16 +33,19 @@ public class AdminController {
     private final UserService userService;
     private final CourseService courseService;
     private final RoomService roomService;
+    private final ReviewService reviewService;
+
     private final ExerciseService exerciseService;
     private final SubscriptionService subscriptionService;
     private final PricingService pricingService;
 
-    public AdminController(UserService userService, CourseService courseService, RoomService roomService,
+    public AdminController(UserService userService, CourseService courseService, RoomService roomService, ReviewService reviewService,
             SubscriptionService subscriptionService, ExerciseService exerciseService, PricingService pricingService) {
         this.userService = userService;
         this.courseService = courseService;
         this.exerciseService = exerciseService;
         this.roomService = roomService;
+        this.reviewService = reviewService;
         this.subscriptionService = subscriptionService;
         this.pricingService = pricingService;
     }
@@ -147,6 +152,30 @@ public class AdminController {
         var rooms = roomService.findActiveRooms();
         model.addAttribute("rooms", rooms);
 
+        // Member Management Data
+        List<UserDto> enrolledMembers = courseService.listEnrollments(id).stream()
+                .map(Enrollment::getUser)
+                .map(user -> {
+                    UserDto dto = new UserDto();
+                    dto.setId(user.getId());
+                    dto.setFirstName(user.getFirstName());
+                    dto.setLastName(user.getLastName());
+                    dto.setEmail(user.getEmail());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        Set<Long> enrolledMemberIds = enrolledMembers.stream()
+                .map(UserDto::getId)
+                .collect(Collectors.toSet());
+
+        List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
+                .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !enrolledMemberIds.contains(user.getId()))
+                .collect(Collectors.toList());
+
+        model.addAttribute("enrolledMembers", enrolledMembers);
+        model.addAttribute("availableMembers", availableMembers);
+
         return "admin/course-form";
     }
 
@@ -165,6 +194,18 @@ public class AdminController {
 
         courseService.updateCourseFromDto(id, courseDto);
         return "redirect:/admin/courses";
+    }
+
+    @PostMapping("/courses/edit/{id}/add-member")
+    public String addMemberToCourse(@PathVariable Long id, @RequestParam Long memberId) {
+        courseService.addMember(id, memberId);
+        return "redirect:/admin/courses/edit/" + id;
+    }
+
+    @PostMapping("/courses/edit/{id}/remove-member/{memberId}")
+    public String removeMemberFromCourse(@PathVariable Long id, @PathVariable Long memberId) {
+        courseService.removeMember(id, memberId);
+        return "redirect:/admin/courses/edit/" + id;
     }
 
     @GetMapping("/courses/delete/{id}")
@@ -225,6 +266,17 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMessage", "Error assigning exercises: " + e.getMessage());
         }
         return "redirect:/admin/courses/edit/" + id;
+    }
+
+    @GetMapping("/courses/{id}/info")
+    public String showCourseInfo(@PathVariable Long id, Model model) {
+        Course course = courseService.findById(id);
+        List<Review> reviews = reviewService.getReviewsByCourse(id);
+        model.addAttribute("course", course);
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("exercises", course.getExercises());
+
+        return "admin/course-info";
     }
 
     @GetMapping("/users/new")
