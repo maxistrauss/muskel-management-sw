@@ -5,6 +5,9 @@ import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.service.PayPalService;
 import de.oth.muskelmanagement.service.SubscriptionService;
 import de.oth.muskelmanagement.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +20,14 @@ import java.security.Principal;
 @PreAuthorize("hasRole('MEMBER')")
 public class MemberPaymentController {
 
+    private static final Logger logger = LoggerFactory.getLogger(MemberPaymentController.class);
+
     private final PayPalService payPalService;
     private final SubscriptionService subscriptionService;
     private final UserService userService;
+    
+    @Value("${paypal.mode}")
+    private String mode;
 
     public MemberPaymentController(PayPalService payPalService, SubscriptionService subscriptionService, 
                                    UserService userService) {
@@ -41,30 +49,52 @@ public class MemberPaymentController {
                 return "redirect:/member/subscriptions";
             }
             
-            // Create PayPal order (generates order ID)
+            // Create PayPal order
             String orderId = payPalService.createOrder(subscription);
             
             if (orderId != null) {
-                // Redirect to PayPal checkout
-                // In a real scenario with API, this would be the approval URL from PayPal
-                // For demo: redirect to success page and mark as paid
-                subscriptionService.markAsPaid(subscriptionId, orderId);
-                redirectAttributes.addFlashAttribute("success", "Payment successful!");
-                return "redirect:/member/subscriptions";
+                // Save order ID to subscription for later reference
+                subscriptionService.updatePayPalOrderId(subscriptionId, orderId);
+                
+                // Redirect to PayPal checkout page
+                String paypalRedirectUrl = "sandbox".equalsIgnoreCase(mode)
+                    ? "https://www.sandbox.paypal.com/checkoutnow?token=" + orderId
+                    : "https://www.paypal.com/checkoutnow?token=" + orderId;
+                
+                logger.info("Redirecting to PayPal checkout: {}", paypalRedirectUrl);
+                return "redirect:" + paypalRedirectUrl;
             } else {
                 redirectAttributes.addFlashAttribute("error", "Failed to create payment");
                 return "redirect:/member/subscriptions";
             }
         } catch (Exception e) {
+            logger.error("Error creating payment", e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/member/subscriptions";
         }
     }
 
-    @GetMapping("/success")
-    public String paymentSuccess(@RequestParam(required = false) String orderId, 
-                                RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute("success", "Payment completed successfully!");
+    @GetMapping("/return")
+    public String paymentReturn(@RequestParam String token, Principal principal,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findByEmail(principal.getName());
+            
+            // Capture the order
+            boolean success = payPalService.captureOrder(token);
+            
+            if (success) {
+                // Find and update subscription
+                subscriptionService.markAsPaid(user.getId(), token);
+                redirectAttributes.addFlashAttribute("success", "Payment completed successfully!");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Failed to complete payment");
+            }
+        } catch (Exception e) {
+            logger.error("Error processing payment return", e);
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        
         return "redirect:/member/subscriptions";
     }
 

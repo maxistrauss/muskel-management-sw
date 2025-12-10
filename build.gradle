@@ -37,8 +37,11 @@ dependencies {
     implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
     implementation 'com.openhtmltopdf:openhtmltopdf-slf4j:1.0.10'
     
-    // PayPal SDK
-    implementation 'com.paypal.sdk:checkout-sdk:1.0.2'
+    // PayPal SDK for Checkout Integration
+    implementation 'com.braintreepayments.gateway:braintree-java:3.17.0'
+    
+    // JSON processing
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 node {

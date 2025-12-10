@@ -155,6 +155,33 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         logger.info("Subscription {} marked as paid with PayPal order {}", subscriptionId, paypalOrderId);
     }
 
+    @Override
+    @Transactional
+    public void updatePayPalOrderId(Long subscriptionId, String paypalOrderId) {
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new RuntimeException("Subscription not found with id: " + subscriptionId));
+        
+        subscription.setPaypalOrderId(paypalOrderId);
+        subscription.setPaymentStatus("PENDING");
+        subscriptionRepository.save(subscription);
+        
+        logger.info("Subscription {} updated with PayPal order {}", subscriptionId, paypalOrderId);
+    }
+
+    @Override
+    @Transactional
+    public void markAsPaidByUserId(Long userId, String paypalOrderId) {
+        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+                .orElseThrow(() -> new RuntimeException("No active subscription found for user: " + userId));
+        
+        subscription.setPaypalOrderId(paypalOrderId);
+        subscription.setPaymentStatus("PAID");
+        subscriptionRepository.save(subscription);
+        
+        logger.info("Subscription {} for user {} marked as paid with PayPal order {}", 
+                subscription.getId(), userId, paypalOrderId);
+    }
+
     private SubscriptionDto convertToDto(Subscription subscription) {
         SubscriptionDto dto = new SubscriptionDto();
         dto.setId(subscription.getId());
