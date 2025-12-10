@@ -1,12 +1,12 @@
 package de.oth.muskelmanagement.service.impl;
 
 import de.oth.muskelmanagement.dto.SubscriptionDto;
-import de.oth.muskelmanagement.model.entity.Subscription;
 import de.oth.muskelmanagement.model.entity.Pricing;
+import de.oth.muskelmanagement.model.entity.Subscription;
 import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
-import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import de.oth.muskelmanagement.repository.PricingRepository;
+import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.SubscriptionService;
 import org.slf4j.Logger;
@@ -155,6 +155,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         logger.info("Subscription {} marked as paid with PayPal order {}", subscriptionId, paypalOrderId);
     }
 
+    /* 
     @Override
     @Transactional
     public void updatePayPalOrderId(Long subscriptionId, String paypalOrderId) {
@@ -166,9 +167,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         subscriptionRepository.save(subscription);
         
         logger.info("Subscription {} updated with PayPal order {}", subscriptionId, paypalOrderId);
-    }
+    }*/
 
-    @Override
+    /*@Override
     @Transactional
     public void markAsPaidByUserId(Long userId, String paypalOrderId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
@@ -180,7 +181,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         
         logger.info("Subscription {} for user {} marked as paid with PayPal order {}", 
                 subscription.getId(), userId, paypalOrderId);
-    }
+    }*/
 
     private SubscriptionDto convertToDto(Subscription subscription) {
         SubscriptionDto dto = new SubscriptionDto();
@@ -202,5 +203,17 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         dto.setPaypalOrderId(subscription.getPaypalOrderId());
         dto.setPaymentStatus(subscription.getPaymentStatus());
         return dto;
+    }
+
+    @Override
+    public Optional<Subscription> findActiveSubscriptionEntity(Long userId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findActiveSubscriptionEntity'");
+    }
+
+    @Override
+    public List<Subscription> findAllActiveSubscriptionsEntities(Long userId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findAllActiveSubscriptionsEntities'");
     }
 }

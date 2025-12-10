@@ -15,9 +15,6 @@ public class RegistrationDto {
     @Email(message = "Please provide a valid email address")
     private String email;
 
-    @NotBlank(message = "Membership type cannot be blank")
-    private String membershipType;
-
     @NotBlank(message = "Password cannot be blank")
     private String password;
 
@@ -46,14 +43,6 @@ public class RegistrationDto {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getMembershipType() {
-        return membershipType;
-    }
-
-    public void setMembershipType(String membershipType) {
-        this.membershipType = membershipType;
     }
 
     public String getPassword() {

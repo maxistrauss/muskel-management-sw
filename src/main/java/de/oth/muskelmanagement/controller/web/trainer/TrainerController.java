@@ -3,7 +3,9 @@ package de.oth.muskelmanagement.controller.web.trainer;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Course;
 import de.oth.muskelmanagement.model.entity.Enrollment;
+import de.oth.muskelmanagement.model.entity.Review;
 import de.oth.muskelmanagement.service.CourseService;
+import de.oth.muskelmanagement.service.ReviewService;
 import de.oth.muskelmanagement.service.RoomService;
 import de.oth.muskelmanagement.service.UserService;
 import org.springframework.data.domain.Page;
@@ -24,11 +26,14 @@ public class TrainerController {
     private final CourseService courseService;
     private final UserService userService;
     private final RoomService roomService;
+    private final ReviewService reviewService;
 
-    public TrainerController(CourseService courseService, UserService userService, RoomService roomService) {
+    public TrainerController(CourseService courseService, UserService userService, RoomService roomService,
+            ReviewService reviewService) {
         this.courseService = courseService;
         this.userService = userService;
         this.roomService = roomService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping("/courses/new")
@@ -77,6 +82,9 @@ public class TrainerController {
         existing.setCapacity(courseForm.getCapacity());
         existing.setActive(courseForm.isActive());
         existing.setRoom(courseForm.getRoom());
+        existing.setStartDate(courseForm.getStartDate());
+        existing.setEndDate(courseForm.getEndDate());
+        existing.setDaysOfWeek(courseForm.getDaysOfWeek());
         courseService.save(existing);
         return "redirect:/trainer/courses";
     }
@@ -110,6 +118,15 @@ public class TrainerController {
         return "trainer/course-participants";
     }
 
+    @GetMapping("/courses/{id}/reviews")
+    public String viewReviews(@PathVariable Long id, Model model) {
+        Course course = courseService.findById(id);
+        List<Review> reviews = reviewService.getReviewsByCourse(id);
+        model.addAttribute("course", course);
+        model.addAttribute("reviews", reviews);
+        return "trainer/course-reviews";
+    }
+
     @GetMapping("/courses/{id}/add-member")
     public String showAddMemberForm(@PathVariable Long id, Model model) {
         Course course = courseService.findById(id);
@@ -136,16 +153,8 @@ public class TrainerController {
     }
 
     @GetMapping("/members")
-    public String listMembers(Model model, @PageableDefault(size = 20) Pageable pageable,
-            org.springframework.security.core.Authentication authentication) {
-        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        Page<UserDto> users;
-        if (isAdmin) {
-            users = userService.findAll(pageable);
-        } else {
-            users = userService.findNonAdmins(pageable);
-        }
+    public String listMembers(Model model, @PageableDefault(size = 20) Pageable pageable) {
+        Page<UserDto> users = userService.findAll(pageable);
         model.addAttribute("userPage", users);
         return "trainer/members";
     }

@@ -26,7 +26,7 @@ public class EmailServiceImpl implements EmailService {
     private String fromEmail;
 
     @Override
-    public void sendTwoFactorCode(String toEmail, String code, String userName) {
+    public void sendTwoFactorCodeEmail(String toEmail, String code, String userName) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -92,7 +92,8 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendSubscriptionExpiryReminder(String toEmail, String userName, String tarifName, LocalDate expiryDate,
+    public void sendSubscriptionExpiryReminder(String toEmail, String userName, String pricingName,
+            LocalDate expiryDate,
             long daysRemaining) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -102,7 +103,7 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(toEmail);
             helper.setSubject("Your Subscription is Expiring Soon - MuskelManagement");
 
-            String htmlContent = buildExpiryReminderEmailTemplate(userName, tarifName, expiryDate, daysRemaining);
+            String htmlContent = buildExpiryReminderEmailTemplate(userName, pricingName, expiryDate, daysRemaining);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
@@ -112,6 +113,241 @@ public class EmailServiceImpl implements EmailService {
             logger.error("Failed to send expiry reminder email to: {}", toEmail, e);
             throw new RuntimeException("Failed to send expiry reminder email", e);
         }
+    }
+
+    @Override
+    public void sendRegistrationConfirmationEmail(String toEmail, String userName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Registration Successful - MuskelManagement");
+
+            String htmlContent = buildRegistrationConfirmationEmailTemplate(userName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Registration confirmation email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send registration confirmation email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send registration confirmation email", e);
+        }
+    }
+
+    private String buildRegistrationConfirmationEmailTemplate(String userName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #10b981;
+                            color: white;
+                            padding: 20px;
+                            text-align: center;
+                            border-radius: 5px 5px 0 0;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 24px;
+                        }
+                        .content {
+                            background-color: #f9fafb;
+                            padding: 30px;
+                            border-radius: 0 0 5px 5px;
+                        }
+                        .success-box {
+                            background-color: white;
+                            border-left: 4px solid #10b981;
+                            border-radius: 5px;
+                            padding: 20px;
+                            margin: 20px 0;
+                            text-align: center;
+                        }
+                        .success-box h2 {
+                            color: #10b981;
+                            margin-top: 0;
+                        }
+                        .cta-button {
+                            display: inline-block;
+                            background-color: #3b82f6;
+                            color: white;
+                            padding: 15px 30px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            font-weight: bold;
+                            margin: 20px 0;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 20px;
+                            color: #6b7280;
+                            font-size: 12px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                            <p style="margin: 5px 0 0 0;">Welcome!</p>
+                        </div>
+                        <div class="content">
+                            <p>Hello %s,</p>
+                
+                            <div class="success-box">
+                                <h2>Registration Successful!</h2>
+                                <p>Welcome to the MuskelManagement community.</p>
+                            </div>
+                
+                            <p>Your account has been successfully created. You can now log in and start your fitness journey.</p>
+                
+                            <div style="text-align: center;">
+                                <a href="http://localhost:8080/login" class="cta-button">
+                                    Login Now
+                                </a>
+                            </div>
+                
+                            <p>We are excited to have you on board!</p>
+                
+                            <p>Best regards,<br/>
+                               Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This email was generated automatically. Please do not reply to it.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName != null ? userName : "User");
+    }
+
+    @Override
+    public void sendPasswordChangeConfirmationEmail(String toEmail, String userName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Security Alert: Password Changed - MuskelManagement");
+
+            String htmlContent = buildPasswordChangeConfirmationEmailTemplate(userName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Password change confirmation email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send password change confirmation email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send password change confirmation email", e);
+        }
+    }
+
+    private String buildPasswordChangeConfirmationEmailTemplate(String userName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #3b82f6;
+                            color: white;
+                            padding: 20px;
+                            text-align: center;
+                            border-radius: 5px 5px 0 0;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 24px;
+                        }
+                        .content {
+                            background-color: #f9fafb;
+                            padding: 30px;
+                            border-radius: 0 0 5px 5px;
+                        }
+                        .alert-box {
+                            background-color: white;
+                            border-left: 4px solid #3b82f6;
+                            border-radius: 5px;
+                            padding: 20px;
+                            margin: 20px 0;
+                        }
+                        .warning {
+                            background-color: #fef3c7;
+                            border-left: 4px solid #f59e0b;
+                            padding: 15px;
+                            margin: 20px 0;
+                            border-radius: 3px;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 20px;
+                            color: #6b7280;
+                            font-size: 12px;
+                        }
+                        strong {
+                            color: #1f2937;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                            <p style="margin: 5px 0 0 0;">Security Alert</p>
+                        </div>
+                        <div class="content">
+                            <p>Hello %s,</p>
+                
+                            <div class="alert-box">
+                                <p><strong>Your password was successfully changed.</strong></p>
+                                <p>This is a confirmation that your account password has been updated.</p>
+                            </div>
+                
+                            <div class="warning">
+                                <strong>⚠️ Didn't change your password?</strong><br/>
+                                If you did not make this change, please contact our support team immediately 
+                                and secure your account.
+                            </div>
+                
+                            <p>Best regards,<br/>
+                               Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This email was generated automatically. Please do not reply to it.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName != null ? userName : "User");
     }
 
     private String buildTwoFactorEmailTemplate(String code, String userName) {
@@ -426,7 +662,7 @@ public class EmailServiceImpl implements EmailService {
                 """.formatted(userName != null ? userName : "User");
     }
 
-    private String buildExpiryReminderEmailTemplate(String userName, String tarifName, LocalDate expiryDate,
+    private String buildExpiryReminderEmailTemplate(String userName, String pricingName, LocalDate expiryDate,
             long daysRemaining) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         String formattedDate = expiryDate.format(formatter);
@@ -557,6 +793,6 @@ public class EmailServiceImpl implements EmailService {
                 </body>
                 </html>
                 """.formatted(userName != null ? userName : "Member", daysRemaining,
-                tarifName != null ? tarifName : "Your Plan", formattedDate);
+                pricingName != null ? pricingName : "Your Plan", formattedDate);
     }
 }

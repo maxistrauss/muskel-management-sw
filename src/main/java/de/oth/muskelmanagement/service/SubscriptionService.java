@@ -64,18 +64,9 @@ public interface SubscriptionService {
      * @param paypalOrderId The PayPal order ID
      */
     void markAsPaid(Long subscriptionId, String paypalOrderId);
-    
-    /**
-     * Update PayPal order ID for a subscription
-     * @param subscriptionId The subscription ID
-     * @param paypalOrderId The PayPal order ID
-     */
-    void updatePayPalOrderId(Long subscriptionId, String paypalOrderId);
-    
-    /**
-     * Mark subscription as paid by user ID and PayPal order ID (finds active subscription)
-     * @param userId The user ID
-     * @param paypalOrderId The PayPal order ID
-     */
-    void markAsPaidByUserId(Long userId, String paypalOrderId);
+
+    // Methods returning entities directly for internal service use
+    Optional<de.oth.muskelmanagement.model.entity.Subscription> findActiveSubscriptionEntity(Long userId);
+
+    List<de.oth.muskelmanagement.model.entity.Subscription> findAllActiveSubscriptionsEntities(Long userId);
 }

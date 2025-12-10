@@ -3,10 +3,13 @@ package de.oth.muskelmanagement.service.impl;
 import de.oth.muskelmanagement.dto.RegistrationDto;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Role;
+import de.oth.muskelmanagement.model.entity.Subscription;
 import de.oth.muskelmanagement.model.entity.User;
+import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.RoleRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.EmailService;
+import de.oth.muskelmanagement.service.SubscriptionService;
 import de.oth.muskelmanagement.service.UserService;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -34,17 +37,20 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final de.oth.muskelmanagement.repository.CourseRepository courseRepository;
     private final de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository;
+    private final SubscriptionService subscriptionService; // Inject SubscriptionService
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
             PasswordEncoder passwordEncoder, EmailService emailService,
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
-            de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository) {
+            de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
+            SubscriptionService subscriptionService) { // Add to constructor
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.subscriptionService = subscriptionService; // Assign
     }
 
     @Override
@@ -53,7 +59,6 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        user.setMembershipType(userDto.getMembershipType());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEnabled(userDto.isEnabled());
         user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
@@ -84,7 +89,6 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(registrationDto.getFirstName());
         user.setLastName(registrationDto.getLastName());
         user.setEmail(registrationDto.getEmail());
-        user.setMembershipType(registrationDto.getMembershipType());
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setEnabled(true); // New registrations are enabled by default
 
@@ -99,7 +103,17 @@ public class UserServiceImpl implements UserService {
         roles.add(memberRole);
         user.setRoles(roles);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Send registration confirmation email
+        try {
+            emailService.sendRegistrationConfirmationEmail(savedUser.getEmail(), savedUser.getFirstName());
+        } catch (Exception e) {
+            // Log error but don't fail registration
+            System.err.println("Failed to send registration email: " + e.getMessage());
+        }
+
+        return savedUser;
     }
 
     @Override
@@ -135,7 +149,6 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        user.setMembershipType(userDto.getMembershipType());
         user.setEnabled(userDto.isEnabled());
         user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
 
@@ -211,10 +224,38 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         userFromDb.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(userFromDb);
+
+        // Send email confirmation
+        try {
+            emailService.sendPasswordChangeConfirmationEmail(userFromDb.getEmail(), userFromDb.getFirstName());
+        } catch (Exception e) {
+            // Log error but don't fail password change
+            System.err.println("Failed to send password change confirmation email: " + e.getMessage());
+        }
     }
 
     @Override
-    public Page<UserDto> findUsers(String email, String firstName, String lastName, String membershipType,
+    public void changeMyPassword(Long userId, String oldPassword, String newPassword) {
+        User userFromDb = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(oldPassword, userFromDb.getPassword())) {
+            throw new IllegalArgumentException("Old password does not match.");
+        }
+
+        userFromDb.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userFromDb);
+
+        // Send email confirmation
+        try {
+            emailService.sendPasswordChangeConfirmationEmail(userFromDb.getEmail(), userFromDb.getFirstName());
+        } catch (Exception e) {
+            // Log error but don't fail password change
+            System.err.println("Failed to send password change confirmation email: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Page<UserDto> findUsers(String email, String firstName, String lastName, String activePlan,
             Pageable pageable) {
         Specification<User> spec = (Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -228,8 +269,12 @@ public class UserServiceImpl implements UserService {
             if (StringUtils.hasText(lastName)) {
                 predicates.add(cb.like(cb.lower(root.get("lastName")), "%" + lastName.toLowerCase() + "%"));
             }
-            if (StringUtils.hasText(membershipType)) {
-                predicates.add(cb.like(cb.lower(root.get("membershipType")), "%" + membershipType.toLowerCase() + "%"));
+            if (StringUtils.hasText(activePlan)) {
+                // Filter by active plan name
+                jakarta.persistence.criteria.Join<User, Subscription> subscriptionJoin = root.join("subscriptions");
+                predicates.add(cb.equal(subscriptionJoin.get("status"), SubscriptionStatus.ACTIVE));
+                predicates.add(cb.like(cb.lower(subscriptionJoin.join("pricing").get("name")),
+                        "%" + activePlan.toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -243,7 +288,14 @@ public class UserServiceImpl implements UserService {
         userDto.setFirstName(user.getFirstName());
         userDto.setLastName(user.getLastName());
         userDto.setEmail(user.getEmail());
-        userDto.setMembershipType(user.getMembershipType());
+
+        // Derive active subscription info
+        subscriptionService.findActiveSubscriptionEntity(user.getId()).ifPresent(subscription -> {
+            userDto.setActiveSubscriptionPricingName(subscription.getPricing().getName());
+            userDto.setActiveSubscriptionStatus(subscription.getStatus().name());
+            userDto.setActiveSubscriptionStartDate(subscription.getStartDate());
+        });
+        
         userDto.setEnabled(user.isEnabled());
         userDto.setDeactivationReason(user.getDeactivationReason());
         userDto.setTwoFactorEnabled(user.isTwoFactorEnabled());
@@ -270,15 +322,5 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         user.setTwoFactorEnabled(!user.isTwoFactorEnabled());
         userRepository.save(user);
-    }
-
-    @Override
-    public Page<UserDto> findMembersOnly(Pageable pageable) {
-        return userRepository.findPureMembers(pageable).map(this::convertToDto);
-    }
-
-    @Override
-    public Page<UserDto> findNonAdmins(Pageable pageable) {
-        return userRepository.findNonAdmins(pageable).map(this::convertToDto);
     }
 }

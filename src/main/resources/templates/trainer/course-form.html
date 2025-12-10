@@ -57,6 +57,25 @@
                 <textarea name="description" class="w-full border rounded px-3 py-2" rows="6" th:text="${course.description}"></textarea>
             </div>
             <div class="mb-4">
+                <label class="block text-gray-700">Start Date</label>
+                <input type="date" name="startDate" th:value="${course.startDate}" class="w-full border rounded px-3 py-2" required/>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">End Date</label>
+                <input type="date" name="endDate" th:value="${course.endDate}" class="w-full border rounded px-3 py-2" required/>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Days of Week</label>
+                <div class="flex flex-wrap">
+                    <div th:each="day : ${T(de.oth.muskelmanagement.model.enums.DayOfWeek).values()}" class="mr-4">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="daysOfWeek" th:value="${day}" th:checked="${course.daysOfWeek != null && course.daysOfWeek.stream().anyMatch(d -> d.name().equals(day.name()))}" class="mr-2"/>
+                            <span th:text="${day.name().substring(0,1) + day.name().substring(1).toLowerCase()}"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-4">
                 <label class="inline-flex items-center">
                     <input type="checkbox" name="active" th:checked="${course.active}" class="mr-2"/>
                     <span>Active</span>

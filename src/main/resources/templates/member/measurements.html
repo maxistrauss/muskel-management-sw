@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Progress</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+    <div class="container mx-auto mt-8 p-4">
+        <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <h1 class="text-3xl font-bold mb-6">My Progress</h1>
+
+            <!-- Graph Container -->
+            <div class="mb-8 bg-gray-50 p-4 rounded-lg" th:if="${!#lists.isEmpty(measurements)}">
+                <canvas height="150" id="progressChart" width="400"></canvas>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-800 text-white">
+                    <tr>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Date</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Weight (kg)</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Body Fat %</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Muscle Mass %</th>
+                        <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Notes</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                    <tr class="border-b hover:bg-gray-50" th:each="m : ${measurements}">
+                        <td class="py-3 px-4" th:text="${#temporals.format(m.date, 'dd.MM.yyyy')}"></td>
+                        <td class="py-3 px-4" th:text="${m.weight}"></td>
+                        <td class="py-3 px-4" th:text="${m.bodyFatPercentage}"></td>
+                        <td class="py-3 px-4" th:text="${m.muscleMassPercentage}"></td>
+                        <td class="py-3 px-4 text-sm text-gray-600 max-w-md" th:text="${m.notes}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(measurements)}">
+                        <td class="py-4 text-center text-gray-500" colspan="5">No measurements found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const measurements = /*[[${measurements}]]*/ [];
+
+    if (measurements.length > 0) {
+        const sorted = [...measurements].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const dates = sorted.map(m => new Date(m.date).toLocaleDateString());
+        const weights = sorted.map(m => m.weight);
+        const bodyFats = sorted.map(m => m.bodyFatPercentage);
+
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [
+                    {
+                        label: 'Weight (kg)',
+                        data: weights,
+                        borderColor: 'rgb(59, 130, 246)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Body Fat (%)',
+                        data: bodyFats,
+                        borderColor: 'rgb(239, 68, 68)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {display: true, text: 'Weight (kg)'}
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {display: true, text: 'Body Fat (%)'}
+                    }
+                }
+            }
+        });
+    }
+    /*]]>*/
+</script>
+</body>
+</html>

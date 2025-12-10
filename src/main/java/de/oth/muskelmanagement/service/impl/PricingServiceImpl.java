@@ -43,6 +43,11 @@ public class PricingServiceImpl implements PricingService {
     }
 
     @Override
+    public List<Pricing> findAll() {
+        return pricingRepository.findAll();
+    }
+
+    @Override
     public Page<PricingDto> findAll(Pageable pageable) {
         return pricingRepository.findAll(pageable).map(this::convertToDto);
     }

@@ -3,6 +3,21 @@
 <head>
     <title>Welcome</title>
     <link rel="stylesheet" th:href="@{/css/output.css}"/>
+
+    <!-- Leaflet CSS and JS for OpenStreetMap -->
+    <link crossorigin="" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          rel="stylesheet"/>
+    <script crossorigin=""
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            z-index: 1;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
 <!-- Include Sidebar Navigation Fragment -->
@@ -12,27 +27,92 @@
 <div class="lg:ml-64">
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold mb-6">Welcome to MuskelManagement!</h1>
+            <h1 class="text-3xl font-bold mb-6">Welcome to MuskelManagement!</h1>
 
-        <div sec:authorize="isAuthenticated()">
-            <p class="text-lg">Welcome, <span class="font-semibold"
-                                              th:text="${#authentication.principal.username}"></span>!</p>
-            <p class="text-lg">Your roles are: <span class="font-semibold"
-                                                     th:text="${#authentication.principal.authorities}"></span></p>
+            <div sec:authorize="isAuthenticated()">
+                <p class="text-lg">Welcome, <span class="font-semibold"
+                                                  th:text="${#authentication.principal.username}"></span>!</p>
+                <p class="text-lg mb-6">Your roles are: <span class="font-semibold"
+                                                              th:text="${#authentication.principal.authorities}"></span>
+                </p>
 
-            <div sec:authorize="hasRole('ADMIN')" class="mt-6">
-                <h2 class="text-2xl font-bold mb-4">Admin Functions</h2>
-                <div class="flex flex-col space-y-3">
-                    <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded text-center"
-                       href="/admin/users">User Management</a>
-                    <a class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded text-center"
-                       href="/admin/pricing">Pricing Management</a>
+                <div class="mt-6 mb-8" sec:authorize="hasRole('ADMIN')">
+                    <h2 class="text-2xl font-bold mb-4">Admin Functions</h2>
+                    <div class="flex flex-col space-y-3">
+                        <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded text-center"
+                           href="/admin/users">User Management</a>
+                        <a class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded text-center"
+                           href="/admin/pricing">Pricing Management</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Studio Location Section -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h2 class="text-2xl font-bold mb-4">Our Studio Location</h2>
+                <p class="text-gray-600 mb-4">Come visit us at our main studio!</p>
+
+                <div class="rounded-lg shadow-inner border border-gray-300 mb-4" id="map"></div>
+
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="text-gray-600">
+                        <p><strong>MuskelManagement HQ</strong><br/>
+                            Prüfeninger Str. 58<br/>
+                            93049 Regensburg</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <a class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                           href="https://www.openstreetmap.org/directions?to=49.0157%2C12.0730"
+                           target="_blank">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2"></path>
+                            </svg>
+                            OSM Routing
+                        </a>
+                        <a class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                           href="https://www.google.com/maps/dir/?api=1&destination=Prüfeninger+Str.+58,+93049+Regensburg"
+                           target="_blank">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2"></path>
+                                <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2"></path>
+                            </svg>
+                            Google Maps
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Coordinates for OTH Regensburg
+        const lat = 49.0157;
+        const lng = 12.0730;
+        const zoom = 15;
+
+        const map = L.map('map').setView([lat, lng], zoom);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const marker = L.marker([lat, lng]).addTo(map);
+        const popupContent = `
+            <div class="text-center">
+                <b>MuskelManagement Studio</b><br>
+                Prüfeninger Str. 58<br>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=Prüfeninger+Str.+58,+93049+Regensburg" target="_blank" class="text-blue-600 hover:underline text-sm">Get Directions</a>
+            </div>
+        `;
+        marker.bindPopup(popupContent).openPopup();
+    });
+</script>
 
 </body>
 </html>

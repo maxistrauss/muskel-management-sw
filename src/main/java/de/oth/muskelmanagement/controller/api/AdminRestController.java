@@ -28,8 +28,8 @@ public class AdminRestController {
     @GetMapping
     public ResponseEntity<Page<UserDto>> findUsers(@RequestParam(required = false) String email,
             @RequestParam(required = false) String firstName, @RequestParam(required = false) String lastName,
-            @RequestParam(required = false) String membershipType, @PageableDefault(size = 10) Pageable pageable) {
-        Page<UserDto> users = userService.findUsers(email, firstName, lastName, membershipType, pageable);
+            @RequestParam(required = false) String activePlan, @PageableDefault(size = 10) Pageable pageable) {
+        Page<UserDto> users = userService.findUsers(email, firstName, lastName, activePlan, pageable);
         return ResponseEntity.ok(users);
     }
 

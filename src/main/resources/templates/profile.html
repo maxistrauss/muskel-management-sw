@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>My Profile</title>
     <link rel="stylesheet" th:href="@{/css/output.css}"/>
@@ -49,8 +49,17 @@
             </div>
             
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Membership Type:</label>
-                <p class="text-gray-600" th:text="${user.membershipType ?: 'Not assigned'}"></p>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Active Plan:</label>
+                <p class="text-gray-600" th:text="${user.activeSubscriptionPricingName ?: 'None'}"></p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Subscription Status:</label>
+                <span class="px-2 py-1 rounded text-xs font-semibold"
+                      th:classappend="${user.activeSubscriptionStatus == 'ACTIVE'} ? 'bg-green-200 text-green-800' : 
+                                       (${user.activeSubscriptionStatus == 'EXPIRED'} ? 'bg-red-200 text-red-800' : 
+                                       (${user.activeSubscriptionStatus == 'CANCELLED'} ? 'bg-orange-200 text-orange-800' : 'bg-gray-200 text-gray-800'))"
+                      th:text="${user.activeSubscriptionStatus ?: 'N/A'}"></span>
             </div>
             
             <div class="mb-4">
@@ -124,10 +133,20 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="membershipType">Membership Type:</label>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Active Plan:</label>
                 <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 cursor-not-allowed"
-                       id="membershipType" th:field="*{membershipType}" type="text" readonly disabled/>
-                <p class="text-gray-500 text-xs italic">Membership type can only be changed by administrators</p>
+                       disabled id="activeSubscriptionPricingName" readonly th:field="*{activeSubscriptionPricingName}"
+                       type="text"/>
+                <p class="text-gray-500 text-xs italic">Active plan can only be changed by managing your
+                    subscriptions.</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Subscription Status:</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 cursor-not-allowed"
+                       disabled id="activeSubscriptionStatus" readonly th:field="*{activeSubscriptionStatus}"
+                       type="text"/>
+                <p class="text-gray-500 text-xs italic">Subscription status is automatically updated.</p>
             </div>
 
             <div class="mb-4">
@@ -157,6 +176,40 @@
                    href="/profile">Cancel</a>
             </div>
         </form>
+
+        <!-- Change Password Form (Edit Mode) -->
+        <div class="mt-8 pt-6 border-t border-gray-300" id="change-password-form" th:if="${!isViewMode}">
+            <h2 class="text-xl font-bold mb-4">Change Password</h2>
+            <form method="post" th:action="@{/profile/change-password}" th:object="${changePasswordDto}">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="oldPassword">Old Password:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="oldPassword" required th:field="*{oldPassword}" type="password"/>
+                    <span class="text-red-500 text-xs italic" th:errors="*{oldPassword}"
+                          th:if="${#fields.hasErrors('oldPassword')}"></span>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="newPassword">New Password:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="newPassword" required th:field="*{newPassword}" type="password"/>
+                    <span class="text-red-500 text-xs italic" th:errors="*{newPassword}"
+                          th:if="${#fields.hasErrors('newPassword')}"></span>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="confirmPassword">Confirm New
+                        Password:</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="confirmPassword" required th:field="*{confirmPassword}" type="password"/>
+                    <span class="text-red-500 text-xs italic" th:errors="*{confirmPassword}"
+                          th:if="${#fields.hasErrors('confirmPassword')}"></span>
+                </div>
+                <div class="flex justify-end">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="submit">
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 </body>

@@ -1,10 +1,12 @@
 package de.oth.muskelmanagement.controller.web.general;
 
+import de.oth.muskelmanagement.dto.ChangePasswordDto;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -32,18 +34,20 @@ public class ProfileController {
     @GetMapping
     public String showProfile(Model model, Principal principal) {
         User user = userService.findByEmail(principal.getName());
-        UserDto userDto = convertToDto(user);
+        UserDto userDto = userService.findById(user.getId()); // Get fully populated DTO
         model.addAttribute("user", userDto);
         model.addAttribute("isViewMode", true);
+        model.addAttribute("changePasswordDto", new ChangePasswordDto()); // Add empty DTO for potential form on page
         return "profile";
     }
 
     @GetMapping("/edit")
     public String showEditProfile(Model model, Principal principal) {
         User user = userService.findByEmail(principal.getName());
-        UserDto userDto = convertToDto(user);
+        UserDto userDto = userService.findById(user.getId()); // Get fully populated DTO
         model.addAttribute("user", userDto);
         model.addAttribute("isViewMode", false);
+        model.addAttribute("changePasswordDto", new ChangePasswordDto()); // Add empty DTO for form
         return "profile";
     }
 
@@ -51,19 +55,22 @@ public class ProfileController {
     public String updateProfile(@ModelAttribute("user") UserDto userDto, BindingResult bindingResult, Model model,
             Principal principal) {
         User user = userService.findByEmail(principal.getName());
-        UserDto currentUser = convertToDto(user);
+        UserDto currentUser = userService.findById(
+                user.getId()); // Get current UserDto, which has active subscription info
 
         // Ensure user can only update their own profile
         if (!currentUser.getId().equals(userDto.getId())) {
             model.addAttribute("error", "You can only edit your own profile");
             model.addAttribute("isViewMode", false);
+            model.addAttribute("changePasswordDto", new ChangePasswordDto());
             return "profile";
         }
 
         // Preserve fields that shouldn't be changed via profile edit
         userDto.setId(currentUser.getId());
         userDto.setEmail(currentUser.getEmail());
-        userDto.setMembershipType(currentUser.getMembershipType());
+        userDto.setActiveSubscriptionPricingName(currentUser.getActiveSubscriptionPricingName());
+        userDto.setActiveSubscriptionStatus(currentUser.getActiveSubscriptionStatus());
         userDto.setRoles(currentUser.getRoles());
         userDto.setEnabled(currentUser.isEnabled());
 
@@ -71,17 +78,52 @@ public class ProfileController {
         if (userDto.getFirstName() == null || userDto.getFirstName().trim().isEmpty()) {
             model.addAttribute("error", "First name cannot be blank");
             model.addAttribute("isViewMode", false);
+            model.addAttribute("changePasswordDto", new ChangePasswordDto());
             return "profile";
         }
 
         if (userDto.getLastName() == null || userDto.getLastName().trim().isEmpty()) {
             model.addAttribute("error", "Last name cannot be blank");
             model.addAttribute("isViewMode", false);
+            model.addAttribute("changePasswordDto", new ChangePasswordDto());
             return "profile";
         }
 
         userService.updateUser(userDto);
         return "redirect:/profile";
+    }
+
+    @PostMapping("/change-password")
+    public String changePassword(@Valid @ModelAttribute("changePasswordDto") ChangePasswordDto changePasswordDto,
+            BindingResult bindingResult, Model model, Principal principal, RedirectAttributes redirectAttributes) {
+
+        User user = userService.findByEmail(principal.getName());
+        UserDto userDto = userService.findById(user.getId());
+        model.addAttribute("user", userDto); // Re-add userDto to model for template rendering
+        model.addAttribute("isViewMode", false); // Stay in edit mode for password form
+
+        if (bindingResult.hasErrors()) {
+            return "profile"; // Return to profile page with validation errors
+        }
+
+        if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "password.mismatch",
+                    "New password and confirmation do not match");
+            return "profile";
+        }
+
+        try {
+            userService.changeMyPassword(user.getId(), changePasswordDto.getOldPassword(),
+                    changePasswordDto.getNewPassword());
+            redirectAttributes.addFlashAttribute("success", "Your password has been changed successfully.");
+            return "redirect:/profile";
+        } catch (IllegalArgumentException e) {
+            bindingResult.rejectValue("oldPassword", "password.invalid", e.getMessage());
+            return "profile";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "An unexpected error occurred: " + e.getMessage());
+            return "profile";
+        }
     }
 
     @PostMapping("/deactivate")
@@ -91,7 +133,7 @@ public class ProfileController {
 
         if (user != null) {
             // Deactivate the user account
-            UserDto userDto = convertToDto(user);
+            UserDto userDto = userService.findById(user.getId()); // Get up-to-date DTO
             userDto.setEnabled(false);
             userService.updateUser(userDto);
 
@@ -115,7 +157,10 @@ public class ProfileController {
         if (user != null) {
             userService.toggleTwoFactor(user.getId());
 
-            if (!user.isTwoFactorEnabled()) {
+            // After toggling, user object might be stale. Get fresh DTO to check status.
+            UserDto updatedUserDto = userService.findById(user.getId());
+
+            if (!updatedUserDto.isTwoFactorEnabled()) { // Check updated status
                 redirectAttributes.addFlashAttribute("success",
                         "Two-Factor Authentication has been enabled. You will receive a code via email on your next login.");
             } else {
@@ -127,16 +172,7 @@ public class ProfileController {
     }
 
     private UserDto convertToDto(User user) {
-        UserDto userDto = new UserDto();
-        userDto.setId(user.getId());
-        userDto.setFirstName(user.getFirstName());
-        userDto.setLastName(user.getLastName());
-        userDto.setEmail(user.getEmail());
-        userDto.setMembershipType(user.getMembershipType());
-        userDto.setEnabled(user.isEnabled());
-        userDto.setTwoFactorEnabled(user.isTwoFactorEnabled());
-        userDto.setRoles(
-                user.getRoles().stream().map(role -> role.getName()).collect(java.util.stream.Collectors.toSet()));
-        return userDto;
+        // Use userService.findById to get a DTO with derived subscription info
+        return userService.findById(user.getId());
     }
 }

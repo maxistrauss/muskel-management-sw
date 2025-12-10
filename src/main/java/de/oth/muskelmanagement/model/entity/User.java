@@ -16,11 +16,6 @@ public class User {
     private String lastName;
     @Column(unique = true, nullable = false)
     private String email;
-    private String membershipType;
-
-    @ManyToOne
-    @JoinColumn(name = "membership_id")
-    private Membership membership;
 
     private String password;
 
@@ -36,15 +31,17 @@ public class User {
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Subscription> subscriptions;
+
     public User() {
     }
 
-    public User(String firstName, String lastName, String email, String membershipType, String password,
+    public User(String firstName, String lastName, String email, String password,
             Set<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.membershipType = membershipType;
         this.password = password;
         this.roles = roles;
     }
@@ -79,22 +76,6 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getMembershipType() {
-        return membershipType;
-    }
-
-    public void setMembershipType(String membershipType) {
-        this.membershipType = membershipType;
-    }
-
-    public Membership getMembership() {
-        return membership;
-    }
-
-    public void setMembership(Membership membership) {
-        this.membership = membership;
     }
 
     public String getPassword() {
@@ -135,5 +116,13 @@ public class User {
 
     public void setDeactivationReason(String deactivationReason) {
         this.deactivationReason = deactivationReason;
+    }
+
+    public Set<Subscription> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void setSubscriptions(Set<Subscription> subscriptions) {
+        this.subscriptions = subscriptions;
     }
 }

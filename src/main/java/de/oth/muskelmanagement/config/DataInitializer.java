@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Set;
 
 @Component
@@ -34,15 +35,17 @@ public class DataInitializer implements CommandLineRunner {
     private final ExerciseService exerciseService;
     private final PasswordEncoder passwordEncoder;
     private final TrainingPlanRepository trainingPlanRepository;
+    private final FitnessMeasurementRepository fitnessMeasurementRepository;
+    private final ReviewRepository reviewRepository;
 
-    public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
-            RoomRepository roomRepository, MembershipRepository membershipRepository,
-            PricingRepository pricingRepository, EquipmentRepository equipmentRepository,
-            SubscriptionRepository subscriptionRepository,
+    public DataInitializer(UserRepository userRepository, RoleRepository roleRepository, RoomRepository roomRepository,
+            MembershipRepository membershipRepository, PricingRepository pricingRepository,
+            EquipmentRepository equipmentRepository, SubscriptionRepository subscriptionRepository,
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
             de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
             ExerciseRepository exerciseRepository, ExerciseService exerciseService, PasswordEncoder passwordEncoder,
-            TrainingPlanRepository trainingPlanRepository) {
+            TrainingPlanRepository trainingPlanRepository, FitnessMeasurementRepository fitnessMeasurementRepository,
+            ReviewRepository reviewRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
@@ -56,6 +59,8 @@ public class DataInitializer implements CommandLineRunner {
         this.exerciseService = exerciseService;
         this.passwordEncoder = passwordEncoder;
         this.trainingPlanRepository = trainingPlanRepository;
+        this.fitnessMeasurementRepository = fitnessMeasurementRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @Override
@@ -64,62 +69,35 @@ public class DataInitializer implements CommandLineRunner {
         initializeMemberships();
         initializePricings();
         initializeUsers();
-        migrateUsersToMemberships();
         initializeRooms();
         initializeEquipment();
         initializeCourses();
         initializeExercises();
         initializeSubscriptions();
         initializeTrainingPlans();
+        initializeFitnessMeasurements();
+        initializeReviews();
     }
 
-    private void initializeTrainingPlans() {
-        if (trainingPlanRepository.count() > 0) {
+    private void initializeReviews() {
+        if (reviewRepository.count() > 0) {
             return;
         }
 
-        User trainer = userRepository.findByEmail("trainer@example.com");
         User member = userRepository.findByEmail("member@example.com");
-        var exercises = exerciseRepository.findAll();
+        Course yoga = courseRepository.findByName("Yoga Basics").stream().findFirst().orElse(null);
+        Course hiit = courseRepository.findByName("HIIT Cardio").stream().findFirst().orElse(null);
 
-        if (trainer != null && member != null && !exercises.isEmpty()) {
-            TrainingPlan beginnerPlan = new TrainingPlan("Beginner Strength",
-                    "A foundational plan to build muscle and learn proper form.", member, trainer);
-
-            // Add up to 3 exercises
-            int count = 0;
-            for (Exercise ex : exercises) {
-                if (count >= 3)
-                    break;
-                TrainingPlanExercise tpe = new TrainingPlanExercise();
-                tpe.setExercise(ex);
-                tpe.setSets(3);
-                tpe.setReps("8-12");
-                tpe.setNotes("Focus on form.");
-                tpe.setOrderIndex(count);
-                beginnerPlan.addExercise(tpe);
-                count++;
+        if (member != null) {
+            if (yoga != null) {
+                reviewRepository.save(
+                        new Review(yoga, member, 5, "Absolutely loved this course! Very relaxing but effective."));
+                reviewRepository.save(new Review(yoga, member, 4, "Great instructor, but the room was a bit cold."));
             }
-            trainingPlanRepository.save(beginnerPlan);
-
-            TrainingPlan cardioPlan = new TrainingPlan("Cardio Blast",
-                    "Improve your endurance with this high-energy routine.", member, trainer);
-
-            // Add next 2 exercises if available
-            int start = count;
-            for (int i = start; i < exercises.size(); i++) {
-                if (i >= start + 2)
-                    break;
-                Exercise ex = exercises.get(i);
-                TrainingPlanExercise tpe = new TrainingPlanExercise();
-                tpe.setExercise(ex);
-                tpe.setSets(4);
-                tpe.setReps("15-20");
-                tpe.setNotes("Keep heart rate up.");
-                tpe.setOrderIndex(i - start);
-                cardioPlan.addExercise(tpe);
+            if (hiit != null) {
+                reviewRepository.save(new Review(hiit, member, 5, "Intense workout! Exactly what I needed."));
+                reviewRepository.save(new Review(hiit, member, 3, "Good exercises, but too fast-paced for beginners."));
             }
-            trainingPlanRepository.save(cardioPlan);
         }
     }
 
@@ -224,25 +202,46 @@ public class DataInitializer implements CommandLineRunner {
         de.oth.muskelmanagement.model.entity.User trainer = userRepository.findByEmail("trainer@example.com");
 
         de.oth.muskelmanagement.model.entity.Course yoga = new de.oth.muskelmanagement.model.entity.Course(
-                "Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true);
+                "Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true, LocalTime.of(9, 0), 60);
         if (trainer != null) {
             yoga.setTrainer(trainer);
         }
-        // assign yoga studio if available
         roomRepository.findByName("Yoga Studio").ifPresent(r -> yoga.setRoom(r));
+        yoga.setStartDate(LocalDate.now().minusWeeks(4));
+        yoga.setEndDate(LocalDate.now().plusWeeks(8));
+        yoga.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY));
         courseRepository.save(yoga);
 
         de.oth.muskelmanagement.model.entity.Course hiit = new de.oth.muskelmanagement.model.entity.Course(
-                "HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true);
+                "HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true, LocalTime.of(18, 0), 45);
         if (trainer != null) {
             hiit.setTrainer(trainer);
         }
-        // assign cardio room if available
         roomRepository.findByName("Cardio Room").ifPresent(r -> hiit.setRoom(r));
+        hiit.setStartDate(LocalDate.now().minusWeeks(2));
+        hiit.setEndDate(LocalDate.now().plusWeeks(10));
+        hiit.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.TUESDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.THURSDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.SATURDAY));
         courseRepository.save(hiit);
 
+        de.oth.muskelmanagement.model.entity.Course strength = new de.oth.muskelmanagement.model.entity.Course(
+                "Strength Training", "Build muscle and increase strength with progressive overload.", 10, true, LocalTime.of(17, 0), 75);
+        if (trainer != null) {
+            strength.setTrainer(trainer);
+        }
+        roomRepository.findByName("Weight Room").ifPresent(r -> strength.setRoom(r));
+        strength.setStartDate(LocalDate.now().minusWeeks(1));
+        strength.setEndDate(LocalDate.now().plusWeeks(11));
+        strength.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.FRIDAY));
+        courseRepository.save(strength);
+        
         de.oth.muskelmanagement.model.entity.Course pelvicFloor = new de.oth.muskelmanagement.model.entity.Course(
-                "Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true);
+                "Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true, LocalTime.of(10, 0), 90);
+        if (trainer != null) {
+            pelvicFloor.setTrainer(trainer);
+        }
+        pelvicFloor.setStartDate(LocalDate.now().plusWeeks(1));
+        pelvicFloor.setEndDate(LocalDate.now().plusWeeks(3));
+        pelvicFloor.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.SUNDAY));
         courseRepository.save(pelvicFloor);
 
         // Optionally enroll seeded users
@@ -289,22 +288,6 @@ public class DataInitializer implements CommandLineRunner {
         membershipRepository.save(trainer);
     }
 
-    private void migrateUsersToMemberships() {
-        Iterable<User> users = userRepository.findAll();
-        for (User u : users) {
-            if (u.getMembership() == null && u.getMembershipType() != null) {
-                String mt = u.getMembershipType();
-                Membership m = membershipRepository.findByName(mt);
-                if (m == null) {
-                    m = new Membership(mt);
-                    membershipRepository.save(m);
-                }
-                u.setMembership(m);
-                userRepository.save(u);
-            }
-        }
-    }
-
     private void initializeRoles() {
         if (roleRepository.count() > 0) {
             return;
@@ -329,15 +312,19 @@ public class DataInitializer implements CommandLineRunner {
         Role trainerRole = roleRepository.findByName("ROLE_TRAINER");
         Role memberRole = roleRepository.findByName("ROLE_MEMBER");
 
-        User admin = new User("Admin", "User", "admin@example.com", "Premium", passwordEncoder.encode("password"),
+        Membership premiumMembership = membershipRepository.findByName("Premium");
+        Membership trainerMembership = membershipRepository.findByName("Trainer");
+        Membership basicMembership = membershipRepository.findByName("Basic");
+
+        User admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("password"),
                 Set.of(adminRole, trainerRole, memberRole));
         userRepository.save(admin);
 
-        User trainer = new User("Trainer", "User", "trainer@example.com", "Trainer", passwordEncoder.encode("password"),
+        User trainer = new User("Trainer", "User", "trainer@example.com", passwordEncoder.encode("password"),
                 Set.of(trainerRole, memberRole));
         userRepository.save(trainer);
 
-        User member = new User("Member", "User", "member@example.com", "Basic", passwordEncoder.encode("password"),
+        User member = new User("Member", "User", "member@example.com", passwordEncoder.encode("password"),
                 Set.of(memberRole));
         userRepository.save(member);
     }
@@ -384,6 +371,93 @@ public class DataInitializer implements CommandLineRunner {
             log.error("Error loading exercises from JSON: {}", e.getMessage());
             log.warn("Exercise initialization failed.");
             log.warn("The application will continue to run, but the exercise library will be empty.");
+        }
+    }
+
+    private void initializeTrainingPlans() {
+        if (trainingPlanRepository.count() > 0) {
+            return;
+        }
+
+        User trainer = userRepository.findByEmail("trainer@example.com");
+        User member = userRepository.findByEmail("member@example.com");
+        var exercises = exerciseRepository.findAll();
+
+        if (trainer != null && member != null && !exercises.isEmpty()) {
+            TrainingPlan beginnerPlan = new TrainingPlan("Beginner Strength",
+                    "A foundational plan to build muscle and learn proper form.", member, trainer);
+
+            // Add up to 3 exercises
+            int count = 0;
+            for (Exercise ex : exercises) {
+                if (count >= 3)
+                    break;
+                TrainingPlanExercise tpe = new TrainingPlanExercise();
+                tpe.setExercise(ex);
+                tpe.setSets(3);
+                tpe.setReps("8-12");
+                tpe.setNotes("Focus on form.");
+                tpe.setOrderIndex(count);
+                beginnerPlan.addExercise(tpe);
+                count++;
+            }
+            trainingPlanRepository.save(beginnerPlan);
+
+            TrainingPlan cardioPlan = new TrainingPlan("Cardio Blast",
+                    "Improve your endurance with this high-energy routine.", member, trainer);
+
+            // Add next 2 exercises if available
+            int start = count;
+            for (int i = start; i < exercises.size(); i++) {
+                if (i >= start + 2)
+                    break;
+                Exercise ex = exercises.get(i);
+                TrainingPlanExercise tpe = new TrainingPlanExercise();
+                tpe.setExercise(ex);
+                tpe.setSets(4);
+                tpe.setReps("15-20");
+                tpe.setNotes("Keep heart rate up.");
+                tpe.setOrderIndex(i - start);
+                cardioPlan.addExercise(tpe);
+            }
+            trainingPlanRepository.save(cardioPlan);
+        }
+    }
+
+    private void initializeFitnessMeasurements() {
+        if (fitnessMeasurementRepository.count() > 0) {
+            return;
+        }
+
+        User member = userRepository.findByEmail("member@example.com");
+        if (member != null) {
+            // -6 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(6), 90.0, 25.0, 38.0,
+                            "Initial assessment. Goal: Weight loss and muscle gain."));
+            // -5 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(5), 88.5, 24.2, 38.5,
+                            "Good start, diet adherence is high."));
+            // -4 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(4), 87.2, 23.5, 39.0,
+                            "Strength increasing, weight dropping steadily."));
+            // -3 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(3), 86.0, 22.8, 39.5,
+                            "Halfway check-in. Adjusting macro split."));
+            // -2 months
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(2), 84.8, 21.5, 40.2,
+                            "Visible definition appearing."));
+            // -1 month
+            fitnessMeasurementRepository.save(
+                    new FitnessMeasurement(member, LocalDate.now().minusMonths(1), 83.5, 20.5, 41.0,
+                            "Excellent progress. Increased cardio intensity."));
+            // Current
+            fitnessMeasurementRepository.save(new FitnessMeasurement(member, LocalDate.now(), 82.0, 19.5, 41.5,
+                    "Hit target weight for this phase. Moving to maintenance."));
         }
     }
 }

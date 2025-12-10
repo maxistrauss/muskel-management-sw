@@ -8,20 +8,83 @@
 <div th:replace="fragments/navbar :: navbar"></div>
 
 <div class="lg:ml-64">
-<div class="container mx-auto mt-8">
-    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
+<div class="container mx-auto mt-8 p-4"> <!-- Removed container mx-auto -->
+    <div class="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md"> <!-- Removed max-w-3xl mx-auto -->
         <h1 class="text-2xl font-bold" th:text="${course.name}"></h1>
         <p class="text-gray-700 mt-4" th:text="${course.description}"></p>
         <p class="text-sm text-gray-500 mt-2">Capacity: <span th:text="${course.capacity}"></span></p>
         <p class="text-sm text-gray-500 mt-1">Room: <span th:text="${course.room != null && course.room.active ? course.room.name : '-'}"></span></p>
+        <p class="text-sm text-gray-500 mt-1" th:if="${course.startDate != null}">Start Date: <span th:text="${#temporals.format(course.startDate, 'dd.MM.yyyy')}"></span></p>
+        <p class="text-sm text-gray-500 mt-1" th:if="${course.endDate != null}">End Date: <span th:text="${#temporals.format(course.endDate, 'dd.MM.yyyy')}"></span></p>
+        <p class="text-sm text-gray-500 mt-1" th:if="${course.startTime != null}">Start Time: <span th:text="${#temporals.format(course.startTime, 'HH:mm')}"></span></p>
+        <p class="text-sm text-gray-500 mt-1" th:if="${course.durationMinutes != null}">Duration: <span th:text="${course.durationMinutes + ' minutes'}"></span></p>
+        <p class="text-sm text-gray-500 mt-1" th:if="${course.daysOfWeek != null and !course.daysOfWeek.isEmpty()}">Days:
+            <span th:each="day, iterStat : ${course.daysOfWeek}" th:text="${day.name().substring(0,1) + day.name().substring(1).toLowerCase()} + (${!iterStat.last} ? ', ' : '')"></span>
+        </p>
 
-        <div class="mt-6">
-            <form th:if="${!enrolled}" th:action="@{/member/courses/{id}/enroll(id=${course.id})}" method="post">
+        <div class="mt-6 flex gap-2">
+            <form th:if="${!enrolled}" th:action="@{/member/course-info/{id}/enroll(id=${course.id})}" method="post">
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Enroll</button>
             </form>
-            <form th:if="${enrolled}" th:action="@{/member/courses/{id}/unenroll(id=${course.id})}" method="post">
+            <form th:if="${enrolled}" th:action="@{/member/course-info/{id}/unenroll(id=${course.id})}" method="post">
                 <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Unenroll</button>
             </form>
+
+            <a class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+               th:href="@{/member/course-info/{id}/reviews/new(id=${course.id})}"
+               th:if="${enrolled}">
+                Write a Review
+            </a>
+        </div>
+
+        <!-- Calendar -->
+        <div class="mt-6 border-t pt-6">
+            <h3 class="text-xl font-semibold mb-2">Calendar</h3>
+            <p class="text-gray-600 text-sm mb-4">Marked days indicate when the course takes place.</p>
+            <div id="calendar-container"></div>
+        </div>
+
+        <!-- Participants -->
+        <div class="mt-6 border-t pt-6">
+            <h3 class="text-xl font-semibold mb-4">Participants</h3>
+            <ul class="space-y-2">
+                <li th:each="e : ${course.enrollments}"
+                    class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <span th:text="${e.user.firstName + ' ' + e.user.lastName}"></span>
+                    <span class="px-3 py-1 text-sm rounded-full"
+                          th:classappend="${e.attendanceStatus.name() == 'PRESENT' ? 'bg-green-100 text-green-800' :
+                                           e.attendanceStatus.name() == 'ABSENT' ? 'bg-red-100 text-red-800' :
+                                           'bg-gray-100 text-gray-800'}"
+                          th:text="${e.attendanceStatus}"></span>
+                </li>
+            </ul>
+            <p th:if="${#lists.isEmpty(course.enrollments)}" class="text-gray-500 italic">No participants enrolled yet.</p>
+        </div>
+
+        <!-- Reviews -->
+        <div class="mt-6 border-t pt-6">
+            <h3 class="text-xl font-semibold mb-4">Reviews</h3>
+            <div class="space-y-4" th:if="${!#lists.isEmpty(reviews)}">
+                <div class="bg-gray-50 p-4 rounded-lg" th:each="review : ${reviews}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-semibold"
+                                  th:text="${review.member.firstName + ' ' + review.member.lastName}">User Name</span>
+                            <span class="text-gray-500 text-sm ml-2"
+                                  th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy')}">Date</span>
+                        </div>
+                        <div class="flex text-yellow-400 text-sm">
+                            <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                <span th:if="${review.rating >= i}">★</span>
+                                <span class="text-gray-300" th:unless="${review.rating >= i}">★</span>
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mt-2" th:text="${review.comment}">Comment</p>
+                </div>
+            </div>
+            <p class="text-gray-500 italic" th:if="${#lists.isEmpty(reviews)}">No reviews yet. Be the first to write
+                one!</p>
         </div>
 
         <!-- Course Exercises Section -->
@@ -62,22 +125,95 @@
             </div>
         </div>
 
-        <div class="mt-6 border-t pt-6">
-            <h3 class="text-xl font-semibold mb-4">Participants</h3>
-            <ul class="space-y-2">
-                <li th:each="e : ${course.enrollments}"
-                    class="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span th:text="${e.user.firstName + ' ' + e.user.lastName}"></span>
-                    <span class="px-3 py-1 text-sm rounded-full"
-                          th:classappend="${e.attendanceStatus.name() == 'PRESENT' ? 'bg-green-100 text-green-800' :
-                                           e.attendanceStatus.name() == 'ABSENT' ? 'bg-red-100 text-red-800' :
-                                           'bg-gray-100 text-gray-800'}"
-                          th:text="${e.attendanceStatus}"></span>
-                </li>
-            </ul>
-            <p th:if="${#lists.isEmpty(course.enrollments)}" class="text-gray-500 italic">No participants enrolled yet.</p>
-        </div>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const startDateStr = /*[[${course.startDate}]]*/ null;
+            const endDateStr = /*[[${course.endDate}]]*/ null;
+            const daysOfWeekStrs = /*[[${course.daysOfWeek}]]*/ [];
+
+            if (startDateStr && endDateStr && daysOfWeekStrs) {
+                const startDate = new Date(startDateStr);
+                // Adjust for timezone offset to prevent off-by-one day errors
+                startDate.setMinutes(startDate.getMinutes() + startDate.getTimezoneOffset());
+
+                const endDate = new Date(endDateStr);
+                endDate.setMinutes(endDate.getMinutes() + endDate.getTimezoneOffset());
+
+                const daysOfWeek = daysOfWeekStrs.map(day => day.toUpperCase());
+
+                const calendarContainer = document.getElementById('calendar-container');
+
+                function renderCalendar(year, month) {
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                    const dayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+                    const dayAbbr = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+
+                    let calendarHtml = '<div class="flex items-center justify-between mb-4">';
+                    calendarHtml += `<h4 class="text-lg font-semibold">${monthNames[month]} ${year}</h4>`;
+                    calendarHtml += '<div class="flex space-x-2">';
+                    calendarHtml += `<button id="prev-month" class="px-2 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300">&lt;</button>`;
+                    calendarHtml += `<button id="next-month" class="px-2 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300">&gt;</button>`;
+                    calendarHtml += '</div></div>';
+
+
+                    calendarHtml += '<div class="grid grid-cols-7 gap-1 text-center">';
+                    dayAbbr.forEach(day => {
+                        calendarHtml += `<div class="font-semibold text-gray-600">${day}</div>`;
+                    });
+
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const startingDay = firstDay.getDay();
+
+                    for (let i = 0; i < startingDay; i++) {
+                        calendarHtml += '<div></div>';
+                    }
+
+                    for (let day = 1; day <= lastDay.getDate(); day++) {
+                        const currentDate = new Date(year, month, day);
+                        const dayOfWeek = dayNames[currentDate.getDay()];
+
+                        // Check if the current date is within the course's start and end date range
+                        const isWithinDateRange = currentDate >= startDate && currentDate <= endDate;
+                        const isCourseDay = isWithinDateRange && daysOfWeek.includes(dayOfWeek);
+
+                        let cellClass = 'py-2 rounded-full';
+                        if (isCourseDay) {
+                            cellClass += ' bg-blue-500 text-white';
+                        } else {
+                            cellClass += ' text-gray-700';
+                        }
+
+                        calendarHtml += `<div class="${cellClass}">${day}</div>`;
+                    }
+
+
+                    calendarHtml += '</div>';
+                    calendarContainer.innerHTML = calendarHtml;
+
+                    document.getElementById('prev-month').addEventListener('click', () => {
+                        const newDate = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() - 1, 1);
+                        currentDisplayDate = newDate;
+                        renderCalendar(newDate.getFullYear(), newDate.getMonth());
+                    });
+                    document.getElementById('next-month').addEventListener('click', () => {
+                        const newDate = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 1);
+                        currentDisplayDate = newDate;
+                        renderCalendar(newDate.getFullYear(), newDate.getMonth());
+                    });
+                }
+
+                let currentDisplayDate = startDate;
+                renderCalendar(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth());
+            } else {
+                document.getElementById('calendar-container').innerHTML = '<p class="text-gray-500 italic">Course schedule not available.</p>';
+            }
+            /*]]>*/
+        </script>
     </div>
+</div>
+</div>
 </div>
 </body>
 </html>

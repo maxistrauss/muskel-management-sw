@@ -34,6 +34,12 @@ class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private EmailService emailService;
+    @Mock
+    private SubscriptionService subscriptionService;
+    @Mock
+    private de.oth.muskelmanagement.repository.CourseRepository courseRepository;
+    @Mock
+    private de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -62,7 +68,7 @@ class UserServiceImplTest {
         userDto.setDeactivationReason(null);
         userDto.setRoles(new HashSet<>(Collections.singletonList("ROLE_ADMIN")));
 
-        user = new User("Test", "User", "test@example.com", "Basic", "encodedPassword",
+        user = new User("Test", "User", "test@example.com", "encodedPassword",
                 new HashSet<>(Collections.singletonList(memberRole)));
         user.setId(1L);
         user.setEnabled(true);
@@ -126,8 +132,8 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateUser_shouldUpdateUserDetailsAndKeepMemberRole() {
-        User existingUser = new User("Old", "Name", "old@example.com", "Basic", "oldEncodedPassword",
+    void updateUser_shouldUpdateUserDetails() {
+        User existingUser = new User("Old", "Name", "old@example.com", "oldEncodedPassword",
                 new HashSet<>(Collections.singletonList(memberRole)));
         existingUser.setId(1L);
 
@@ -136,7 +142,6 @@ class UserServiceImplTest {
         updateDto.setFirstName("New");
         updateDto.setLastName("Name");
         updateDto.setEmail("new@example.com");
-        updateDto.setMembershipType("Premium");
         updateDto.setEnabled(false);
         updateDto.setRoles(new HashSet<>(Collections.singletonList("ROLE_TRAINER")));
 
@@ -174,7 +179,6 @@ class UserServiceImplTest {
         updateDto.setFirstName("Test");
         updateDto.setLastName("User");
         updateDto.setEmail("test@example.com");
-        updateDto.setMembershipType("Basic");
         updateDto.setRoles(new HashSet<>(Collections.singletonList("ROLE_MEMBER")));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
@@ -206,7 +210,6 @@ class UserServiceImplTest {
         updateDto.setFirstName("Test");
         updateDto.setLastName("User");
         updateDto.setEmail("test@example.com");
-        updateDto.setMembershipType("Basic");
         updateDto.setRoles(new HashSet<>(Collections.singletonList("ROLE_MEMBER")));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
@@ -238,7 +241,6 @@ class UserServiceImplTest {
         updateDto.setFirstName("Test");
         updateDto.setLastName("User");
         updateDto.setEmail("test@example.com");
-        updateDto.setMembershipType("Basic");
         updateDto.setEnabled(false);
         updateDto.setDeactivationReason("Account suspended for policy violation");
         updateDto.setRoles(new HashSet<>(Collections.singletonList("ROLE_MEMBER")));
@@ -273,7 +275,6 @@ class UserServiceImplTest {
         updateDto.setFirstName("Test");
         updateDto.setLastName("User");
         updateDto.setEmail("test@example.com");
-        updateDto.setMembershipType("Basic");
         updateDto.setEnabled(true);
         updateDto.setRoles(new HashSet<>(Collections.singletonList("ROLE_MEMBER")));
 
@@ -306,7 +307,6 @@ class UserServiceImplTest {
         updateDto.setFirstName("Test");
         updateDto.setLastName("User");
         updateDto.setEmail("test@example.com");
-        updateDto.setMembershipType("Basic");
         updateDto.setEnabled(true);
         updateDto.setTwoFactorEnabled(true);
         updateDto.setRoles(new HashSet<>(Collections.singletonList("ROLE_MEMBER")));
@@ -389,4 +389,3 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).deleteById(1L);
     }
 }
-
