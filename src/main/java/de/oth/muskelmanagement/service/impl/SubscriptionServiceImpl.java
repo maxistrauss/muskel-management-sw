@@ -155,7 +155,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         logger.info("Subscription {} marked as paid with PayPal order {}", subscriptionId, paypalOrderId);
     }
 
-    /* 
     @Override
     @Transactional
     public void updatePayPalOrderId(Long subscriptionId, String paypalOrderId) {
@@ -167,9 +166,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         subscriptionRepository.save(subscription);
         
         logger.info("Subscription {} updated with PayPal order {}", subscriptionId, paypalOrderId);
-    }*/
+    }
 
-    /*@Override
+    @Override
     @Transactional
     public void markAsPaidByUserId(Long userId, String paypalOrderId) {
         Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
@@ -181,7 +180,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         
         logger.info("Subscription {} for user {} marked as paid with PayPal order {}", 
                 subscription.getId(), userId, paypalOrderId);
-    }*/
+    }
 
     private SubscriptionDto convertToDto(Subscription subscription) {
         SubscriptionDto dto = new SubscriptionDto();
@@ -206,14 +205,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Subscription> findActiveSubscriptionEntity(Long userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findActiveSubscriptionEntity'");
+        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Subscription> findAllActiveSubscriptionsEntities(Long userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findAllActiveSubscriptionsEntities'");
+        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+                .stream()
+                .collect(java.util.stream.Collectors.toList());
     }
 }

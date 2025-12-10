@@ -10,11 +10,11 @@ public interface SubscriptionService {
     /**
      * Create a new subscription for a user
      * @param userId The user ID
-     * @param tarifId The tarif ID
+     * @param pricingId The pricing ID
      * @return The created subscription DTO
-     * @throws RuntimeException if user already has an active subscription or tarif is not active
+     * @throws RuntimeException if user already has an active subscription or pricing is not active
      */
-    SubscriptionDto subscribe(Long userId, Long tarifId);
+    SubscriptionDto subscribe(Long userId, Long pricingId);
     
     /**
      * Get the active subscription for a user
@@ -64,6 +64,20 @@ public interface SubscriptionService {
      * @param paypalOrderId The PayPal order ID
      */
     void markAsPaid(Long subscriptionId, String paypalOrderId);
+    
+    /**
+     * Update PayPal order ID for a subscription
+     * @param subscriptionId The subscription ID
+     * @param paypalOrderId The PayPal order ID
+     */
+    void updatePayPalOrderId(Long subscriptionId, String paypalOrderId);
+    
+    /**
+     * Mark subscription as paid by user ID and PayPal order ID (finds active subscription)
+     * @param userId The user ID
+     * @param paypalOrderId The PayPal order ID
+     */
+    void markAsPaidByUserId(Long userId, String paypalOrderId);
 
     // Methods returning entities directly for internal service use
     Optional<de.oth.muskelmanagement.model.entity.Subscription> findActiveSubscriptionEntity(Long userId);

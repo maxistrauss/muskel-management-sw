@@ -54,7 +54,7 @@ public class MemberPaymentController {
             
             if (orderId != null) {
                 // Save order ID to subscription for later reference
-                subscriptionService.updatePayPalOrderId(subscriptionId, orderId);
+                //subscriptionService.updatePayPalOrderId(subscriptionId, orderId);
                 
                 // Redirect to PayPal checkout page
                 String paypalRedirectUrl = "sandbox".equalsIgnoreCase(mode)
