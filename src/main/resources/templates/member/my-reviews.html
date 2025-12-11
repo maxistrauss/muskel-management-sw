@@ -27,7 +27,7 @@
                     <tr class="border-b hover:bg-gray-50" th:each="review : ${reviews}">
                         <td class="py-3 px-4 font-semibold">
                             <a class="text-blue-600 hover:underline"
-                               th:href="@{/courses/{id}(id=${review.course.id})}"
+                               th:href="@{/member/course-info/{id}(id=${review.course.id})}"
                                th:text="${review.course.name}">Course Name</a>
                         </td>
                         <td class="py-3 px-4">
