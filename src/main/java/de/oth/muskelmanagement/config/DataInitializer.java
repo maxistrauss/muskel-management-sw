@@ -348,6 +348,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Room storage = new Room("Equipment Storage", 0, "Climate controlled, Shelving units, Maintenance area", true);
         roomRepository.save(storage);
+
+        Room outdoor = new Room("Outdoor", 100, "Open air field, Natural light, Fresh air", true);
+        roomRepository.save(outdoor);
     }
 
     private void initializeExercises() {
