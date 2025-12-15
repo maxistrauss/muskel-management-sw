@@ -39,6 +39,9 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public Room save(RoomDto roomDto) {
+        if (roomDto.getCapacity() == null) {
+            throw new IllegalArgumentException("Capacity cannot be null");
+        }
         Room room = new Room();
         room.setName(roomDto.getName());
         room.setCapacity(roomDto.getCapacity());
@@ -68,6 +71,9 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public void update(RoomDto roomDto) {
+        if (roomDto.getCapacity() == null) {
+            throw new IllegalArgumentException("Capacity cannot be null");
+        }
         Room room = roomRepository.findById(roomDto.getId())
                 .orElseThrow(() -> new RuntimeException("Room not found with id: " + roomDto.getId()));
 

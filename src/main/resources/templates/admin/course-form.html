@@ -151,6 +151,30 @@
                 <div th:each="member : ${enrolledMembers}" class="flex items-center justify-between p-2 hover:bg-gray-100 rounded-lg">
                     <span th:text="${member.firstName} + ' ' + ${member.lastName} + ' (' + ${member.email} + ')'">Member Name (email@example.com)</span>
                     <form th:action="@{/admin/courses/edit/{id}/remove-member/{memberId}(id=${course.id}, memberId=${member.id})}" method="post">
+                        <button class="text-sm bg-red-100 text-red-700 hover:bg-red-200 font-semibold py-1 px-3 rounded-full"
+                                type="submit">
+                            Remove
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- List of Waitlisted Members -->
+            <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-2">Waitlisted Members (<span
+                    th:text="${#lists.size(waitlistedMembers)}">0</span>)</h3>
+            <div class="text-gray-500 italic p-4 bg-gray-50 rounded-lg" th:if="${#lists.isEmpty(waitlistedMembers)}">
+                The waitlist is currently empty.
+            </div>
+            <div class="space-y-2 border rounded-lg p-4 bg-yellow-50 border-yellow-200"
+                 th:unless="${#lists.isEmpty(waitlistedMembers)}">
+                <div class="flex items-center justify-between p-2 hover:bg-yellow-100 rounded-lg"
+                     th:each="member, iterStat : ${waitlistedMembers}">
+                    <div>
+                        <span class="font-bold text-yellow-800 mr-2" th:text="'#' + ${iterStat.count}">#1</span>
+                        <span th:text="${member.firstName} + ' ' + ${member.lastName} + ' (' + ${member.email} + ')'">Member Name (email@example.com)</span>
+                    </div>
+                    <form method="post"
+                          th:action="@{/admin/courses/edit/{id}/remove-member/{memberId}(id=${course.id}, memberId=${member.id})}">
                         <button type="submit" class="text-sm bg-red-100 text-red-700 hover:bg-red-200 font-semibold py-1 px-3 rounded-full">Remove</button>
                     </form>
                 </div>

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -329,28 +330,21 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.save(member);
     }
 
-    private void initializeRooms() {
-        if (roomRepository.count() > 0) {
-            return;
+    @Transactional
+    protected void initializeRooms() {
+        createRoomIfNotFound("Main Gym", 50, "Mirrors, Air conditioning, Sound system, Rubber flooring", true);
+        createRoomIfNotFound("Cardio Room", 30, "Treadmills area, Bikes area, TV screens, Water dispensers", true);
+        createRoomIfNotFound("Weight Room", 25, "Mirrors, Heavy-duty rubber flooring, Chalk station", true);
+        createRoomIfNotFound("Yoga Studio", 20, "Mirrors, Wooden flooring, Sound system, Ambient lighting", true);
+        createRoomIfNotFound("Equipment Storage", 0, "Climate controlled, Shelving units, Maintenance area", true);
+        createRoomIfNotFound("Outdoor", 100, "Open air field, Natural light, Fresh air", true);
+    }
+
+    private void createRoomIfNotFound(String name, Integer capacity, String amenities, boolean active) {
+        if (roomRepository.findByName(name).isEmpty()) {
+            Room room = new Room(name, capacity, amenities, active);
+            roomRepository.save(room);
         }
-
-        Room mainGym = new Room("Main Gym", 50, "Mirrors, Air conditioning, Sound system, Rubber flooring", true);
-        roomRepository.save(mainGym);
-
-        Room cardioRoom = new Room("Cardio Room", 30, "Treadmills area, Bikes area, TV screens, Water dispensers", true);
-        roomRepository.save(cardioRoom);
-
-        Room weightRoom = new Room("Weight Room", 25, "Mirrors, Heavy-duty rubber flooring, Chalk station", true);
-        roomRepository.save(weightRoom);
-
-        Room yogaStudio = new Room("Yoga Studio", 20, "Mirrors, Wooden flooring, Sound system, Ambient lighting", true);
-        roomRepository.save(yogaStudio);
-
-        Room storage = new Room("Equipment Storage", 0, "Climate controlled, Shelving units, Maintenance area", true);
-        roomRepository.save(storage);
-
-        Room outdoor = new Room("Outdoor", 100, "Open air field, Natural light, Fresh air", true);
-        roomRepository.save(outdoor);
     }
 
     private void initializeExercises() {

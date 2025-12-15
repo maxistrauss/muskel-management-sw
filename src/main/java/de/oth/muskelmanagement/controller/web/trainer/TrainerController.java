@@ -63,8 +63,17 @@ public class TrainerController {
             return "trainer/course-form";
         }
         course.setTrainer(trainer);
+
+        // Ensure Room is a managed entity
+        if (course.getRoom() != null && course.getRoom().getId() != null) {
+            var room = roomService.findEntityById(course.getRoom().getId());
+            course.setRoom(room);
+        } else {
+            course.setRoom(null);
+        }
+
         Course newCourse = courseService.save(course);
-        courseService.addMember(newCourse.getId(), trainer.getId());
+        courseService.enrollCreator(newCourse.getId(), trainer.getId());
         return "redirect:/trainer/courses";
     }
 
@@ -84,7 +93,10 @@ public class TrainerController {
         model.addAttribute("rooms", rooms);
 
         // Member Management Data
-        List<UserDto> enrolledMembers = courseService.listEnrollments(id).stream()
+        List<Enrollment> allEnrollments = courseService.listEnrollments(id);
+
+        List<UserDto> enrolledMembers = allEnrollments.stream()
+                .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED)
                 .map(Enrollment::getUser)
                 .map(user -> {
                     UserDto dto = new UserDto();
@@ -96,15 +108,27 @@ public class TrainerController {
                 })
                 .collect(Collectors.toList());
 
-        Set<Long> enrolledMemberIds = enrolledMembers.stream()
-                .map(UserDto::getId)
+        List<UserDto> waitlistedMembers = allEnrollments.stream()
+                .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED)
+                .sorted((e1, e2) -> e1.getCreatedAt().compareTo(e2.getCreatedAt())).map(Enrollment::getUser)
+                .map(user -> {
+                    UserDto dto = new UserDto();
+                    dto.setId(user.getId());
+                    dto.setFirstName(user.getFirstName());
+                    dto.setLastName(user.getLastName());
+                    dto.setEmail(user.getEmail());
+                    return dto;
+                }).collect(Collectors.toList());
+
+        Set<Long> excludedMemberIds = allEnrollments.stream().map(e -> e.getUser().getId())
                 .collect(Collectors.toSet());
 
         List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
-                .filter(user -> user.getRoles().stream().anyMatch(role -> role.equals("ROLE_MEMBER")) && !enrolledMemberIds.contains(user.getId()))
+                .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !excludedMemberIds.contains(user.getId()))
                 .collect(Collectors.toList());
 
         model.addAttribute("enrolledMembers", enrolledMembers);
+        model.addAttribute("waitlistedMembers", waitlistedMembers);
         model.addAttribute("availableMembers", availableMembers);
 
         return "trainer/course-form";
@@ -124,24 +148,44 @@ public class TrainerController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("currentTrainer", currentUser);
             model.addAttribute("rooms", roomService.findActiveRooms());
-            List<UserDto> enrolledMembers = courseService.listEnrollments(id).stream()
+            List<Enrollment> allEnrollments = courseService.listEnrollments(id);
+
+            List<UserDto> enrolledMembers = allEnrollments.stream()
+                    .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED)
                     .map(Enrollment::getUser)
                     .map(user -> {
                         UserDto dto = new UserDto();
                         dto.setId(user.getId());
-dto.setFirstName(user.getFirstName());
+                        dto.setFirstName(user.getFirstName());
                         dto.setLastName(user.getLastName());
                         dto.setEmail(user.getEmail());
                         return dto;
                     })
                     .collect(Collectors.toList());
-            model.addAttribute("enrolledMembers", enrolledMembers);
 
-            Set<Long> enrolledMemberIds = enrolledMembers.stream().map(UserDto::getId).collect(Collectors.toSet());
+            List<UserDto> waitlistedMembers = allEnrollments.stream()
+                    .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED)
+                    .sorted((e1, e2) -> e1.getCreatedAt().compareTo(e2.getCreatedAt())).map(Enrollment::getUser)
+                    .map(user -> {
+                        UserDto dto = new UserDto();
+                        dto.setId(user.getId());
+                        dto.setFirstName(user.getFirstName());
+                        dto.setLastName(user.getLastName());
+                        dto.setEmail(user.getEmail());
+                        return dto;
+                    }).collect(Collectors.toList());
+
+            Set<Long> excludedMemberIds = allEnrollments.stream().map(e -> e.getUser().getId())
+                    .collect(Collectors.toSet());
+
             List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
-                    .filter(user -> user.getRoles().stream().anyMatch(role -> role.equals("ROLE_MEMBER")) && !enrolledMemberIds.contains(user.getId()))
+                    .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !excludedMemberIds.contains(user.getId()))
                     .collect(Collectors.toList());
+
+            model.addAttribute("enrolledMembers", enrolledMembers);
+            model.addAttribute("waitlistedMembers", waitlistedMembers);
             model.addAttribute("availableMembers", availableMembers);
+
 
             // Preserve exercises and trainer info when returning to form
             course.setExercises(existing.getExercises());
@@ -154,7 +198,13 @@ dto.setFirstName(user.getFirstName());
         existing.setDescription(course.getDescription());
         existing.setCapacity(course.getCapacity());
         existing.setActive(course.isActive());
-        existing.setRoom(course.getRoom());
+        // Ensure Room is a managed entity
+        if (course.getRoom() != null && course.getRoom().getId() != null) {
+            var room = roomService.findEntityById(course.getRoom().getId());
+            existing.setRoom(room);
+        } else {
+            existing.setRoom(null);
+        }
         existing.setStartDate(course.getStartDate());
         existing.setEndDate(course.getEndDate());
         existing.setStartTime(course.getStartTime());
@@ -183,6 +233,7 @@ dto.setFirstName(user.getFirstName());
         var trainer = userService.findByEmail(principal.getName());
         var page = courseService.findByTrainerId(trainer.getId(), pageable);
         model.addAttribute("coursePage", page);
+        model.addAttribute("courses", page.getContent());
         return "trainer/courses";
     }
 

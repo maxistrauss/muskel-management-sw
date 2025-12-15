@@ -9,7 +9,6 @@ import de.oth.muskelmanagement.model.enums.AttendanceStatus;
 import de.oth.muskelmanagement.repository.*;
 import de.oth.muskelmanagement.service.CourseService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,14 +25,17 @@ public class CourseServiceImpl implements CourseService {
     private final UserRepository userRepository;
     private final ExerciseRepository exerciseRepository;
     private final RoomRepository roomRepository;
+    private final de.oth.muskelmanagement.service.EmailService emailService;
 
     public CourseServiceImpl(CourseRepository courseRepository, EnrollmentRepository enrollmentRepository,
-                             UserRepository userRepository, ExerciseRepository exerciseRepository, RoomRepository roomRepository) {
+            UserRepository userRepository, ExerciseRepository exerciseRepository, RoomRepository roomRepository,
+            de.oth.muskelmanagement.service.EmailService emailService) {
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
         this.exerciseRepository = exerciseRepository;
         this.roomRepository = roomRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -69,7 +71,19 @@ public class CourseServiceImpl implements CourseService {
 
         // check existing
         return enrollmentRepository.findByCourseAndUser(course, user).orElseGet(() -> {
+            // Check capacity
+            long confirmedCount = enrollmentRepository.countByCourseAndStatus(course,
+                    de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED);
+            de.oth.muskelmanagement.model.enums.EnrollmentStatus status;
+
+            if (confirmedCount < course.getCapacity()) {
+                status = de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED;
+            } else {
+                status = de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED;
+            }
+
             Enrollment e = new Enrollment(user, course);
+            e.setStatus(status);
             Enrollment saved = enrollmentRepository.save(e);
             course.addEnrollment(saved);
             courseRepository.save(course);
@@ -83,9 +97,39 @@ public class CourseServiceImpl implements CourseService {
         Course course = findById(courseId);
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         enrollmentRepository.findByCourseAndUser(course, user).ifPresent(e -> {
+            de.oth.muskelmanagement.model.enums.EnrollmentStatus oldStatus = e.getStatus();
+            
             course.removeEnrollment(e);
             enrollmentRepository.delete(e);
             courseRepository.save(course);
+
+            // If a confirmed spot opened up, promote someone from waitlist
+            if (oldStatus == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED) {
+                List<Enrollment> waitlist = enrollmentRepository.findByCourseAndStatusOrderByCreatedAtAsc(course,
+                        de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED);
+                if (!waitlist.isEmpty()) {
+                    Enrollment next = waitlist.get(0);
+                    next.setStatus(de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED);
+                    enrollmentRepository.save(next);
+                }
+            }
+        });
+    }
+
+    @Override
+    @Transactional
+    public Enrollment enrollCreator(Long courseId, Long creatorId) {
+        Course course = findById(courseId);
+        User creator = userRepository.findById(creatorId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // check existing
+        return enrollmentRepository.findByCourseAndUser(course, creator).orElseGet(() -> {
+            Enrollment e = new Enrollment(creator, course);
+            e.setStatus(de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED); // Always confirm creator
+            Enrollment saved = enrollmentRepository.save(e);
+            course.addEnrollment(saved);
+            courseRepository.save(course);
+            return saved;
         });
     }
 
@@ -177,7 +221,62 @@ public class CourseServiceImpl implements CourseService {
         return courseRepository.save(course);
     }
 
-    // New DTO methods
+    @Override
+    public Enrollment getEnrollment(Long courseId, Long userId) {
+        Course course = findById(courseId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return enrollmentRepository.findByCourseAndUser(course, user).orElse(null);
+    }
+
+    @Override
+    public boolean isCourseFull(Long courseId) {
+        Course course = findById(courseId);
+        long confirmedCount = enrollmentRepository.countByCourseAndStatus(course,
+                de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED);
+        return confirmedCount >= course.getCapacity();
+    }
+
+    @Override
+    public int getWaitlistPosition(Long courseId, Long userId) {
+        Course course = findById(courseId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Enrollment> waitlist = enrollmentRepository.findByCourseAndStatusOrderByCreatedAtAsc(course,
+                de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED);
+
+        for (int i = 0; i < waitlist.size(); i++) {
+            if (waitlist.get(i).getUser().getId().equals(userId)) {
+                return i + 1;
+            }
+        }
+        return -1; // Not on waitlist
+    }
+
+    @Override
+    public long getEnrolledCount(Long courseId) {
+        Course course = findById(courseId);
+        return enrollmentRepository.countByCourseAndStatus(course,
+                de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED);
+    }
+
+    @Override
+    public long getWaitlistSize(Long courseId) {
+        Course course = findById(courseId);
+        return enrollmentRepository.countByCourseAndStatus(course,
+                de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED);
+    }
+
+    @Override
+    public Page<Enrollment> getUserEnrollments(Long userId, Pageable pageable) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return enrollmentRepository.findByUser(user, pageable);
+    }
+
+    @Override
+    public Page<CourseDto> findAllDtos(Pageable pageable) {
+        return courseRepository.findAll(pageable).map(this::toCourseDto);
+    }
+
     @Override
     public CourseDto getCourseDtoById(Long id) {
         Course course = findById(id);
@@ -230,7 +329,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private CourseDto toCourseDto(Course course) {
-        return new CourseDto(
+        CourseDto dto = new CourseDto(
                 course.getId(),
                 course.getName(),
                 course.getDescription(),
@@ -245,6 +344,9 @@ public class CourseServiceImpl implements CourseService {
                 course.getDaysOfWeek(),
                 toExerciseDto(course.getExercises())
         );
+        dto.setEnrolledCount(getEnrolledCount(course.getId()));
+        dto.setWaitlistSize(getWaitlistSize(course.getId()));
+        return dto;
     }
 
     private UserDto toUserDto(User user) {

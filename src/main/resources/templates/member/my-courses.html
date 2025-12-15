@@ -20,29 +20,48 @@
                             <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Course Name</th>
                             <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Trainer</th>
                             <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Schedule</th>
+                            <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Status</th>
                             <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-700">
-                        <tr th:each="course : ${enrolledCoursePage.content}" class="border-b hover:bg-gray-50">
+                    <tr class="border-b hover:bg-gray-50" th:each="enrollment : ${enrollmentPage.content}">
                             <td class="py-4 px-4">
-                                <div class="font-semibold" th:text="${course.name}"></div>
-                                <div class="text-xs text-gray-500" th:text="${#strings.length(course.description) > 80 ? #strings.substring(course.description,0,80) + '...' : course.description}"></div>
+                                <div class="font-semibold" th:text="${enrollment.course.name}"></div>
+                                <div class="text-xs text-gray-500"
+                                     th:text="${#strings.length(enrollment.course.description) > 80 ? #strings.substring(enrollment.course.description,0,80) + '...' : enrollment.course.description}"></div>
                             </td>
-                            <td class="py-4 px-4" th:text="${course.trainer != null ? course.trainer.firstName + ' ' + course.trainer.lastName : '-'}"></td>
+                        <td class="py-4 px-4"
+                            th:text="${enrollment.course.trainer != null ? enrollment.course.trainer.firstName + ' ' + enrollment.course.trainer.lastName : '-'}"></td>
                             <td class="py-4 px-4 text-sm">
-                                <div th:text="${#temporals.format(course.startDate, 'dd MMM yyyy')} + ' - ' + ${#temporals.format(course.endDate, 'dd MMM yyyy')}"></div>
-                                <div class="text-gray-500" th:if="${course.daysOfWeek != null and !course.daysOfWeek.isEmpty()}" th:text="${#strings.listJoin(course.daysOfWeek, ', ')}"></div>
+                                <div th:text="${#temporals.format(enrollment.course.startDate, 'dd MMM yyyy')} + ' - ' + ${#temporals.format(enrollment.course.endDate, 'dd MMM yyyy')}"></div>
+                                <div class="text-gray-500"
+                                     th:if="${enrollment.course.daysOfWeek != null and !enrollment.course.daysOfWeek.isEmpty()}"
+                                     th:text="${#strings.listJoin(enrollment.course.daysOfWeek, ', ')}"></div>
+                            </td>
+                        <td class="py-4 px-4 text-center">
+                            <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded"
+                                  th:if="${enrollment.status.name() == 'CONFIRMED'}">Active</span>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded"
+                                  th:if="${enrollment.status.name() == 'WAITLISTED'}">Waitlist</span>
                             </td>
                             <td class="py-4 px-4">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <a th:href="@{/member/course-info/{id}(id=${course.id})}" class="bg-blue-100 text-blue-800 hover:bg-blue-200 font-bold py-2 px-3 rounded text-xs">Info</a>
-                                    <div th:if="${course.trainer == null || course.trainer.id != currentUser.id}">
-                                        <form th:action="@{/member/course-info/{id}/unenroll(id=${course.id})}" method="post" class="inline">
-                                            <button type="submit" class="bg-red-100 text-red-800 hover:bg-red-200 font-bold py-2 px-3 rounded text-xs">Unenroll</button>
+                                    <a class="bg-blue-100 text-blue-800 hover:bg-blue-200 font-bold py-2 px-3 rounded text-xs"
+                                       th:href="@{/member/course-info/{id}(id=${enrollment.course.id})}">Info</a>
+                                    <div th:if="${enrollment.course.trainer == null || enrollment.course.trainer.id != currentUser.id}">
+                                        <form class="inline"
+                                              method="post" th:action="@{/member/course-info/{id}/unenroll(id=${enrollment.course.id})}">
+                                            <button class="bg-red-100 text-red-800 hover:bg-red-200 font-bold py-2 px-3 rounded text-xs"
+                                                    th:text="${enrollment.status.name() == 'WAITLISTED' ? 'Leave' : 'Unenroll'}"
+                                                    type="submit">
+                                                Unenroll
+                                            </button>
                                         </form>
                                     </div>
-                                    <a th:href="@{/member/course-info/{id}/reviews/new(id=${course.id})}" class="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 font-bold py-2 px-3 rounded text-xs">Review</a>
+                                    <a class="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 font-bold py-2 px-3 rounded text-xs"
+                                       th:href="@{/member/course-info/{id}/reviews/new(id=${enrollment.course.id})}"
+                                       th:if="${enrollment.status.name() == 'CONFIRMED'}">Review</a>
                                 </div>
                             </td>
                         </tr>
@@ -50,28 +69,29 @@
                 </table>
             </div>
 
-            <div th:if="${#lists.isEmpty(enrolledCoursePage.content)}" class="text-center py-8">
+            <div class="text-center py-8" th:if="${#lists.isEmpty(enrollmentPage.content)}">
                 <p class="text-gray-600">You are not enrolled in any courses yet.</p>
                 <a href="/member/course-info" class="mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Browse Available Courses</a>
             </div>
 
             <!-- Pagination -->
-            <div th:if="${enrolledCoursePage.totalPages > 1}" class="mt-8 flex justify-center">
+            <div class="mt-8 flex justify-center" th:if="${enrollmentPage.totalPages > 1}">
                 <nav aria-label="Pagination">
                     <ul class="flex items-center space-x-2">
-                        <li th:if="${enrolledCoursePage.number > 0}">
+                        <li th:if="${enrollmentPage.number > 0}">
                             <a class="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-10"
-                               th:href="@{/member/course-info/my(page=${enrolledCoursePage.number - 1}, size=${enrolledCoursePage.size})}">Previous</a>
+                               th:href="@{/member/course-info/my(page=${enrollmentPage.number - 1}, size=${enrollmentPage.size})}">Previous</a>
                         </li>
-                        
-                        <li th:each="i : ${#numbers.sequence(0, enrolledCoursePage.totalPages - 1)}"
-                            th:class="${i == enrolledCoursePage.number ? 'px-3 py-2 bg-blue-500 border border-gray-300 text-white rounded' : 'px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100'}">
-                            <a th:href="@{/member/course-info/my(page=${i}, size=${enrolledCoursePage.size})}" th:text="${i + 1}"></a>
+
+                        <li th:class="${i == enrollmentPage.number ? 'px-3 py-2 bg-blue-500 border border-gray-300 text-white rounded' : 'px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100'}"
+                            th:each="i : ${#numbers.sequence(0, enrollmentPage.totalPages - 1)}">
+                            <a th:href="@{/member/course-info/my(page=${i}, size=${enrollmentPage.size})}"
+                               th:text="${i + 1}"></a>
                         </li>
-                        
-                        <li th:if="${enrolledCoursePage.number < enrolledCoursePage.totalPages - 1}">
+
+                        <li th:if="${enrollmentPage.number < enrollmentPage.totalPages - 1}">
                             <a class="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
-                               th:href="@{/member/course-info/my(page=${enrolledCoursePage.number + 1}, size=${enrolledCoursePage.size})}">Next</a>
+                               th:href="@{/member/course-info/my(page=${enrollmentPage.number + 1}, size=${enrollmentPage.size})}">Next</a>
                         </li>
                     </ul>
                 </nav>

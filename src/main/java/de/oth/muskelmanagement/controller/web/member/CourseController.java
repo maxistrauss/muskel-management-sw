@@ -51,9 +51,8 @@ public class CourseController {
             return "redirect:/login";
         }
         var user = userService.findByEmail(principal.getName());
-        var enrolledCourses = courseService.findEnrolledCoursesByUser(user.getId(), pageable);
-        model.addAttribute("enrolledCoursePage", enrolledCourses);
-        model.addAttribute("courses", enrolledCourses.getContent());
+        var enrollmentPage = courseService.getUserEnrollments(user.getId(), pageable);
+        model.addAttribute("enrollmentPage", enrollmentPage);
         model.addAttribute("currentUser", user);
         return "member/my-courses";
     }
@@ -72,15 +71,32 @@ public class CourseController {
         model.addAttribute("reviews", reviews);
 
         boolean enrolled = false;
+        boolean waitlisted = false;
+        int waitlistPosition = -1;
+        boolean courseFull = courseService.isCourseFull(id);
+
         if (principal != null) {
             var user = userService.findByEmail(principal.getName());
             model.addAttribute("currentUser", user);
             if (user != null) {
-                var enrolls = courseService.listEnrollments(id);
-                enrolled = enrolls.stream().anyMatch(e -> e.getUser().getId().equals(user.getId()));
+                var enrollment = courseService.getEnrollment(id, user.getId());
+                if (enrollment != null) {
+                    if (enrollment.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED) {
+                        enrolled = true;
+                    } else if (enrollment.getStatus()
+                            == de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED) {
+                        waitlisted = true;
+                        waitlistPosition = courseService.getWaitlistPosition(id, user.getId());
+                    }
+                }
             }
         }
+
         model.addAttribute("enrolled", enrolled);
+        model.addAttribute("waitlisted", waitlisted);
+        model.addAttribute("waitlistPosition", waitlistPosition);
+        model.addAttribute("courseFull", courseFull);
+
         return "course-details";
     }
 
