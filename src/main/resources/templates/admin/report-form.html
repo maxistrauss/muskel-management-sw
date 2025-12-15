@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Report Form</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}"/>
+</head>
+<body class="bg-gray-100">
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="lg:ml-64">
+    <div class="container mx-auto p-8">
+        <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold mb-6 text-gray-800"
+                th:text="${report.id == null ? 'Create New Report' : 'Edit Report'}"></h1>
+
+            <form method="post" th:action="@{/admin/reports/save}" th:object="${report}">
+                <input th:field="*{id}" type="hidden"/>
+                <input th:field="*{createdAt}" type="hidden"/>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+                        Report Name
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="name" placeholder="e.g. Monthly Utilization" required th:field="*{name}" type="text">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="type">
+                        Report Type
+                    </label>
+                    <select class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="type" onchange="toggleFilters()" th:field="*{type}">
+                        <option th:each="type : ${reportTypes}" th:text="${type}" th:value="${type}"></option>
+                    </select>
+                </div>
+
+                <!-- Course Filter (Only for COURSE_UTILIZATION) -->
+                <div class="mb-4 hidden" id="courseFilter">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="course">
+                        Filter by Course (Optional)
+                    </label>
+                    <select class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="course" th:field="*{course}">
+                        <option value="">-- All Courses --</option>
+                        <option th:each="c : ${courses}" th:text="${c.name}" th:value="${c.id}"></option>
+                    </select>
+                    <p class="text-gray-500 text-xs mt-1">Leave empty to compare all courses.</p>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <a class="text-gray-600 hover:text-gray-800 font-bold" href="/admin/reports">Cancel</a>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            type="submit">
+                        Save Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleFilters() {
+        const type = document.getElementById('type').value;
+        const courseFilter = document.getElementById('courseFilter');
+
+        if (type === 'COURSE_UTILIZATION') {
+            courseFilter.classList.remove('hidden');
+        } else {
+            courseFilter.classList.add('hidden');
+            document.getElementById('course').value = ""; // Reset
+        }
+    }
+
+    // Run on load
+    document.addEventListener('DOMContentLoaded', toggleFilters);
+</script>
+
+</body>
+</html>
