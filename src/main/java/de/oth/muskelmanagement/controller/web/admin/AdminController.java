@@ -122,7 +122,7 @@ public class AdminController {
     }
 
     @PostMapping("/courses/new")
-    public String createCourse(@Valid @ModelAttribute("course") CourseDto courseDto, BindingResult bindingResult, Model model) {
+    public String createCourse(@Valid @ModelAttribute("course") CourseDto courseDto, BindingResult bindingResult, Model model, Principal principal) {
         if (bindingResult.hasErrors()) {
             // Re-add necessary model attributes for the form
             var allUsers = userService.findAll(Pageable.unpaged());
@@ -133,7 +133,10 @@ public class AdminController {
             model.addAttribute("rooms", rooms);
             return "admin/course-form";
         }
-        courseService.saveCourseFromDto(courseDto);
+        Course newCourse = courseService.saveCourseFromDto(courseDto);
+        // Enroll the admin creator into the course
+        var adminUser = userService.findByEmail(principal.getName());
+        courseService.addMember(newCourse.getId(), adminUser.getId());
         return "redirect:/admin/courses";
     }
 

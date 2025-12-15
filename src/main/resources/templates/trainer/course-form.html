@@ -61,6 +61,7 @@
                 <div>
                     <label class="block text-gray-700">Start Date</label>
                     <input type="date" name="startDate" th:value="${course.startDate}" class="w-full border rounded px-3 py-2" required/>
+                    <p th:if="${#fields.hasErrors('course.startDate')}" th:errors="*{course.startDate}" class="text-red-500 text-xs mt-1"></p>
                 </div>
                 <div>
                     <label class="block text-gray-700">End Date</label>

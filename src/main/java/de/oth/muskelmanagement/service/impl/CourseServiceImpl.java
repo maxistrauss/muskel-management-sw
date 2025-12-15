@@ -42,6 +42,11 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Page<Course> findByTrainerId(Long trainerId, Pageable pageable) {
+        return courseRepository.findByTrainerId(trainerId, pageable);
+    }
+
+    @Override
     public Course findById(Long id) {
         return courseRepository.findById(id).orElseThrow(() -> new RuntimeException("Course not found"));
     }

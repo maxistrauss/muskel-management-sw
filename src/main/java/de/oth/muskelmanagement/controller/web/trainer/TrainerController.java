@@ -3,16 +3,10 @@ package de.oth.muskelmanagement.controller.web.trainer;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Course;
 import de.oth.muskelmanagement.model.entity.Enrollment;
-import de.oth.muskelmanagement.model.entity.Review;
-import de.oth.muskelmanagement.service.CourseService;
-import de.oth.muskelmanagement.service.ExerciseService;
-import de.oth.muskelmanagement.service.ReviewService;
-import de.oth.muskelmanagement.service.RoomService;
-import de.oth.muskelmanagement.service.UserService;
 import de.oth.muskelmanagement.model.entity.Exercise;
-import java.util.stream.Collectors;
-import java.util.Set;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import de.oth.muskelmanagement.model.entity.Review;
+import de.oth.muskelmanagement.service.*;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -21,10 +15,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/trainer")
@@ -38,7 +36,7 @@ public class TrainerController {
     private final ExerciseService exerciseService;
 
     public TrainerController(CourseService courseService, UserService userService, RoomService roomService,
-            ReviewService reviewService, ExerciseService exerciseService) {
+                             ReviewService reviewService, ExerciseService exerciseService) {
         this.courseService = courseService;
         this.userService = userService;
         this.roomService = roomService;
@@ -57,10 +55,16 @@ public class TrainerController {
     }
 
     @PostMapping("/courses/new")
-    public String createCourse(@ModelAttribute Course course, Principal principal) {
+    public String createCourse(@Valid @ModelAttribute("course") Course course, BindingResult bindingResult, Principal principal, Model model) {
         var trainer = userService.findByEmail(principal.getName());
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("currentTrainer", trainer);
+            model.addAttribute("rooms", roomService.findActiveRooms());
+            return "trainer/course-form";
+        }
         course.setTrainer(trainer);
-        courseService.save(course);
+        Course newCourse = courseService.save(course);
+        courseService.addMember(newCourse.getId(), trainer.getId());
         return "redirect:/trainer/courses";
     }
 
@@ -97,7 +101,7 @@ public class TrainerController {
                 .collect(Collectors.toSet());
 
         List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
-                .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !enrolledMemberIds.contains(user.getId()))
+                .filter(user -> user.getRoles().stream().anyMatch(role -> role.equals("ROLE_MEMBER")) && !enrolledMemberIds.contains(user.getId()))
                 .collect(Collectors.toList());
 
         model.addAttribute("enrolledMembers", enrolledMembers);
@@ -107,7 +111,7 @@ public class TrainerController {
     }
 
     @PostMapping("/courses/edit/{id}")
-    public String updateCourse(@PathVariable Long id, @ModelAttribute Course courseForm, Principal principal) {
+    public String updateCourse(@PathVariable Long id, @Valid @ModelAttribute("course") Course course, BindingResult bindingResult, Principal principal, Model model) {
         Course existing = courseService.findById(id);
         var currentUser = userService.findByEmail(principal.getName());
         boolean isOwner = existing.getTrainer() != null && existing.getTrainer().getId().equals(currentUser.getId());
@@ -116,14 +120,46 @@ public class TrainerController {
         if (!isOwner && !isAdmin) {
             throw new AccessDeniedException("You can only edit your own courses");
         }
-        existing.setName(courseForm.getName());
-        existing.setDescription(courseForm.getDescription());
-        existing.setCapacity(courseForm.getCapacity());
-        existing.setActive(courseForm.isActive());
-        existing.setRoom(courseForm.getRoom());
-        existing.setStartDate(courseForm.getStartDate());
-        existing.setEndDate(courseForm.getEndDate());
-        existing.setDaysOfWeek(courseForm.getDaysOfWeek());
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("currentTrainer", currentUser);
+            model.addAttribute("rooms", roomService.findActiveRooms());
+            List<UserDto> enrolledMembers = courseService.listEnrollments(id).stream()
+                    .map(Enrollment::getUser)
+                    .map(user -> {
+                        UserDto dto = new UserDto();
+                        dto.setId(user.getId());
+dto.setFirstName(user.getFirstName());
+                        dto.setLastName(user.getLastName());
+                        dto.setEmail(user.getEmail());
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+            model.addAttribute("enrolledMembers", enrolledMembers);
+
+            Set<Long> enrolledMemberIds = enrolledMembers.stream().map(UserDto::getId).collect(Collectors.toSet());
+            List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
+                    .filter(user -> user.getRoles().stream().anyMatch(role -> role.equals("ROLE_MEMBER")) && !enrolledMemberIds.contains(user.getId()))
+                    .collect(Collectors.toList());
+            model.addAttribute("availableMembers", availableMembers);
+
+            // Preserve exercises and trainer info when returning to form
+            course.setExercises(existing.getExercises());
+            course.setTrainer(existing.getTrainer());
+
+            return "trainer/course-form";
+        }
+
+        existing.setName(course.getName());
+        existing.setDescription(course.getDescription());
+        existing.setCapacity(course.getCapacity());
+        existing.setActive(course.isActive());
+        existing.setRoom(course.getRoom());
+        existing.setStartDate(course.getStartDate());
+        existing.setEndDate(course.getEndDate());
+        existing.setStartTime(course.getStartTime());
+        existing.setDurationMinutes(course.getDurationMinutes());
+        existing.setDaysOfWeek(course.getDaysOfWeek());
         courseService.save(existing);
         return "redirect:/trainer/courses";
     }
@@ -143,10 +179,10 @@ public class TrainerController {
     }
 
     @GetMapping("/courses")
-    public String listCourses(Model model, @PageableDefault(size = 10) Pageable pageable) {
-        var page = courseService.findAll(pageable);
+    public String listCourses(Model model, @PageableDefault(size = 10) Pageable pageable, Principal principal) {
+        var trainer = userService.findByEmail(principal.getName());
+        var page = courseService.findByTrainerId(trainer.getId(), pageable);
         model.addAttribute("coursePage", page);
-        model.addAttribute("courses", page.getContent());
         return "trainer/courses";
     }
 
@@ -208,8 +244,8 @@ public class TrainerController {
 
     @GetMapping("/courses/{id}/exercises")
     public String manageCourseExercises(@PathVariable Long id, Model model, Principal principal,
-            @RequestParam(required = false) String bodyPart, @RequestParam(required = false) String equipment,
-            @RequestParam(required = false) String target) {
+                                        @RequestParam(required = false) String bodyPart, @RequestParam(required = false) String equipment,
+                                        @RequestParam(required = false) String target) {
         Course course = courseService.findById(id);
         var currentUser = userService.findByEmail(principal.getName());
         boolean isOwner = course.getTrainer() != null && course.getTrainer().getId().equals(currentUser.getId());
@@ -258,7 +294,7 @@ public class TrainerController {
 
     @PostMapping("/courses/{id}/exercises")
     public String saveCourseExercises(@PathVariable Long id, @RequestParam(required = false) List<Long> exerciseIds,
-            RedirectAttributes redirectAttributes, Principal principal) {
+                                      RedirectAttributes redirectAttributes, Principal principal) {
         Course course = courseService.findById(id);
         var currentUser = userService.findByEmail(principal.getName());
         boolean isOwner = course.getTrainer() != null && course.getTrainer().getId().equals(currentUser.getId());

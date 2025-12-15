@@ -54,6 +54,7 @@ public class CourseController {
         var enrolledCourses = courseService.findEnrolledCoursesByUser(user.getId(), pageable);
         model.addAttribute("enrolledCoursePage", enrolledCourses);
         model.addAttribute("courses", enrolledCourses.getContent());
+        model.addAttribute("currentUser", user);
         return "member/my-courses";
     }
 
@@ -73,6 +74,7 @@ public class CourseController {
         boolean enrolled = false;
         if (principal != null) {
             var user = userService.findByEmail(principal.getName());
+            model.addAttribute("currentUser", user);
             if (user != null) {
                 var enrolls = courseService.listEnrollments(id);
                 enrolled = enrolls.stream().anyMatch(e -> e.getUser().getId().equals(user.getId()));

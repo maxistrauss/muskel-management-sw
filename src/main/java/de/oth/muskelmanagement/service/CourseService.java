@@ -13,6 +13,7 @@ import java.util.Set;
 
 public interface CourseService {
     Page<Course> findAll(Pageable pageable);
+    Page<Course> findByTrainerId(Long trainerId, Pageable pageable);
     Course findById(Long id);
     Course save(Course course);
     void deleteById(Long id);

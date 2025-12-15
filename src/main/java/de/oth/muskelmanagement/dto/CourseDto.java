@@ -4,6 +4,7 @@ import de.oth.muskelmanagement.model.enums.DayOfWeek;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -31,12 +32,15 @@ public class CourseDto {
     private RoomDto room;
 
     @NotNull(message = "Start date cannot be null")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
     @NotNull(message = "End date cannot be null")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
     @NotNull(message = "Start time cannot be null")
+    @DateTimeFormat(pattern = "HH:mm")
     private LocalTime startTime;
 
     @NotNull(message = "Duration cannot be null")

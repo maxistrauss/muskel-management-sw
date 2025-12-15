@@ -58,7 +58,7 @@
             <form th:if="${!enrolled}" th:action="@{/member/course-info/{id}/enroll(id=${course.id})}" method="post">
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Enroll</button>
             </form>
-            <form th:if="${enrolled}" th:action="@{/member/course-info/{id}/unenroll(id=${course.id})}" method="post">
+            <form th:if="${enrolled and (currentUser == null or course.trainer == null or course.trainer.id != currentUser.id)}" th:action="@{/member/course-info/{id}/unenroll(id=${course.id})}" method="post">
                 <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Unenroll</button>
             </form>
 
