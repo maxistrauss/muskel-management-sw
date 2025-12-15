@@ -3,6 +3,7 @@ package de.oth.muskelmanagement.config;
 import de.oth.muskelmanagement.model.entity.*;
 import de.oth.muskelmanagement.model.enums.EquipmentCategory;
 import de.oth.muskelmanagement.model.enums.EquipmentStatus;
+import de.oth.muskelmanagement.model.enums.ReportType;
 import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.*;
 import de.oth.muskelmanagement.service.ExerciseService;
@@ -26,7 +27,6 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RoomRepository roomRepository;
-    private final MembershipRepository membershipRepository;
     private final PricingRepository pricingRepository;
     private final EquipmentRepository equipmentRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -38,19 +38,19 @@ public class DataInitializer implements CommandLineRunner {
     private final TrainingPlanRepository trainingPlanRepository;
     private final FitnessMeasurementRepository fitnessMeasurementRepository;
     private final ReviewRepository reviewRepository;
+    private final ReportRepository reportRepository;
 
     public DataInitializer(UserRepository userRepository, RoleRepository roleRepository, RoomRepository roomRepository,
-            MembershipRepository membershipRepository, PricingRepository pricingRepository,
+            PricingRepository pricingRepository,
             EquipmentRepository equipmentRepository, SubscriptionRepository subscriptionRepository,
             de.oth.muskelmanagement.repository.CourseRepository courseRepository,
             de.oth.muskelmanagement.repository.EnrollmentRepository enrollmentRepository,
             ExerciseRepository exerciseRepository, ExerciseService exerciseService, PasswordEncoder passwordEncoder,
             TrainingPlanRepository trainingPlanRepository, FitnessMeasurementRepository fitnessMeasurementRepository,
-            ReviewRepository reviewRepository) {
+            ReviewRepository reviewRepository, ReportRepository reportRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
-        this.membershipRepository = membershipRepository;
         this.pricingRepository = pricingRepository;
         this.equipmentRepository = equipmentRepository;
         this.subscriptionRepository = subscriptionRepository;
@@ -62,12 +62,12 @@ public class DataInitializer implements CommandLineRunner {
         this.trainingPlanRepository = trainingPlanRepository;
         this.fitnessMeasurementRepository = fitnessMeasurementRepository;
         this.reviewRepository = reviewRepository;
+        this.reportRepository = reportRepository;
     }
 
     @Override
     public void run(String... args) {
         initializeRoles();
-        initializeMemberships();
         initializePricings();
         initializeUsers();
         initializeRooms();
@@ -78,6 +78,18 @@ public class DataInitializer implements CommandLineRunner {
         initializeTrainingPlans();
         initializeFitnessMeasurements();
         initializeReviews();
+        initializeReports();
+    }
+
+    private void initializeReports() {
+        if (reportRepository.count() > 0) {
+            return;
+        }
+
+        reportRepository.save(new Report("Trainer Popularity", ReportType.TRAINER_POPULARITY, null, null));
+        reportRepository.save(new Report("Member Growth", ReportType.MEMBER_GROWTH, null, null));
+        reportRepository.save(new Report("Course Utilization Overview", ReportType.COURSE_UTILIZATION, null, null));
+        reportRepository.save(new Report("Top 5 Popular Courses", ReportType.POPULAR_COURSES, null, null));
     }
 
     private void initializeReviews() {
@@ -110,10 +122,12 @@ public class DataInitializer implements CommandLineRunner {
         Pricing basic = new Pricing("Basic", new BigDecimal("29.99"), 1, "Monthly membership with basic access", true);
         pricingRepository.save(basic);
 
-        Pricing premium = new Pricing("Premium", new BigDecimal("59.99"), 12, "Annual membership with full access and additional services", true);
+        Pricing premium = new Pricing("Premium", new BigDecimal("59.99"), 12,
+                "Annual membership with full access and additional services", true);
         pricingRepository.save(premium);
 
-        Pricing student = new Pricing("Student", new BigDecimal("19.99"), 1, "Discounted monthly membership for students", true);
+        Pricing student = new Pricing("Student", new BigDecimal("19.99"), 1,
+                "Discounted monthly membership for students", true);
         pricingRepository.save(student);
     }
 
@@ -130,46 +144,56 @@ public class DataInitializer implements CommandLineRunner {
 
         // Cardio equipment for Cardio Room
         Equipment treadmill1 = new Equipment("Treadmill", "TREAD-001", EquipmentStatus.AVAILABLE, cardioRoom,
-                LocalDate.now().minusMonths(3), "Technogym", EquipmentCategory.CARDIO, 90, LocalDate.now().minusMonths(1));
+                LocalDate.now().minusMonths(3), "Technogym", EquipmentCategory.CARDIO, 90,
+                LocalDate.now().minusMonths(1));
         equipmentRepository.save(treadmill1);
 
         Equipment treadmill2 = new Equipment("Treadmill", "TREAD-002", EquipmentStatus.AVAILABLE, cardioRoom,
-                LocalDate.now().minusMonths(2), "Life Fitness", EquipmentCategory.CARDIO, 90, LocalDate.now().minusMonths(1));
+                LocalDate.now().minusMonths(2), "Life Fitness", EquipmentCategory.CARDIO, 90,
+                LocalDate.now().minusMonths(1));
         equipmentRepository.save(treadmill2);
 
         Equipment bike1 = new Equipment("Exercise Bike", "BIKE-001", EquipmentStatus.AVAILABLE, cardioRoom,
-                LocalDate.now().minusMonths(1), "Peloton", EquipmentCategory.CARDIO, 120, LocalDate.now().minusWeeks(2));
+                LocalDate.now().minusMonths(1), "Peloton", EquipmentCategory.CARDIO, 120,
+                LocalDate.now().minusWeeks(2));
         equipmentRepository.save(bike1);
 
         Equipment elliptical1 = new Equipment("Elliptical Machine", "ELLI-001", EquipmentStatus.AVAILABLE, cardioRoom,
-                LocalDate.now().minusMonths(4), "Concept2", EquipmentCategory.CARDIO, 90, LocalDate.now().minusMonths(2));
+                LocalDate.now().minusMonths(4), "Concept2", EquipmentCategory.CARDIO, 90,
+                LocalDate.now().minusMonths(2));
         equipmentRepository.save(elliptical1);
 
         // Strength equipment for Weight Room
         Equipment bench1 = new Equipment("Flat Bench", "BENCH-01", EquipmentStatus.AVAILABLE, weightRoom,
-                LocalDate.now().minusMonths(6), "Hammer Strength", EquipmentCategory.STRENGTH, 180, LocalDate.now().minusMonths(3));
+                LocalDate.now().minusMonths(6), "Hammer Strength", EquipmentCategory.STRENGTH, 180,
+                LocalDate.now().minusMonths(3));
         equipmentRepository.save(bench1);
 
         Equipment squatRack1 = new Equipment("Squat Rack", "SQUAT-001", EquipmentStatus.AVAILABLE, weightRoom,
-                LocalDate.now().minusMonths(5), "Rogue Fitness", EquipmentCategory.STRENGTH, 180, LocalDate.now().minusMonths(2));
+                LocalDate.now().minusMonths(5), "Rogue Fitness", EquipmentCategory.STRENGTH, 180,
+                LocalDate.now().minusMonths(2));
         equipmentRepository.save(squatRack1);
 
         // Free weights for Main Gym
         Equipment dumbbellSet1 = new Equipment("Dumbbell Set 2.5-25kg", "DUMB-001", EquipmentStatus.AVAILABLE, mainGym,
-                LocalDate.now().minusMonths(2), "Multipower", EquipmentCategory.FREE_WEIGHTS, 180, LocalDate.now().minusMonths(1));
+                LocalDate.now().minusMonths(2), "Multipower", EquipmentCategory.FREE_WEIGHTS, 180,
+                LocalDate.now().minusMonths(1));
         equipmentRepository.save(dumbbellSet1);
 
         Equipment barbell1 = new Equipment("Barbell", "BARB-001", EquipmentStatus.AVAILABLE, mainGym,
-                LocalDate.now().minusMonths(1), "Eleiko", EquipmentCategory.FREE_WEIGHTS, 180, LocalDate.now().minusWeeks(3));
+                LocalDate.now().minusMonths(1), "Eleiko", EquipmentCategory.FREE_WEIGHTS, 180,
+                LocalDate.now().minusWeeks(3));
         equipmentRepository.save(barbell1);
 
         // Additional equipment in storage as backup
         Equipment repairBike = new Equipment("Exercise Bike", "BIKE-002", EquipmentStatus.IN_MAINTENANCE, storage,
-                LocalDate.now().minusMonths(12), "Schwinn", EquipmentCategory.CARDIO, 90, LocalDate.now().minusMonths(6));
+                LocalDate.now().minusMonths(12), "Schwinn", EquipmentCategory.CARDIO, 90,
+                LocalDate.now().minusMonths(6));
         equipmentRepository.save(repairBike);
 
         Equipment oldTreadmill = new Equipment("Treadmill", "TREAD-003", EquipmentStatus.DEFECTIVE, storage,
-                LocalDate.now().minusMonths(24), "ProForm", EquipmentCategory.CARDIO, 90, LocalDate.now().minusMonths(12));
+                LocalDate.now().minusMonths(24), "ProForm", EquipmentCategory.CARDIO, 90,
+                LocalDate.now().minusMonths(12));
         equipmentRepository.save(oldTreadmill);
     }
 
@@ -203,40 +227,49 @@ public class DataInitializer implements CommandLineRunner {
         de.oth.muskelmanagement.model.entity.User trainer = userRepository.findByEmail("trainer@example.com");
 
         de.oth.muskelmanagement.model.entity.Course yoga = new de.oth.muskelmanagement.model.entity.Course(
-                "Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true, LocalTime.of(9, 0), 60);
+                "Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true,
+                LocalTime.of(9, 0), 60);
         if (trainer != null) {
             yoga.setTrainer(trainer);
         }
         roomRepository.findByName("Yoga Studio").ifPresent(r -> yoga.setRoom(r));
         yoga.setStartDate(LocalDate.now().minusWeeks(4));
         yoga.setEndDate(LocalDate.now().plusWeeks(8));
-        yoga.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY));
+        yoga.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY,
+                de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY));
         courseRepository.save(yoga);
 
         de.oth.muskelmanagement.model.entity.Course hiit = new de.oth.muskelmanagement.model.entity.Course(
-                "HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true, LocalTime.of(18, 0), 45);
+                "HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true,
+                LocalTime.of(18, 0), 45);
         if (trainer != null) {
             hiit.setTrainer(trainer);
         }
         roomRepository.findByName("Cardio Room").ifPresent(r -> hiit.setRoom(r));
         hiit.setStartDate(LocalDate.now().minusWeeks(2));
         hiit.setEndDate(LocalDate.now().plusWeeks(10));
-        hiit.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.TUESDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.THURSDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.SATURDAY));
+        hiit.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.TUESDAY,
+                de.oth.muskelmanagement.model.enums.DayOfWeek.THURSDAY,
+                de.oth.muskelmanagement.model.enums.DayOfWeek.SATURDAY));
         courseRepository.save(hiit);
 
         de.oth.muskelmanagement.model.entity.Course strength = new de.oth.muskelmanagement.model.entity.Course(
-                "Strength Training", "Build muscle and increase strength with progressive overload.", 10, true, LocalTime.of(17, 0), 75);
+                "Strength Training", "Build muscle and increase strength with progressive overload.", 10, true,
+                LocalTime.of(17, 0), 75);
         if (trainer != null) {
             strength.setTrainer(trainer);
         }
         roomRepository.findByName("Weight Room").ifPresent(r -> strength.setRoom(r));
         strength.setStartDate(LocalDate.now().minusWeeks(1));
         strength.setEndDate(LocalDate.now().plusWeeks(11));
-        strength.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY, de.oth.muskelmanagement.model.enums.DayOfWeek.FRIDAY));
+        strength.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY,
+                de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY,
+                de.oth.muskelmanagement.model.enums.DayOfWeek.FRIDAY));
         courseRepository.save(strength);
-        
+
         de.oth.muskelmanagement.model.entity.Course pelvicFloor = new de.oth.muskelmanagement.model.entity.Course(
-                "Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true, LocalTime.of(10, 0), 90);
+                "Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true,
+                LocalTime.of(10, 0), 90);
         if (trainer != null) {
             pelvicFloor.setTrainer(trainer);
         }
@@ -265,30 +298,6 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void initializeMemberships() {
-        if (membershipRepository.count() > 0) {
-            return;
-        }
-
-        Membership basic = new Membership("Basic");
-        basic.setDurationMonths(1);
-        basic.setPrice(19.99);
-        basic.setDescription("Basic membership");
-        membershipRepository.save(basic);
-
-        Membership premium = new Membership("Premium");
-        premium.setDurationMonths(12);
-        premium.setPrice(199.99);
-        premium.setDescription("Premium membership with full access");
-        membershipRepository.save(premium);
-
-        Membership trainer = new Membership("Trainer");
-        trainer.setDurationMonths(12);
-        trainer.setPrice(0.0);
-        trainer.setDescription("Trainer internal membership");
-        membershipRepository.save(trainer);
-    }
-
     private void initializeRoles() {
         if (roleRepository.count() > 0) {
             return;
@@ -312,10 +321,6 @@ public class DataInitializer implements CommandLineRunner {
         Role adminRole = roleRepository.findByName("ROLE_ADMIN");
         Role trainerRole = roleRepository.findByName("ROLE_TRAINER");
         Role memberRole = roleRepository.findByName("ROLE_MEMBER");
-
-        Membership premiumMembership = membershipRepository.findByName("Premium");
-        Membership trainerMembership = membershipRepository.findByName("Trainer");
-        Membership basicMembership = membershipRepository.findByName("Basic");
 
         User admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("password"),
                 Set.of(adminRole, trainerRole, memberRole));
@@ -357,7 +362,7 @@ public class DataInitializer implements CommandLineRunner {
 
         try {
             int loadedCount = exerciseService.loadExercisesFromJson();
-            
+
             if (loadedCount > 0) {
                 log.info("Successfully loaded {} exercises from JSON file", loadedCount);
             } else {
