@@ -3,16 +3,9 @@ package de.oth.muskelmanagement.controller.web.trainer;
 import de.oth.muskelmanagement.dto.UserDto;
 import de.oth.muskelmanagement.model.entity.Course;
 import de.oth.muskelmanagement.model.entity.Enrollment;
-import de.oth.muskelmanagement.model.entity.Review;
-import de.oth.muskelmanagement.service.CourseService;
-import de.oth.muskelmanagement.service.ExerciseService;
-import de.oth.muskelmanagement.service.ReviewService;
-import de.oth.muskelmanagement.service.RoomService;
-import de.oth.muskelmanagement.service.UserService;
 import de.oth.muskelmanagement.model.entity.Exercise;
-import java.util.stream.Collectors;
-import java.util.Set;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import de.oth.muskelmanagement.model.entity.Review;
+import de.oth.muskelmanagement.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -22,9 +15,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/trainer")
@@ -60,6 +56,15 @@ public class TrainerController {
     public String createCourse(@ModelAttribute Course course, Principal principal) {
         var trainer = userService.findByEmail(principal.getName());
         course.setTrainer(trainer);
+
+        // Ensure Room is a managed entity
+        if (course.getRoom() != null && course.getRoom().getId() != null) {
+            var room = roomService.findEntityById(course.getRoom().getId());
+            course.setRoom(room);
+        } else {
+            course.setRoom(null);
+        }
+        
         courseService.save(course);
         return "redirect:/trainer/courses";
     }
@@ -80,7 +85,10 @@ public class TrainerController {
         model.addAttribute("rooms", rooms);
 
         // Member Management Data
-        List<UserDto> enrolledMembers = courseService.listEnrollments(id).stream()
+        List<Enrollment> allEnrollments = courseService.listEnrollments(id);
+
+        List<UserDto> enrolledMembers = allEnrollments.stream()
+                .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED)
                 .map(Enrollment::getUser)
                 .map(user -> {
                     UserDto dto = new UserDto();
@@ -92,15 +100,27 @@ public class TrainerController {
                 })
                 .collect(Collectors.toList());
 
-        Set<Long> enrolledMemberIds = enrolledMembers.stream()
-                .map(UserDto::getId)
+        List<UserDto> waitlistedMembers = allEnrollments.stream()
+                .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED)
+                .sorted((e1, e2) -> e1.getCreatedAt().compareTo(e2.getCreatedAt())).map(Enrollment::getUser)
+                .map(user -> {
+                    UserDto dto = new UserDto();
+                    dto.setId(user.getId());
+                    dto.setFirstName(user.getFirstName());
+                    dto.setLastName(user.getLastName());
+                    dto.setEmail(user.getEmail());
+                    return dto;
+                }).collect(Collectors.toList());
+
+        Set<Long> excludedMemberIds = allEnrollments.stream().map(e -> e.getUser().getId())
                 .collect(Collectors.toSet());
 
         List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
-                .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !enrolledMemberIds.contains(user.getId()))
+                .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !excludedMemberIds.contains(user.getId()))
                 .collect(Collectors.toList());
 
         model.addAttribute("enrolledMembers", enrolledMembers);
+        model.addAttribute("waitlistedMembers", waitlistedMembers);
         model.addAttribute("availableMembers", availableMembers);
 
         return "trainer/course-form";
@@ -120,7 +140,15 @@ public class TrainerController {
         existing.setDescription(courseForm.getDescription());
         existing.setCapacity(courseForm.getCapacity());
         existing.setActive(courseForm.isActive());
-        existing.setRoom(courseForm.getRoom());
+
+        // Ensure Room is a managed entity
+        if (courseForm.getRoom() != null && courseForm.getRoom().getId() != null) {
+            var room = roomService.findEntityById(courseForm.getRoom().getId());
+            existing.setRoom(room);
+        } else {
+            existing.setRoom(null);
+        }
+        
         existing.setStartDate(courseForm.getStartDate());
         existing.setEndDate(courseForm.getEndDate());
         existing.setDaysOfWeek(courseForm.getDaysOfWeek());
@@ -144,7 +172,7 @@ public class TrainerController {
 
     @GetMapping("/courses")
     public String listCourses(Model model, @PageableDefault(size = 10) Pageable pageable) {
-        var page = courseService.findAll(pageable);
+        var page = courseService.findAllDtos(pageable);
         model.addAttribute("coursePage", page);
         model.addAttribute("courses", page.getContent());
         return "trainer/courses";

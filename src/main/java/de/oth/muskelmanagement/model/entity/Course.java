@@ -4,7 +4,7 @@ import de.oth.muskelmanagement.model.enums.DayOfWeek;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime; // Added import
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +44,7 @@ public class Course {
     @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "room_id")
     private Room room;
 
@@ -198,6 +198,21 @@ public class Course {
     public void removeExercise(Exercise exercise) {
         exercises.remove(exercise);
         exercise.getCourses().remove(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Course course = (Course) o;
+        return id != null && id.equals(course.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }
 

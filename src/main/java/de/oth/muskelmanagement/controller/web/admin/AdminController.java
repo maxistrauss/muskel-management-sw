@@ -78,7 +78,7 @@ public class AdminController {
     @GetMapping("/courses")
     public String listCourses(Model model, @PageableDefault(size = 10) Pageable pageable,
             @RequestParam(required = false) Long trainerId) {
-        var page = courseService.findAll(pageable);
+        var page = courseService.findAllDtos(pageable);
         var courses = page.getContent();
 
         // Filter by trainer if trainerId is provided
@@ -153,7 +153,10 @@ public class AdminController {
         model.addAttribute("rooms", rooms);
 
         // Member Management Data
-        List<UserDto> enrolledMembers = courseService.listEnrollments(id).stream()
+        List<Enrollment> allEnrollments = courseService.listEnrollments(id);
+
+        List<UserDto> enrolledMembers = allEnrollments.stream()
+                .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED)
                 .map(Enrollment::getUser)
                 .map(user -> {
                     UserDto dto = new UserDto();
@@ -165,15 +168,27 @@ public class AdminController {
                 })
                 .collect(Collectors.toList());
 
-        Set<Long> enrolledMemberIds = enrolledMembers.stream()
-                .map(UserDto::getId)
+        List<UserDto> waitlistedMembers = allEnrollments.stream()
+                .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED)
+                .sorted((e1, e2) -> e1.getCreatedAt().compareTo(e2.getCreatedAt())) // Sort by waitlist position
+                .map(Enrollment::getUser).map(user -> {
+                    UserDto dto = new UserDto();
+                    dto.setId(user.getId());
+                    dto.setFirstName(user.getFirstName());
+                    dto.setLastName(user.getLastName());
+                    dto.setEmail(user.getEmail());
+                    return dto;
+                }).collect(Collectors.toList());
+
+        Set<Long> excludedMemberIds = allEnrollments.stream().map(e -> e.getUser().getId())
                 .collect(Collectors.toSet());
 
         List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
-                .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !enrolledMemberIds.contains(user.getId()))
+                .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !excludedMemberIds.contains(user.getId()))
                 .collect(Collectors.toList());
 
         model.addAttribute("enrolledMembers", enrolledMembers);
+        model.addAttribute("waitlistedMembers", waitlistedMembers);
         model.addAttribute("availableMembers", availableMembers);
 
         return "admin/course-form";

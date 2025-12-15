@@ -31,7 +31,27 @@ public interface CourseService {
     Set<Exercise> getExercisesByCourse(Long courseId);
     Course bulkAssignExercises(Long courseId, List<Long> exerciseIds);
 
+    // Waitlist helpers
+    Enrollment getEnrollment(Long courseId, Long userId);
+
+    int getWaitlistPosition(Long courseId, Long userId);
+
+    boolean isCourseFull(Long courseId);
+
+    long getEnrolledCount(Long courseId);
+
+    long getWaitlistSize(Long courseId);
+
+    org.springframework.data.domain.Page<Enrollment> getUserEnrollments(Long userId,
+            org.springframework.data.domain.Pageable pageable);
+
+    // DTO methods
+
     CourseDto getCourseDtoById(Long id);
+
+    org.springframework.data.domain.Page<de.oth.muskelmanagement.dto.CourseDto> findAllDtos(
+            org.springframework.data.domain.Pageable pageable);
+
     Course saveCourseFromDto(CourseDto courseDto);
     Course updateCourseFromDto(Long id, CourseDto courseDto);
 }

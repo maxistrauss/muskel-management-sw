@@ -95,4 +95,19 @@ public class Room {
         equipment.remove(equipmentItem);
         equipmentItem.setRoom(null);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Room room = (Room) o;
+        return id != null && id.equals(room.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

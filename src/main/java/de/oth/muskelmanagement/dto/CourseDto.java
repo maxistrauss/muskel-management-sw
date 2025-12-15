@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
-import de.oth.muskelmanagement.dto.ExerciseDto;
 
 public class CourseDto {
     private Long id;
@@ -47,6 +46,9 @@ public class CourseDto {
     private Set<DayOfWeek> daysOfWeek = new HashSet<>();
 
     private Set<ExerciseDto> exercises = new HashSet<>();
+
+    private Long enrolledCount;
+    private Long waitlistSize;
 
     public CourseDto() {
     }
@@ -169,5 +171,21 @@ public class CourseDto {
 
     public void setExercises(Set<ExerciseDto> exercises) {
         this.exercises = exercises;
+    }
+
+    public Long getEnrolledCount() {
+        return enrolledCount;
+    }
+
+    public void setEnrolledCount(Long enrolledCount) {
+        this.enrolledCount = enrolledCount;
+    }
+
+    public Long getWaitlistSize() {
+        return waitlistSize;
+    }
+
+    public void setWaitlistSize(Long waitlistSize) {
+        this.waitlistSize = waitlistSize;
     }
 }
