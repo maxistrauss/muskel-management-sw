@@ -4,7 +4,6 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
 import java.math.BigDecimal;
 
 public class PricingDto {
@@ -26,11 +25,13 @@ public class PricingDto {
 
     private boolean active = true;
 
+    private String stripeBuyButtonId;
+
     public PricingDto() {
     }
 
     public PricingDto(Long id, String name, BigDecimal price, Integer durationMonths, String description,
-            boolean active) {
+                      boolean active) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -86,5 +87,12 @@ public class PricingDto {
     public void setActive(boolean active) {
         this.active = active;
     }
-}
 
+    public String getStripeBuyButtonId() {
+        return stripeBuyButtonId;
+    }
+
+    public void setStripeBuyButtonId(String stripeBuyButtonId) {
+        this.stripeBuyButtonId = stripeBuyButtonId;
+    }
+}

@@ -25,6 +25,9 @@ public class Pricing {
 
     private boolean active = true;
 
+    @Column(name = "stripe_buy_button_id")
+    private String stripeBuyButtonId;
+
     public Pricing() {
     }
 
@@ -82,6 +85,14 @@ public class Pricing {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getStripeBuyButtonId() {
+        return stripeBuyButtonId;
+    }
+
+    public void setStripeBuyButtonId(String stripeBuyButtonId) {
+        this.stripeBuyButtonId = stripeBuyButtonId;
     }
 }
 

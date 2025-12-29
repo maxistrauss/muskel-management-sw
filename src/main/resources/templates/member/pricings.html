@@ -3,6 +3,8 @@
 <head>
     <title>Available Plans</title>
     <link rel="stylesheet" th:href="@{/css/output.css}"/>
+    <!-- Stripe Buy Button Script -->
+    <script async src="https://js.stripe.com/v3/buy-button.js"></script>
 </head>
 <body class="bg-gray-100">
 <!-- Include Navbar Fragment -->
@@ -85,15 +87,43 @@
                         </ul>
                     </div>
 
-                    <!-- Subscribe Button -->
-                    <div th:if="${canSubscribe}">
-                        <form th:action="@{/member/pricing/{id}/subscribe(id=${pricing.id})}" method="post" class="w-full">
-                            <button type="submit" 
-                                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition">
-                                Subscribe Now
-                            </button>
-                        </form>
-                    </div>
+                    <!-- Subscribe Button with Stripe Buy Button -->
+                    <script async
+                        src="https://js.stripe.com/v3/buy-button.js">
+                    </script>
+
+                    <stripe-buy-button
+                        buy-button-id="buy_btn_1SjjWTKgAYD85Anv6segaSpf"
+                        publishable-key="pk_test_51SjjOwKgAYD85AnvZSUrGasY3Q6HuN4UFlcQa2mwi5mjqtnCYXbYm8reGvx24wwvtgSoPLZqwIZYsMh2WWCnoOYw00CWbYRjJA"
+                        >
+                    </stripe-buy-button>
+
+                    <script>
+                        (function () {
+                            try {
+                                const el = document.querySelector('stripe-buy-button');
+                                if (!el) {
+                                    console.error('Stripe Buy Button element missing on page.');
+                                    return;
+                                }
+                                const id = el.getAttribute('buy-button-id');
+                                const key = el.getAttribute('publishable-key');
+                                if (!id || !key) {
+                                    console.error('Stripe Buy Button misconfigured: id or publishable key missing', { id, key });
+                                }
+
+                                window.addEventListener('error', function (e) {
+                                    const msg = (e && (e.message || (e.error && e.error.message))) || 'Unknown error';
+                                    console.error('Stripe error:', msg, e);
+                                });
+                                window.addEventListener('unhandledrejection', function (e) {
+                                    console.error('Stripe unhandled rejection:', e && e.reason);
+                                });
+                            } catch (err) {
+                                console.error('Stripe logging setup failed:', err);
+                            }
+                        })();
+                    </script>
 
                     <!-- Current Plan Badge (if this is the active subscription) -->
                     <div th:if="${!canSubscribe && activeSubscription != null && activeSubscription.pricingId == pricing.id}">

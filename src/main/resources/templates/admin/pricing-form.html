@@ -45,6 +45,15 @@
                       th:if="${#fields.hasErrors('description')}"></span>
             </div>
             <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="stripeBuyButtonId">Stripe Buy Button ID (optional):</label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                       id="stripeBuyButtonId" th:field="*{stripeBuyButtonId}" type="text" 
+                       placeholder="buy_btn_..."/>
+                <p class="text-gray-600 text-xs mt-1">Get this ID from your Stripe Dashboard → Payment Links → Buy Button</p>
+                <span class="text-red-500 text-xs italic" th:errors="*{stripeBuyButtonId}"
+                      th:if="${#fields.hasErrors('stripeBuyButtonId')}"></span>
+            </div>
+            <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">
                     <input class="mr-2 leading-tight" th:field="*{active}" type="checkbox"/>Active
                 </label>

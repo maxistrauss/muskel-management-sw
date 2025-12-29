@@ -34,6 +34,15 @@ public class PricingServiceImpl implements PricingService {
         pricing.setDurationMonths(pricingDto.getDurationMonths());
         pricing.setDescription(pricingDto.getDescription());
         pricing.setActive(pricingDto.isActive());
+        // Normalize Stripe Buy Button ID (trim, store null if blank)
+        String buyId = pricingDto.getStripeBuyButtonId();
+        if (buyId != null) {
+            buyId = buyId.trim();
+            if (buyId.isEmpty()) {
+                buyId = null;
+            }
+        }
+        pricing.setStripeBuyButtonId(buyId);
         return pricingRepository.save(pricing);
     }
 
@@ -67,6 +76,15 @@ public class PricingServiceImpl implements PricingService {
         pricing.setDurationMonths(pricingDto.getDurationMonths());
         pricing.setDescription(pricingDto.getDescription());
         pricing.setActive(pricingDto.isActive());
+        // Normalize Stripe Buy Button ID (trim, store null if blank)
+        String buyIdUpdate = pricingDto.getStripeBuyButtonId();
+        if (buyIdUpdate != null) {
+            buyIdUpdate = buyIdUpdate.trim();
+            if (buyIdUpdate.isEmpty()) {
+                buyIdUpdate = null;
+            }
+        }
+        pricing.setStripeBuyButtonId(buyIdUpdate);
         pricingRepository.save(pricing);
     }
 
@@ -100,6 +118,7 @@ public class PricingServiceImpl implements PricingService {
         pricingDto.setDurationMonths(pricing.getDurationMonths());
         pricingDto.setDescription(pricing.getDescription());
         pricingDto.setActive(pricing.isActive());
+        pricingDto.setStripeBuyButtonId(pricing.getStripeBuyButtonId());
         return pricingDto;
     }
 }
