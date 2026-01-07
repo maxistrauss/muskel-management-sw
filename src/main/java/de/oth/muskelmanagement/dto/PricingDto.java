@@ -26,6 +26,7 @@ public class PricingDto {
     private boolean active = true;
 
     private String stripeBuyButtonId;
+    private String stripePriceId;
 
     public PricingDto() {
     }
@@ -94,5 +95,13 @@ public class PricingDto {
 
     public void setStripeBuyButtonId(String stripeBuyButtonId) {
         this.stripeBuyButtonId = stripeBuyButtonId;
+    }
+
+    public String getStripePriceId() {
+        return stripePriceId;
+    }
+
+    public void setStripePriceId(String stripePriceId) {
+        this.stripePriceId = stripePriceId;
     }
 }

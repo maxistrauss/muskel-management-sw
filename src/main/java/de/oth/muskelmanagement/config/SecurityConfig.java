@@ -76,7 +76,7 @@ public class SecurityConfig {
                 .httpBasic(basic -> {})  // Enable HTTP Basic Auth for API endpoints (useful for Postman/API testing)
                 .logout(LogoutConfigurer::permitAll)
                 .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandler))
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"))  // Disable CSRF for API endpoints
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**", "/stripe/webhook"))  // Disable CSRF for API endpoints and Stripe webhook
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
         return http.build();
     }

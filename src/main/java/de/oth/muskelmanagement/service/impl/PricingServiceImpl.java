@@ -43,6 +43,13 @@ public class PricingServiceImpl implements PricingService {
             }
         }
         pricing.setStripeBuyButtonId(buyId);
+        // Normalize Stripe Price ID
+        String priceId = pricingDto.getStripePriceId();
+        if (priceId != null) {
+            priceId = priceId.trim();
+            if (priceId.isEmpty()) priceId = null;
+        }
+        pricing.setStripePriceId(priceId);
         return pricingRepository.save(pricing);
     }
 
@@ -85,6 +92,13 @@ public class PricingServiceImpl implements PricingService {
             }
         }
         pricing.setStripeBuyButtonId(buyIdUpdate);
+        // Normalize Stripe Price ID
+        String priceIdUpdate = pricingDto.getStripePriceId();
+        if (priceIdUpdate != null) {
+            priceIdUpdate = priceIdUpdate.trim();
+            if (priceIdUpdate.isEmpty()) priceIdUpdate = null;
+        }
+        pricing.setStripePriceId(priceIdUpdate);
         pricingRepository.save(pricing);
     }
 
@@ -119,6 +133,7 @@ public class PricingServiceImpl implements PricingService {
         pricingDto.setDescription(pricing.getDescription());
         pricingDto.setActive(pricing.isActive());
         pricingDto.setStripeBuyButtonId(pricing.getStripeBuyButtonId());
+        pricingDto.setStripePriceId(pricing.getStripePriceId());
         return pricingDto;
     }
 }

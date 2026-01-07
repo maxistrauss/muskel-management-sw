@@ -28,6 +28,9 @@ public class Pricing {
     @Column(name = "stripe_buy_button_id")
     private String stripeBuyButtonId;
 
+    @Column(name = "stripe_price_id")
+    private String stripePriceId;
+
     public Pricing() {
     }
 
@@ -93,6 +96,14 @@ public class Pricing {
 
     public void setStripeBuyButtonId(String stripeBuyButtonId) {
         this.stripeBuyButtonId = stripeBuyButtonId;
+    }
+
+    public String getStripePriceId() {
+        return stripePriceId;
+    }
+
+    public void setStripePriceId(String stripePriceId) {
+        this.stripePriceId = stripePriceId;
     }
 }
 
