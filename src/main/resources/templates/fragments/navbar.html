@@ -24,11 +24,22 @@
         <div th:with="isSuperUser=${#authorization.expression('hasRole(''MEMBER'') and hasRole(''TRAINER'') and hasRole(''ADMIN'')')}"
              class="h-full flex flex-col px-3"
              th:classappend="${isSuperUser ? 'py-1' : 'py-4'}">
-            <!-- Logo/Brand -->
-            <div class="flex items-center justify-center mb-6 pb-4 border-b border-gray-700">
+            <!-- Logo/Brand + Theme toggle -->
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-700">
                 <a href="/" class="text-xl font-bold text-white hover:text-gray-300 transition-colors">
                     MuskelManagement
                 </a>
+                <button id="theme-toggle" class="ml-2 p-2 rounded-lg transition-colors hover:bg-gray-700" title="Toggle dark mode" aria-label="Toggle dark mode">
+                    <!-- Sun Icon (Light Mode) -->
+                    <svg id="sun-icon" class="w-5 h-5 text-gray-200 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 15a5 5 0 100-10 5 5 0 000 10z"></path>
+                        <path fill-rule="evenodd" d="M10 1a1 1 0 011 1v1a1 1 0 11-2 0V2a1 1 0 011-1zm0 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm9-7a1 1 0 010 2h-1a1 1 0 110-2h1zM3 10a1 1 0 010 2H2a1 1 0 110-2h1zm12.657-6.657a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM6.464 15.536a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zm0-10.607l-.707-.707A1 1 0 114.343 5.05l.707.707a1 1 0 001.414-1.414zm9.193 9.193l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                    <!-- Moon Icon (Dark Mode) -->
+                    <svg id="moon-icon" class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
             </div>
 
             <!-- Navigation Links -->
@@ -247,11 +258,25 @@
         class="fixed inset-0 z-30 bg-gray-900 bg-opacity-50 hidden lg:hidden"
         aria-hidden="true"></div>
 
-    <!-- JavaScript for sidebar toggle -->
+    <!-- JavaScript for sidebar & theme toggle -->
     <script>
+        // Early apply theme from localStorage or system preference
+        (function () {
+            try {
+                const stored = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (stored === 'dark' || (!stored && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else if (stored === 'light') {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) { /* ignore */ }
+        })();
+
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const themeToggle = document.getElementById('theme-toggle');
 
         function toggleSidebar() {
             sidebar.classList.toggle('-translate-x-full');
@@ -267,5 +292,34 @@
                 toggleSidebar();
             }
         });
+
+        function updateToggleIcon() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            if (isDark) {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                themeToggle.setAttribute('aria-label', 'Switch to light mode');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+            }
+        }
+
+        function toggleTheme() {
+            const root = document.documentElement;
+            const isDark = root.classList.toggle('dark');
+            try {
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            } catch (_) { /* ignore */ }
+            updateToggleIcon();
+        }
+
+        if (themeToggle) {
+            updateToggleIcon();
+            themeToggle.addEventListener('click', toggleTheme);
+        }
     </script>
 </div>
