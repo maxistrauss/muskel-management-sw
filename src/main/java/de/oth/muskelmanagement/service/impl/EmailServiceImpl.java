@@ -795,4 +795,556 @@ public class EmailServiceImpl implements EmailService {
                 """.formatted(userName != null ? userName : "Member", daysRemaining,
                 pricingName != null ? pricingName : "Your Plan", formattedDate);
     }
+
+    @Override
+    public void sendCourseEnrollmentConfirmationEmail(String toEmail, String userName, String courseName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Course Enrollment Confirmed - MuskelManagement");
+
+            String htmlContent = buildCourseEnrollmentConfirmationTemplate(userName, courseName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Course enrollment confirmation email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send course enrollment confirmation email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send course enrollment confirmation email", e);
+        }
+    }
+
+    @Override
+    public void sendCourseEnrollmentCancelledEmail(String toEmail, String userName, String courseName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Course Enrollment Cancelled - MuskelManagement");
+
+            String htmlContent = buildCourseEnrollmentCancelledTemplate(userName, courseName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Course enrollment cancelled email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send course enrollment cancelled email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send course enrollment cancelled email", e);
+        }
+    }
+
+    @Override
+    public void sendCourseWaitlistConfirmationEmail(String toEmail, String userName, String courseName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Added to Waitlist - MuskelManagement");
+
+            String htmlContent = buildCourseWaitlistConfirmationTemplate(userName, courseName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Course waitlist confirmation email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send course waitlist confirmation email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send course waitlist confirmation email", e);
+        }
+    }
+
+    @Override
+    public void sendCourseWaitlistPromotionEmail(String toEmail, String userName, String courseName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Spot Available - Course Enrollment Confirmed - MuskelManagement");
+
+            String htmlContent = buildCourseWaitlistPromotionTemplate(userName, courseName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Course waitlist promotion email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send course waitlist promotion email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send course waitlist promotion email", e);
+        }
+    }
+
+    @Override
+    public void sendCourseChangeNotificationEmail(String toEmail, String userName, String courseName, String changeDescription) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Course Update - MuskelManagement");
+
+            String htmlContent = buildCourseChangeNotificationTemplate(userName, courseName, changeDescription);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Course change notification email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send course change notification email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send course change notification email", e);
+        }
+    }
+
+    private String buildCourseEnrollmentConfirmationTemplate(String userName, String courseName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        .container {
+                            font-family: Arial, sans-serif;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #2563eb;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 5px 5px 0 0;
+                            text-align: center;
+                        }
+                        .content {
+                            background-color: #f9fafb;
+                            padding: 20px;
+                            border: 1px solid #e5e7eb;
+                        }
+                        .success-box {
+                            background-color: #d1fae5;
+                            border-left: 4px solid #10b981;
+                            padding: 15px;
+                            margin: 15px 0;
+                        }
+                        .info {
+                            background-color: #dbeafe;
+                            border-left: 4px solid #3b82f6;
+                            padding: 15px;
+                            margin: 15px 0;
+                        }
+                        .footer {
+                            background-color: #2563eb;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 0 0 5px 5px;
+                            text-align: center;
+                            font-size: 12px;
+                        }
+                        .cta-button {
+                            display: inline-block;
+                            background-color: #2563eb;
+                            color: white;
+                            padding: 12px 30px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            margin-top: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                            <p style="margin: 5px 0 0 0;">Enrollment Confirmation</p>
+                        </div>
+                        <div class="content">
+                            <p>Hello %s,</p>
+                            <p>Great news! You have successfully enrolled in a course.</p>
+
+                            <div class="success-box">
+                                <h2 style="margin-top: 0;">✅ Enrollment Confirmed</h2>
+                                <p><strong>Course:</strong> %s</p>
+                                <p style="margin-bottom: 0;">You are now a confirmed member of this course.</p>
+                            </div>
+
+                            <div class="info">
+                                <strong>📌 What's Next?</strong><br/>
+                                You will receive further information about the course schedule, location, and any updates directly to this email address. Make sure to mark our emails as important so you don't miss any updates.
+                            </div>
+
+                            <p style="text-align: center;">
+                                <a href="http://localhost:8080/member/course-info/my" class="cta-button">
+                                    View My Courses
+                                </a>
+                            </p>
+
+                            <p>If you have any questions, please feel free to contact your trainer or support team.</p>
+
+                            <p>Best regards,<br/>
+                               Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This email was generated automatically. Please do not reply to it.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName != null ? userName : "Member", courseName != null ? courseName : "Your Course");
+    }
+
+    private String buildCourseEnrollmentCancelledTemplate(String userName, String courseName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        .container {
+                            font-family: Arial, sans-serif;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #ef4444;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 5px 5px 0 0;
+                            text-align: center;
+                        }
+                        .content {
+                            background-color: #f9fafb;
+                            padding: 20px;
+                            border: 1px solid #e5e7eb;
+                        }
+                        .info-box {
+                            background-color: #fee2e2;
+                            border-left: 4px solid #ef4444;
+                            padding: 15px;
+                            margin: 15px 0;
+                        }
+                        .footer {
+                            background-color: #ef4444;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 0 0 5px 5px;
+                            text-align: center;
+                            font-size: 12px;
+                        }
+                        .cta-button {
+                            display: inline-block;
+                            background-color: #2563eb;
+                            color: white;
+                            padding: 12px 30px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            margin-top: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                            <p style="margin: 5px 0 0 0;">Enrollment Cancelled</p>
+                        </div>
+                        <div class="content">
+                            <p>Hello %s,</p>
+                            <p>Your enrollment in the following course has been cancelled:</p>
+
+                            <div class="info-box">
+                                <h2 style="margin-top: 0;">❌ Enrollment Cancelled</h2>
+                                <p><strong>Course:</strong> %s</p>
+                                <p style="margin-bottom: 0;">You have been removed from this course.</p>
+                            </div>
+
+                            <p>If this was done by mistake or if you have questions, please contact the support team.</p>
+
+                            <p style="text-align: center;">
+                                <a href="http://localhost:8080/member/course-info/overview" class="cta-button">
+                                    Browse Other Courses
+                                </a>
+                            </p>
+
+                            <p>Best regards,<br/>
+                               Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This email was generated automatically. Please do not reply to it.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName != null ? userName : "Member", courseName != null ? courseName : "Your Course");
+    }
+
+    private String buildCourseWaitlistConfirmationTemplate(String userName, String courseName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        .container {
+                            font-family: Arial, sans-serif;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #f59e0b;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 5px 5px 0 0;
+                            text-align: center;
+                        }
+                        .content {
+                            background-color: #f9fafb;
+                            padding: 20px;
+                            border: 1px solid #e5e7eb;
+                        }
+                        .waitlist-box {
+                            background-color: #fef3c7;
+                            border-left: 4px solid #f59e0b;
+                            padding: 15px;
+                            margin: 15px 0;
+                        }
+                        .footer {
+                            background-color: #f59e0b;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 0 0 5px 5px;
+                            text-align: center;
+                            font-size: 12px;
+                        }
+                        .cta-button {
+                            display: inline-block;
+                            background-color: #f59e0b;
+                            color: white;
+                            padding: 12px 30px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            margin-top: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                            <p style="margin: 5px 0 0 0;">Added to Waitlist</p>
+                        </div>
+                        <div class="content">
+                            <p>Hello %s,</p>
+                            <p>You have been added to the waitlist for the following course:</p>
+
+                            <div class="waitlist-box">
+                                <h2 style="margin-top: 0;">⏳ Waitlist Confirmation</h2>
+                                <p><strong>Course:</strong> %s</p>
+                                <p style="margin-bottom: 0;">We will notify you automatically as soon as a spot becomes available!</p>
+                            </div>
+
+                            <p>The course is currently at full capacity, but we'll get you in as soon as someone cancels their enrollment.</p>
+
+                            <p style="text-align: center;">
+                                <a href="http://localhost:8080/member/course-info/my" class="cta-button">
+                                    View My Waitlist
+                                </a>
+                            </p>
+
+                            <p>Best regards,<br/>
+                               Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This email was generated automatically. Please do not reply to it.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName != null ? userName : "Member", courseName != null ? courseName : "Your Course");
+    }
+
+    private String buildCourseWaitlistPromotionTemplate(String userName, String courseName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        .container {
+                            font-family: Arial, sans-serif;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #10b981;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 5px 5px 0 0;
+                            text-align: center;
+                        }
+                        .content {
+                            background-color: #f9fafb;
+                            padding: 20px;
+                            border: 1px solid #e5e7eb;
+                        }
+                        .promotion-box {
+                            background-color: #d1fae5;
+                            border-left: 4px solid #10b981;
+                            padding: 15px;
+                            margin: 15px 0;
+                        }
+                        .footer {
+                            background-color: #10b981;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 0 0 5px 5px;
+                            text-align: center;
+                            font-size: 12px;
+                        }
+                        .cta-button {
+                            display: inline-block;
+                            background-color: #10b981;
+                            color: white;
+                            padding: 12px 30px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            margin-top: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                            <p style="margin: 5px 0 0 0;">Great News!</p>
+                        </div>
+                        <div class="content">
+                            <p>Hello %s,</p>
+                            <p>Exciting news! A spot has opened up in your waitlisted course.</p>
+
+                            <div class="promotion-box">
+                                <h2 style="margin-top: 0;">🎉 Enrollment Confirmed!</h2>
+                                <p><strong>Course:</strong> %s</p>
+                                <p style="margin-bottom: 0;">You have been automatically promoted from the waitlist and are now a confirmed member of this course.</p>
+                            </div>
+
+                            <p>Congratulations! You're now enrolled in the course. Check your account for course details, schedule, and location information.</p>
+
+                            <p style="text-align: center;">
+                                <a href="http://localhost:8080/member/course-info/my" class="cta-button">
+                                    View My Courses
+                                </a>
+                            </p>
+
+                            <p>Best regards,<br/>
+                               Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This email was generated automatically. Please do not reply to it.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName != null ? userName : "Member", courseName != null ? courseName : "Your Course");
+    }
+
+    private String buildCourseChangeNotificationTemplate(String userName, String courseName, String changeDescription) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        .container {
+                            font-family: Arial, sans-serif;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #2563eb;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 5px 5px 0 0;
+                            text-align: center;
+                        }
+                        .content {
+                            background-color: #f9fafb;
+                            padding: 20px;
+                            border: 1px solid #e5e7eb;
+                        }
+                        .update-box {
+                            background-color: #dbeafe;
+                            border-left: 4px solid #3b82f6;
+                            padding: 15px;
+                            margin: 15px 0;
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                        }
+                        .footer {
+                            background-color: #2563eb;
+                            color: white;
+                            padding: 20px;
+                            border-radius: 0 0 5px 5px;
+                            text-align: center;
+                            font-size: 12px;
+                        }
+                        .cta-button {
+                            display: inline-block;
+                            background-color: #2563eb;
+                            color: white;
+                            padding: 12px 30px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            margin-top: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                            <p style="margin: 5px 0 0 0;">Course Update</p>
+                        </div>
+                        <div class="content">
+                            <p>Hello %s,</p>
+                            <p>There is an important update regarding one of your courses:</p>
+
+                            <div class="update-box">
+                                <h2 style="margin-top: 0;">📢 Course: %s</h2>
+                                <p><strong>Update Details:</strong></p>
+                                <p>%s</p>
+                            </div>
+
+                            <p>Please check your account for more details and make any necessary adjustments to your schedule.</p>
+
+                            <p style="text-align: center;">
+                                <a href="http://localhost:8080/member/course-info/my" class="cta-button">
+                                    View Course Details
+                                </a>
+                            </p>
+
+                            <p>If you have any questions or concerns, please don't hesitate to contact your trainer or support team.</p>
+
+                            <p>Best regards,<br/>
+                               Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This email was generated automatically. Please do not reply to it.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName != null ? userName : "Member", 
+                            courseName != null ? courseName : "Your Course",
+                            changeDescription != null ? changeDescription : "The course has been updated. Please review the details.");
+    }
 }

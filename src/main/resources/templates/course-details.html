@@ -69,36 +69,65 @@
             <!-- Buttons -->
             <div class="flex gap-2">
                 <!-- Enroll / Join Waitlist -->
-                <form method="post"
+                <form id="enrollForm" method="post" style="display: none;"
                       th:action="@{/member/course-info/{id}/enroll(id=${course.id})}" th:if="${!enrolled and !waitlisted and (currentUser == null or course.trainer == null or course.trainer.id != currentUser.id)}">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            th:if="${!courseFull}">
-                        Enroll
-                    </button>
-                    <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
-                            th:if="${courseFull}">
-                        Join Waitlist
-                    </button>
                 </form>
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        id="enrollBtn" style="display: none;"
+                        th:if="${!enrolled and !waitlisted and (currentUser == null or course.trainer == null or course.trainer.id != currentUser.id) and !courseFull}"
+                        onclick="openEnrollConfirmation(false)">
+                    Enroll
+                </button>
+                <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+                        id="waitlistBtn" style="display: none;"
+                        th:if="${!enrolled and !waitlisted and (currentUser == null or course.trainer == null or course.trainer.id != currentUser.id) and courseFull}"
+                        onclick="openEnrollConfirmation(true)">
+                    Join Waitlist
+                </button>
 
                 <!-- Unenroll / Leave Waitlist -->
-                <form method="post"
+                <form id="unenrollForm" method="post" style="display: none;"
                       th:action="@{/member/course-info/{id}/unenroll(id=${course.id})}" th:if="${(enrolled or waitlisted) and (course.trainer == null or course.trainer.id != currentUser.id)}">
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                            th:if="${enrolled}">
-                        Unenroll
-                    </button>
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                            th:if="${waitlisted}">
-                        Leave Waitlist
-                    </button>
                 </form>
+                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                        id="unenrollBtn" style="display: none;"
+                        th:if="${enrolled and (course.trainer == null or course.trainer.id != currentUser.id)}"
+                        onclick="openUnenrollConfirmation(false)">
+                    Unenroll
+                </button>
+                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                        id="leaveWaitlistBtn" style="display: none;"
+                        th:if="${waitlisted and (course.trainer == null or course.trainer.id != currentUser.id)}"
+                        onclick="openUnenrollConfirmation(true)">
+                    Leave Waitlist
+                </button>
 
                 <a class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
                    th:href="@{/member/course-info/{id}/reviews/new(id=${course.id})}"
                    th:if="${enrolled}">
                     Write a Review
                 </a>
+            </div>
+        </div>
+
+        <!-- Enrollment Confirmation Modal -->
+        <div id="enrollConfirmationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+                <h2 class="text-2xl font-bold mb-4" id="confirmTitle">Confirm Enrollment</h2>
+                <p class="text-gray-700 mb-6">
+                    <span id="confirmMessage"></span>
+                </p>
+                <p class="text-sm text-gray-500 mb-6">
+                    <strong>You will receive an email notification about this course.</strong>
+                </p>
+                <div class="flex gap-3">
+                    <button onclick="closeConfirmation()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                        Cancel
+                    </button>
+                    <button id="confirmBtn" onclick="submitConfirmation()" class="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Confirm
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -192,6 +221,88 @@
 
         <script th:inline="javascript">
             /*<![CDATA[*/
+            const courseName = /*[[${course.name}]]*/ '';
+            
+            // Show the appropriate buttons based on state
+            document.addEventListener('DOMContentLoaded', function() {
+                const enrollBtn = document.getElementById('enrollBtn');
+                const waitlistBtn = document.getElementById('waitlistBtn');
+                const unenrollBtn = document.getElementById('unenrollBtn');
+                const leaveWaitlistBtn = document.getElementById('leaveWaitlistBtn');
+                
+                if (enrollBtn) enrollBtn.style.display = 'block';
+                if (waitlistBtn) waitlistBtn.style.display = 'block';
+                if (unenrollBtn) unenrollBtn.style.display = 'block';
+                if (leaveWaitlistBtn) leaveWaitlistBtn.style.display = 'block';
+            });
+
+            function openEnrollConfirmation(isWaitlist) {
+                const modal = document.getElementById('enrollConfirmationModal');
+                const confirmTitle = document.getElementById('confirmTitle');
+                const confirmMessage = document.getElementById('confirmMessage');
+                const confirmBtn = document.getElementById('confirmBtn');
+                
+                if (isWaitlist) {
+                    confirmTitle.textContent = 'Join Waitlist';
+                    confirmMessage.textContent = `You are about to join the waitlist for "${courseName}". You will receive an email notification when a spot becomes available.`;
+                } else {
+                    confirmTitle.textContent = 'Confirm Enrollment';
+                    confirmMessage.textContent = `You are about to enroll in "${courseName}". You will receive an email confirmation.`;
+                }
+                
+                confirmBtn.onclick = () => submitConfirmation(false, isWaitlist);
+                modal.classList.remove('hidden');
+            }
+
+            function openUnenrollConfirmation(isWaitlist) {
+                const modal = document.getElementById('enrollConfirmationModal');
+                const confirmTitle = document.getElementById('confirmTitle');
+                const confirmMessage = document.getElementById('confirmMessage');
+                const confirmBtn = document.getElementById('confirmBtn');
+                
+                if (isWaitlist) {
+                    confirmTitle.textContent = 'Leave Waitlist';
+                    confirmMessage.textContent = `You are about to leave the waitlist for "${courseName}". This action cannot be undone.`;
+                } else {
+                    confirmTitle.textContent = 'Confirm Unenrollment';
+                    confirmMessage.textContent = `You are about to unenroll from "${courseName}". This action cannot be undone.`;
+                }
+                
+                confirmBtn.textContent = 'Confirm';
+                confirmBtn.onclick = () => submitConfirmation(true, isWaitlist);
+                modal.classList.remove('hidden');
+            }
+
+            function closeConfirmation() {
+                const modal = document.getElementById('enrollConfirmationModal');
+                modal.classList.add('hidden');
+            }
+
+            function submitConfirmation() {
+                const modal = document.getElementById('enrollConfirmationModal');
+                const confirmTitle = document.getElementById('confirmTitle');
+                
+                if (confirmTitle.textContent.includes('Enroll') || confirmTitle.textContent.includes('Waitlist')) {
+                    if (confirmTitle.textContent.includes('Leave')) {
+                        document.getElementById('unenrollForm').submit();
+                    } else {
+                        document.getElementById('enrollForm').submit();
+                    }
+                } else {
+                    // Unenroll or Leave Waitlist
+                    document.getElementById('unenrollForm').submit();
+                }
+                
+                modal.classList.add('hidden');
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('enrollConfirmationModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeConfirmation();
+                }
+            });
+
             const roomName = /*[[${course.room != null ? course.room.name : ''}]]*/ '';
 
             if (roomName === 'Outdoor') {

@@ -87,6 +87,21 @@ public class CourseServiceImpl implements CourseService {
             Enrollment saved = enrollmentRepository.save(e);
             course.addEnrollment(saved);
             courseRepository.save(course);
+            
+            // Send email notification
+            try {
+                String userName = user.getFirstName() + " " + user.getLastName();
+                if (status == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED) {
+                    emailService.sendCourseEnrollmentConfirmationEmail(user.getEmail(), userName, course.getName());
+                } else {
+                    emailService.sendCourseWaitlistConfirmationEmail(user.getEmail(), userName, course.getName());
+                }
+            } catch (Exception ex) {
+                // Log error but don't fail the enrollment
+                org.slf4j.LoggerFactory.getLogger(CourseServiceImpl.class)
+                    .error("Failed to send enrollment email for course: {} to user: {}", course.getName(), user.getEmail(), ex);
+            }
+            
             return saved;
         });
     }
@@ -103,6 +118,15 @@ public class CourseServiceImpl implements CourseService {
             enrollmentRepository.delete(e);
             courseRepository.save(course);
 
+            // Send cancellation email
+            try {
+                String userName = user.getFirstName() + " " + user.getLastName();
+                emailService.sendCourseEnrollmentCancelledEmail(user.getEmail(), userName, course.getName());
+            } catch (Exception ex) {
+                org.slf4j.LoggerFactory.getLogger(CourseServiceImpl.class)
+                    .error("Failed to send cancellation email for course: {} to user: {}", course.getName(), user.getEmail(), ex);
+            }
+
             // If a confirmed spot opened up, promote someone from waitlist
             if (oldStatus == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED) {
                 List<Enrollment> waitlist = enrollmentRepository.findByCourseAndStatusOrderByCreatedAtAsc(course,
@@ -111,6 +135,15 @@ public class CourseServiceImpl implements CourseService {
                     Enrollment next = waitlist.get(0);
                     next.setStatus(de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED);
                     enrollmentRepository.save(next);
+                    
+                    // Send promotion email to promoted user
+                    try {
+                        String promotedUserName = next.getUser().getFirstName() + " " + next.getUser().getLastName();
+                        emailService.sendCourseWaitlistPromotionEmail(next.getUser().getEmail(), promotedUserName, course.getName());
+                    } catch (Exception ex) {
+                        org.slf4j.LoggerFactory.getLogger(CourseServiceImpl.class)
+                            .error("Failed to send promotion email for course: {} to user: {}", course.getName(), next.getUser().getEmail(), ex);
+                    }
                 }
             }
         });

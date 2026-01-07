@@ -34,14 +34,16 @@ public class TrainerController {
     private final RoomService roomService;
     private final ReviewService reviewService;
     private final ExerciseService exerciseService;
+    private final EmailService emailService;
 
     public TrainerController(CourseService courseService, UserService userService, RoomService roomService,
-                             ReviewService reviewService, ExerciseService exerciseService) {
+                             ReviewService reviewService, ExerciseService exerciseService, EmailService emailService) {
         this.courseService = courseService;
         this.userService = userService;
         this.roomService = roomService;
         this.reviewService = reviewService;
         this.exerciseService = exerciseService;
+        this.emailService = emailService;
     }
 
     @GetMapping("/courses/new")
@@ -360,6 +362,51 @@ public class TrainerController {
             redirectAttributes.addFlashAttribute("successMessage", "Exercises successfully assigned!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error assigning exercises: " + e.getMessage());
+        }
+        return "redirect:/trainer/courses/edit/" + id;
+    }
+
+    @PostMapping("/courses/{id}/notify-members")
+    public String notifyMembersOfCourseChange(@PathVariable Long id, @RequestParam String changeDescription,
+                                             Principal principal, RedirectAttributes redirectAttributes) {
+        Course course = courseService.findById(id);
+        var currentUser = userService.findByEmail(principal.getName());
+        boolean isOwner = course.getTrainer() != null && course.getTrainer().getId().equals(currentUser.getId());
+        boolean isAdmin = currentUser.getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedException("You can only notify members for your own courses");
+        }
+
+        try {
+            // Get all confirmed enrolled members
+            List<Enrollment> confirmedEnrollments = courseService.listEnrollments(id).stream()
+                    .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED)
+                    .toList();
+
+            // Send notification email to each member
+            int sentCount = 0;
+            for (Enrollment enrollment : confirmedEnrollments) {
+                try {
+                    String userName = enrollment.getUser().getFirstName() + " " + enrollment.getUser().getLastName();
+                    emailService.sendCourseChangeNotificationEmail(
+                        enrollment.getUser().getEmail(),
+                        userName,
+                        course.getName(),
+                        changeDescription
+                    );
+                    sentCount++;
+                } catch (Exception ex) {
+                    log.error("Failed to send notification to user: {}", enrollment.getUser().getEmail(), ex);
+                }
+            }
+
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Course notification sent to " + sentCount + " member(s)!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error sending notifications: " + e.getMessage());
+            log.error("Error sending course change notifications", e);
         }
         return "redirect:/trainer/courses/edit/" + id;
     }

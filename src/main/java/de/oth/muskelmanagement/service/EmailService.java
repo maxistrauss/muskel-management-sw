@@ -14,4 +14,14 @@ public interface EmailService {
     void sendRegistrationConfirmationEmail(String toEmail, String userName);
 
     void sendPasswordChangeConfirmationEmail(String toEmail, String userName);
+
+    void sendCourseEnrollmentConfirmationEmail(String toEmail, String userName, String courseName);
+
+    void sendCourseEnrollmentCancelledEmail(String toEmail, String userName, String courseName);
+
+    void sendCourseWaitlistConfirmationEmail(String toEmail, String userName, String courseName);
+
+    void sendCourseWaitlistPromotionEmail(String toEmail, String userName, String courseName);
+
+    void sendCourseChangeNotificationEmail(String toEmail, String userName, String courseName, String changeDescription);
 }
