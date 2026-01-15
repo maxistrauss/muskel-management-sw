@@ -87,48 +87,48 @@
                         </ul>
                     </div>
 
-                    <!-- Subscribe Button with Payment Links -->
-                    <!-- Basic/Standard Plan (29,99€) -->
-                    <div th:if="${pricing.name == 'Basic'}">
-                        <a href="https://buy.stripe.com/test_cNi14o3yD6Mp7mI9M9cjS01" 
-                           target="_blank"
-                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center">
-                            Subscribe Now
-                        </a>
-                    </div>
-
-                    <!-- Premium Plan (59,99€) -->
-                    <div th:if="${pricing.name == 'Premium'}">
-                        <a href="https://buy.stripe.com/test_5kQ28sc599YB5eA1fDcjS03" 
-                           target="_blank"
-                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center">
-                            Subscribe Now
-                        </a>
-                    </div>
-
-                    <!-- Student Plan (19,99€) -->
-                    <div th:if="${pricing.name == 'Student'}">
-                        <a href="https://buy.stripe.com/test_7sY3cwglp6Mp5eA2jHcjS02" 
-                           target="_blank"
-                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center">
-                            Subscribe Now
-                        </a>
-                    </div>
-
-                    <!-- Current Plan Badge (if this is the active subscription) -->
-                    <div th:if="${!canSubscribe && activeSubscription != null && activeSubscription.pricingId == pricing.id}">
+                    <!-- Subscribe Button Logic -->
+                    <!-- If this is the active subscription: show disabled green button -->
+                    <div th:if="${activeSubscription != null && activeSubscription.pricingId == pricing.id}">
                         <button disabled 
-                                class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed">
+                                class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed transition">
                             ✓ Your Current Plan
                         </button>
                     </div>
 
-                    <!-- Disabled button for other plans when user has active subscription -->
-                    <div th:if="${!canSubscribe && (activeSubscription == null || activeSubscription.pricingId != pricing.id)}">
+                    <!-- If user has an active subscription but this is NOT it: show disabled gray button -->
+                    <div th:if="${activeSubscription != null && activeSubscription.pricingId != pricing.id}">
                         <button disabled 
-                                class="w-full bg-gray-300 text-gray-500 font-bold py-3 px-4 rounded-lg cursor-not-allowed">
-                            Subscribe
+                                class="w-full bg-gray-400 text-gray-100 font-bold py-3 px-4 rounded-lg cursor-not-allowed transition">
+                            Upgrade/Downgrade (Cancel current first)
                         </button>
+                    </div>
+
+                    <!-- If user has NO active subscription: show active Payment Links -->
+                    <div th:if="${activeSubscription == null}">
+                        <!-- Basic/Standard Plan (29,99€) -->
+                        <a th:if="${pricing.name == 'Basic'}" 
+                           href="https://buy.stripe.com/test_cNi14o3yD6Mp7mI9M9cjS01" 
+                           target="_blank"
+                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center transition">
+                            Subscribe Now
+                        </a>
+
+                        <!-- Premium Plan (59,99€) -->
+                        <a th:if="${pricing.name == 'Premium'}" 
+                           href="https://buy.stripe.com/test_5kQ28sc599YB5eA1fDcjS03" 
+                           target="_blank"
+                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center transition">
+                            Subscribe Now
+                        </a>
+
+                        <!-- Student Plan (19,99€) -->
+                        <a th:if="${pricing.name == 'Student'}" 
+                           href="https://buy.stripe.com/test_7sY3cwglp6Mp5eA2jHcjS02" 
+                           target="_blank"
+                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center transition">
+                            Subscribe Now
+                        </a>
                     </div>
                 </div>
             </div>
