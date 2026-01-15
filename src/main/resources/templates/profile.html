@@ -48,19 +48,7 @@
                 <p class="text-gray-600" th:text="${user.lastName}"></p>
             </div>
             
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Active Plan:</label>
-                <p class="text-gray-600" th:text="${user.activeSubscriptionPricingName ?: 'None'}"></p>
-            </div>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Subscription Status:</label>
-                <span class="px-2 py-1 rounded text-xs font-semibold"
-                      th:classappend="${user.activeSubscriptionStatus == 'ACTIVE'} ? 'bg-green-200 text-green-800' : 
-                                       (${user.activeSubscriptionStatus == 'EXPIRED'} ? 'bg-red-200 text-red-800' : 
-                                       (${user.activeSubscriptionStatus == 'CANCELLED'} ? 'bg-orange-200 text-orange-800' : 'bg-gray-200 text-gray-800'))"
-                      th:text="${user.activeSubscriptionStatus ?: 'N/A'}"></span>
-            </div>
             
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Roles:</label>
@@ -131,22 +119,7 @@
                 <p class="text-gray-500 text-xs italic">Email cannot be changed</p>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Active Plan:</label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 cursor-not-allowed"
-                       disabled id="activeSubscriptionPricingName" readonly th:field="*{activeSubscriptionPricingName}"
-                       type="text"/>
-                <p class="text-gray-500 text-xs italic">Active plan can only be changed by managing your
-                    subscriptions.</p>
-            </div>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Subscription Status:</label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 cursor-not-allowed"
-                       disabled id="activeSubscriptionStatus" readonly th:field="*{activeSubscriptionStatus}"
-                       type="text"/>
-                <p class="text-gray-500 text-xs italic">Subscription status is automatically updated.</p>
-            </div>
 
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="firstName">First Name:</label>
