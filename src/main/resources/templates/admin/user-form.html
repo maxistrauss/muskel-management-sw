@@ -33,6 +33,13 @@
     <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 class="text-3xl font-bold mb-6" th:if="${user.id == null}">Create User</h1>
         <h1 class="text-3xl font-bold mb-6" th:if="${user.id != null}">Edit User</h1>
+
+        <!-- Success Message -->
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"
+             th:if="${success}">
+            <span th:text="${success}"></span>
+        </div>
+
         <form method="post"
               th:action="${user.id == null} ? @{/admin/users/new} : @{/admin/users/edit/{id}(id=${user.id})}" th:object="${user}">
 

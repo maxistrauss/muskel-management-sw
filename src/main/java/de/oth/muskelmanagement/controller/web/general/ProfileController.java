@@ -160,13 +160,12 @@ public class ProfileController {
             // After toggling, user object might be stale. Get fresh DTO to check status.
             UserDto updatedUserDto = userService.findById(user.getId());
 
-            if (!updatedUserDto.isTwoFactorEnabled()) { // Check updated status
-                redirectAttributes.addFlashAttribute("success",
-                        "Two-Factor Authentication has been enabled. You will receive a code via email on your next login.");
-            } else {
-                redirectAttributes.addFlashAttribute("success", "Two-Factor Authentication has been disabled.");
-            }
-        }
+                    if (updatedUserDto.isTwoFactorEnabled()) { // Check updated status
+                        redirectAttributes.addFlashAttribute("success",
+                                "Two-Factor Authentication has been enabled. You will receive a code via email on your next login.");
+                    } else {
+                        redirectAttributes.addFlashAttribute("success", "Two-Factor Authentication has been disabled.");
+                    }        }
 
         return "redirect:/profile";
     }
