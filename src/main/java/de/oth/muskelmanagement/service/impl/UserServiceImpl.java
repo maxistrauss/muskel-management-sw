@@ -85,6 +85,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(RegistrationDto registrationDto) {
+        if (userRepository.findByEmail(registrationDto.getEmail()) != null) {
+            throw new IllegalStateException("User with this email already exists.");
+        }
         User user = new User();
         user.setFirstName(registrationDto.getFirstName());
         user.setLastName(registrationDto.getLastName());
@@ -148,7 +151,7 @@ public class UserServiceImpl implements UserService {
 
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
-        user.setEmail(userDto.getEmail());
+        // Email should not be changeable via this method user.setEmail(userDto.getEmail());
         user.setEnabled(userDto.isEnabled());
         user.setTwoFactorEnabled(userDto.isTwoFactorEnabled());
 

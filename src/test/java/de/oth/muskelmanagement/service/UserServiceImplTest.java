@@ -154,7 +154,7 @@ class UserServiceImplTest {
         userService.updateUser(updateDto);
 
         assertEquals("New", existingUser.getFirstName());
-        assertEquals("new@example.com", existingUser.getEmail());
+        assertEquals("old@example.com", existingUser.getEmail());
         assertFalse(existingUser.isEnabled());
         assertTrue(existingUser.getRoles().stream()
                 .anyMatch(r -> r.getName().equals("ROLE_MEMBER")));

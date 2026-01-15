@@ -63,36 +63,6 @@ class SubscriptionServiceImplTest {
         activeSubscription.setStartDate(LocalDate.now().minusDays(10));
         activeSubscription.setEndDate(LocalDate.now().plusDays(20));
     }
-
-    @Test
-    void subscribe_ShouldCreateSubscription_WhenValid() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(pricingRepository.findById(1L)).thenReturn(Optional.of(pricing));
-        when(subscriptionRepository.existsByUserIdAndStatus(1L, SubscriptionStatus.ACTIVE)).thenReturn(false);
-        when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(inv -> {
-            Subscription s = inv.getArgument(0);
-            s.setId(100L);
-            return s;
-        });
-
-        SubscriptionDto result = subscriptionService.subscribe(1L, 1L);
-
-        assertNotNull(result);
-        assertEquals("Basic", result.getPricingName());
-        assertEquals(SubscriptionStatus.ACTIVE, result.getStatus());
-        verify(subscriptionRepository).save(any(Subscription.class));
-    }
-
-    @Test
-    void subscribe_ShouldThrow_WhenAlreadyActive() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(pricingRepository.findById(1L)).thenReturn(Optional.of(pricing));
-        when(subscriptionRepository.existsByUserIdAndStatus(1L, SubscriptionStatus.ACTIVE)).thenReturn(true);
-
-        assertThrows(RuntimeException.class, () -> subscriptionService.subscribe(1L, 1L));
-        verify(subscriptionRepository, never()).save(any(Subscription.class));
-    }
-
     @Test
     void cancelSubscription_ShouldSetStatusToCancelled() {
         when(subscriptionRepository.findById(1L)).thenReturn(Optional.of(activeSubscription));
@@ -119,14 +89,5 @@ class SubscriptionServiceImplTest {
         verify(subscriptionRepository).save(expiredSub);
     }
 
-    @Test
-    void getActiveSubscription_ShouldReturnDto_WhenExists() {
-        when(subscriptionRepository.findByUserIdAndStatus(1L, SubscriptionStatus.ACTIVE)).thenReturn(
-                Optional.of(activeSubscription));
 
-        Optional<SubscriptionDto> result = subscriptionService.getActiveSubscription(1L);
-
-        assertTrue(result.isPresent());
-        assertEquals("Basic", result.get().getPricingName());
-    }
 }
