@@ -1,5 +1,6 @@
 package de.oth.muskelmanagement.config;
 
+import de.oth.muskelmanagement.config.filter.TwoFactorAuthFilter;
 import de.oth.muskelmanagement.config.handler.CustomAccessDeniedHandler;
 import de.oth.muskelmanagement.config.handler.CustomAuthenticationFailureHandler;
 import de.oth.muskelmanagement.model.entity.Role;
@@ -16,6 +17,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,36 +37,42 @@ public class SecurityConfig {
     private de.oth.muskelmanagement.config.handler.CustomAuthenticationSuccessHandler authenticationSuccessHandler;
 
     @Bean
+    public TwoFactorAuthFilter twoFactorAuthFilter() {
+        return new TwoFactorAuthFilter();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(authorize -> authorize
+        http.addFilterBefore(twoFactorAuthFilter(), UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(authorize -> authorize
                         // Admin endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        
+
                         // Exercise API sync endpoints (ADMIN only)
                         .requestMatchers("/api/exercises/sync/**").hasRole("ADMIN")
                         .requestMatchers("/api/exercises/sync").hasRole("ADMIN")
                         .requestMatchers("/api/exercises/stats").hasRole("ADMIN")
-                        
+
                         // Course-Exercise management (ADMIN and TRAINER only can add exercises to courses)
                         .requestMatchers("/api/exercises/courses/**").hasAnyRole("ADMIN", "TRAINER")
-                        
+
                         // Trainer endpoints
                         .requestMatchers("/trainer/**").hasAnyRole("TRAINER", "ADMIN")
-                        
+
                         // Member endpoints (includes courses and exercises)
                         // All users with ROLE_MEMBER (which includes TRAINER and ADMIN) can access
                         .requestMatchers("/member/**").hasRole("MEMBER")
-                        
+
                         // API endpoints for courses and exercises (for AJAX calls)
                         .requestMatchers("/api/courses", "/api/courses/**").hasRole("MEMBER")
                         .requestMatchers("/api/exercises", "/api/exercises/*", "/api/exercises/filters").hasRole("MEMBER")
-                        
+
                         // Public endpoints (no authentication required)
-                        .requestMatchers("/login", "/register", "/verify-2fa", "/verify-2fa/resend",
+                        .requestMatchers("/login", "/register",
                                         "/css/**", "/js/**", "/images/**", "/h2-console/**",
                                         "/exercise-image", "/stripe/webhook", "/api/paypal/**").permitAll()
-                        
+
                         // All other requests require authentication
                         .anyRequest().authenticated())
                 .formLogin(formLogin -> formLogin

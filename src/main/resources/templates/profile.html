@@ -100,8 +100,7 @@
                     <form method="post" th:action="@{/profile/toggle-2fa}">
                         <button type="submit"
                                 th:classappend="${user.twoFactorEnabled} ? 'bg-red-500 hover:bg-red-700' : 'bg-green-500 hover:bg-green-700'"
-                                class="text-white font-bold py-2 px-4 rounded transition duration-200"
-                                th:attr="onclick=${user.twoFactorEnabled} ? 'return confirm(\'Do you really want to disable 2FA? This will reduce the security of your account.\');' : ''">
+                                class="text-white font-bold py-2 px-4 rounded transition duration-200">
                             <span th:if="${user.twoFactorEnabled}">Disable</span>
                             <span th:unless="${user.twoFactorEnabled}">Enable</span>
                         </button>
