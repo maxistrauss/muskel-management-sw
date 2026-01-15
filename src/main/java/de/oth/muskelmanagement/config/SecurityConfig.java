@@ -63,7 +63,7 @@ public class SecurityConfig {
                         // Public endpoints (no authentication required)
                         .requestMatchers("/login", "/register", "/verify-2fa", "/verify-2fa/resend",
                                         "/css/**", "/js/**", "/images/**", "/h2-console/**",
-                                        "/exercise-image").permitAll()
+                                        "/exercise-image", "/stripe/webhook", "/api/paypal/**").permitAll()
                         
                         // All other requests require authentication
                         .anyRequest().authenticated())

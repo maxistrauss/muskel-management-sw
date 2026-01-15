@@ -1,14 +1,13 @@
 package de.oth.muskelmanagement.controller.web.payment;
 
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.model.Price;
+import com.stripe.model.Product;
 import com.stripe.model.Event;
-import com.stripe.model.EventDataObjectDeserializer;
-import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.Stripe;
-import com.stripe.param.checkout.SessionRetrieveParams;
-import com.stripe.model.LineItem;
-import com.stripe.model.LineItemCollection;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonObject;
 import de.oth.muskelmanagement.dto.SubscriptionDto;
 import de.oth.muskelmanagement.model.entity.Pricing;
 import de.oth.muskelmanagement.model.entity.User;
@@ -27,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/stripe")
@@ -60,60 +61,163 @@ public class StripeWebhookController {
             log.info("Stripe event received: {}", type);
 
             if ("checkout.session.completed".equals(type)) {
-                EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
-                if (dataObjectDeserializer.getObject().isPresent()) {
-                    Session session = (Session) dataObjectDeserializer.getObject().get();
-
-                    // Initialize Stripe SDK for follow-up API calls
-                    Stripe.apiKey = stripeSecretKey;
-
-                    // Retrieve line items to get price IDs
-                    SessionRetrieveParams params = SessionRetrieveParams.builder()
-                            .addExpand("line_items")
-                            .build();
-                    Session fullSession = Session.retrieve(session.getId(), params, null);
-                    LineItemCollection items = fullSession.getLineItems();
-
-                    String customerEmail = fullSession.getCustomerDetails() != null ? fullSession.getCustomerDetails().getEmail() : null;
+                log.debug("Processing checkout.session.completed event");
+                
+                try {
+                    // Parse the raw JSON payload directly
+                    JsonObject root = JsonParser.parseString(payload).getAsJsonObject();
+                    JsonObject data = root.getAsJsonObject("data").getAsJsonObject("object");
+                    
+                    String customerEmail = null;
+                    if (data.has("customer_details") && data.get("customer_details").isJsonObject()) {
+                        JsonObject customerDetails = data.get("customer_details").getAsJsonObject();
+                        if (customerDetails.has("email") && !customerDetails.get("email").isJsonNull()) {
+                            customerEmail = customerDetails.get("email").getAsString();
+                        }
+                    }
+                    
+                    log.debug("Customer email from session: {}", customerEmail);
+                    
                     if (customerEmail == null || customerEmail.isBlank()) {
                         log.warn("checkout.session.completed without customer email; cannot match user.");
                         return ResponseEntity.ok("ignored");
                     }
+                    
                     User user = userService.findByEmail(customerEmail);
+                    log.debug("User found for email {}: {}", customerEmail, user != null);
+                    
                     if (user == null) {
                         log.warn("No local user found for email {}", customerEmail);
                         return ResponseEntity.ok("ignored");
                     }
-
-                    // Assume single line item mapping to a plan
-                    final String stripePriceId = (items != null && items.getData() != null && !items.getData().isEmpty() && items.getData().get(0).getPrice() != null)
-                            ? items.getData().get(0).getPrice().getId()
-                            : null;
-
-                    if (stripePriceId == null) {
-                        log.warn("No Stripe price ID found in session line items; cannot map to Pricing.");
+                    
+                    // Get subscription ID from the event
+                    String subscriptionId = null;
+                    if (data.has("subscription") && !data.get("subscription").isJsonNull()) {
+                        subscriptionId = data.get("subscription").getAsString();
+                    }
+                    
+                    log.debug("Stripe subscription ID: {}", subscriptionId);
+                    
+                    if (subscriptionId == null || subscriptionId.isBlank()) {
+                        log.warn("No subscription ID in checkout session.");
                         return ResponseEntity.ok("ignored");
                     }
-
+                    
+                    // Initialize Stripe SDK for follow-up API calls
+                    Stripe.apiKey = stripeSecretKey;
+                    
+                    // Retrieve the subscription to get line items and price IDs
+                    com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(subscriptionId);
+                    log.debug("Retrieved subscription: {}", subscription.getId());
+                    
+                    // Get the first line item to find the price ID
+                    String stripePriceId = null;
+                    if (subscription.getItems() != null && subscription.getItems().getData() != null && !subscription.getItems().getData().isEmpty()) {
+                        com.stripe.model.SubscriptionItem item = subscription.getItems().getData().get(0);
+                        stripePriceId = item.getPrice().getId();
+                    }
+                    
+                    log.debug("Stripe Price ID from subscription: {}", stripePriceId);
+                    
+                    if (stripePriceId == null) {
+                        log.warn("No Stripe price ID found in subscription; cannot map to Pricing.");
+                        return ResponseEntity.ok("ignored");
+                    }
+                    
                     // Find our pricing by stripePriceId
+                    final String finalStripePriceId = stripePriceId;
+                    log.debug("Searching for Pricing with stripePriceId: {}", finalStripePriceId);
                     Optional<Pricing> matched = pricingService.findAll().stream()
-                            .filter(p -> stripePriceId.equals(p.getStripePriceId()))
+                            .peek(p -> log.debug("  - Pricing: {} (stripePriceId: {})", p.getName(), p.getStripePriceId()))
+                            .filter(p -> finalStripePriceId.equals(p.getStripePriceId()))
                             .findFirst();
-
+                    
                     if (matched.isEmpty()) {
                         log.warn("No Pricing mapped to stripePriceId {}", stripePriceId);
-                        return ResponseEntity.ok("ignored");
+                        // Fallback: try to map by Stripe Price nickname or Product name
+                        try {
+                            Price price = Price.retrieve(stripePriceId);
+                            String nickname = price.getNickname();
+                            String productId = price.getProduct();
+                            String productName = null;
+                            if (productId != null) {
+                                try {
+                                    Product product = Product.retrieve(productId);
+                                    productName = product.getName();
+                                } catch (Exception ignored) {
+                                }
+                            }
+
+                            log.debug("Stripe price nickname: {}, product: {} ({})", nickname, productId, productName);
+
+                            List<String> candidates = new ArrayList<>();
+                            if (nickname != null && !nickname.isBlank()) candidates.add(nickname);
+                            if (productName != null && !productName.isBlank()) candidates.add(productName);
+
+                            // German product names -> internal plan names mapping
+                            List<String> mappedCandidates = new ArrayList<>(candidates);
+                            for (String c : candidates) {
+                                String lc = c.toLowerCase().trim();
+                                switch (lc) {
+                                    case "standard abo":
+                                    case "standard-abo":
+                                    case "standard":
+                                        mappedCandidates.add("Basic");
+                                        break;
+                                    case "premium abo":
+                                    case "premium-abo":
+                                        mappedCandidates.add("Premium");
+                                        break;
+                                    case "student abo":
+                                    case "student-abo":
+                                    case "student":
+                                        mappedCandidates.add("Student");
+                                        break;
+                                }
+                            }
+
+                            Optional<Pricing> byName = pricingService.findAll().stream()
+                                    .filter(p -> mappedCandidates.stream().anyMatch(c -> c.equalsIgnoreCase(p.getName())))
+                                    .findFirst();
+
+                            if (byName.isPresent()) {
+                                Pricing foundByName = byName.get();
+                                log.info("Matched Pricing by name: {}. Persisting stripePriceId {} for future events.", foundByName.getName(), stripePriceId);
+                                try {
+                                    pricingService.updateStripePriceId(foundByName.getId(), stripePriceId);
+                                } catch (Exception persistEx) {
+                                    log.warn("Failed to persist stripePriceId for pricing {}: {}", foundByName.getId(), persistEx.getMessage());
+                                }
+                                matched = Optional.of(foundByName);
+                            } else {
+                                return ResponseEntity.ok("ignored");
+                            }
+                        } catch (Exception ex) {
+                            log.warn("Failed fallback mapping via Stripe Price/Product for {}: {}", stripePriceId, ex.getMessage());
+                            return ResponseEntity.ok("ignored");
+                        }
                     }
-
+                    
                     Pricing pricing = matched.get();
-
+                    log.info("Matched Pricing: {}", pricing.getName());
+                    
                     // Subscribe user (idempotency: SubscriptionService should prevent duplicates)
                     try {
-                        SubscriptionDto subscription = subscriptionService.subscribe(user.getId(), pricing.getId());
-                        log.info("Subscription created for user {} to pricing {} until {}", user.getEmail(), subscription.getPricingName(), subscription.getEndDate());
+                        SubscriptionDto subscriptionDto = subscriptionService.subscribe(user.getId(), pricing.getId());
+                        // Mark payment as PAID for Stripe-based subscriptions (using Stripe subscription id as reference)
+                        try {
+                            subscriptionService.markAsPaid(subscriptionDto.getId(), "STRIPE-" + subscriptionId);
+                        } catch (Exception markPaidEx) {
+                            log.warn("Could not mark subscription {} as PAID via Stripe: {}", subscriptionDto.getId(), markPaidEx.getMessage());
+                        }
+                        log.info("✅ Subscription created/confirmed for user {} to pricing {} until {}", user.getEmail(), subscriptionDto.getPricingName(), subscriptionDto.getEndDate());
                     } catch (Exception e) {
-                        log.error("Failed to create subscription after Stripe checkout for user {}: {}", user.getEmail(), e.getMessage());
+                        log.error("❌ Failed to create subscription after Stripe checkout for user {}: {}", user.getEmail(), e.getMessage(), e);
                     }
+                } catch (Exception e) {
+                    log.error("❌ Error processing checkout.session.completed: {}", e.getMessage(), e);
+                    return ResponseEntity.ok("error");
                 }
             }
 
@@ -122,7 +226,7 @@ public class StripeWebhookController {
             log.error("Stripe signature verification failed: {}", e.getMessage());
             return ResponseEntity.badRequest().body("invalid signature");
         } catch (Exception e) {
-            log.error("Stripe webhook processing failed: {}", e.getMessage());
+            log.error("Stripe webhook processing failed: {}", e.getMessage(), e);
             return ResponseEntity.ok("error");
         }
     }

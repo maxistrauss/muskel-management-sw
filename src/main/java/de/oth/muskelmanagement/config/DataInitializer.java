@@ -120,14 +120,17 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         Pricing basic = new Pricing("Basic", new BigDecimal("29.99"), 1, "Monthly membership with basic access", true);
+        basic.setStripePriceId("price_1SpaSkKgAYD85AnvmqaYgHct");
         pricingRepository.save(basic);
 
         Pricing premium = new Pricing("Premium", new BigDecimal("59.99"), 12,
                 "Annual membership with full access and additional services", true);
+        premium.setStripePriceId("price_1SpafYKgAYD85AnvecAZOZc6");
         pricingRepository.save(premium);
 
         Pricing student = new Pricing("Student", new BigDecimal("19.99"), 1,
                 "Discounted monthly membership for students", true);
+        student.setStripePriceId("price_1SpadxKgAYD85Anv0XCU0OXc");
         pricingRepository.save(student);
     }
 

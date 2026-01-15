@@ -15,6 +15,9 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     // Find active subscription for a user
     Optional<Subscription> findByUserIdAndStatus(Long userId, SubscriptionStatus status);
     
+    // Prefer single-result retrieval: latest active subscription
+    Optional<Subscription> findTopByUserIdAndStatusOrderByCreatedAtDesc(Long userId, SubscriptionStatus status);
+    
     // Find all subscriptions for a user (history) - ordered by creation date descending
     List<Subscription> findByUserIdOrderByCreatedAtDesc(Long userId);
     

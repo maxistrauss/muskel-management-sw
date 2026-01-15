@@ -37,7 +37,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional
-    public SubscriptionDto subscribe(Long userId, Long pricingId) {
+    public synchronized SubscriptionDto subscribe(Long userId, Long pricingId) {
         logger.info("Creating subscription for user {} with pricing {}", userId, pricingId);
 
         // Check if user exists
@@ -52,9 +52,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             throw new RuntimeException("Cannot subscribe to inactive pricing: " + pricing.getName());
         }
 
-        // Check if user already has an active subscription
-        if (subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)) {
-            throw new RuntimeException("User already has an active subscription");
+        // Check if user already has an active subscription (idempotent behavior)
+        // Idempotent behavior: if an active subscription exists, return latest
+        Optional<Subscription> existingActive = subscriptionRepository
+            .findTopByUserIdAndStatusOrderByCreatedAtDesc(userId, SubscriptionStatus.ACTIVE);
+        if (existingActive.isPresent()) {
+            logger.info("User {} already has an active subscription (id={}). Returning existing.", userId, existingActive.get().getId());
+            return convertToDto(existingActive.get());
         }
 
         // Create new subscription
@@ -66,7 +70,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         subscription.setPricing(pricing);
         subscription.setStartDate(startDate);
         subscription.setEndDate(endDate);
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
+            subscription.setStatus(SubscriptionStatus.ACTIVE); // Set status to ACTIVE
         subscription.setAutoRenew(false);
 
         Subscription savedSubscription = subscriptionRepository.save(subscription);
@@ -78,7 +82,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional(readOnly = true)
     public Optional<SubscriptionDto> getActiveSubscription(Long userId) {
-        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE).map(this::convertToDto);
+        return subscriptionRepository
+                .findTopByUserIdAndStatusOrderByCreatedAtDesc(userId, SubscriptionStatus.ACTIVE)
+                .map(this::convertToDto);
     }
 
     @Override
@@ -171,7 +177,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional
     public void markAsPaidByUserId(Long userId, String paypalOrderId) {
-        Subscription subscription = subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+        Subscription subscription = subscriptionRepository
+            .findTopByUserIdAndStatusOrderByCreatedAtDesc(userId, SubscriptionStatus.ACTIVE)
                 .orElseThrow(() -> new RuntimeException("No active subscription found for user: " + userId));
         
         subscription.setPaypalOrderId(paypalOrderId);
@@ -207,14 +214,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Subscription> findActiveSubscriptionEntity(Long userId) {
-        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE);
+        return subscriptionRepository.findTopByUserIdAndStatusOrderByCreatedAtDesc(userId, SubscriptionStatus.ACTIVE);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Subscription> findAllActiveSubscriptionsEntities(Long userId) {
-        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
-                .stream()
-                .collect(java.util.stream.Collectors.toList());
+        return subscriptionRepository.findByUserIdOrderByCreatedAtDesc(userId)
+            .stream()
+            .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
+            .collect(java.util.stream.Collectors.toList());
     }
 }

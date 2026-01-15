@@ -124,6 +124,19 @@ public class PricingServiceImpl implements PricingService {
         return pricingRepository.findAll(spec, pageable).map(this::convertToDto);
     }
 
+    @Override
+    public void updateStripePriceId(Long id, String stripePriceId) {
+        Pricing pricing = pricingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pricing not found"));
+        String priceId = stripePriceId;
+        if (priceId != null) {
+            priceId = priceId.trim();
+            if (priceId.isEmpty()) priceId = null;
+        }
+        pricing.setStripePriceId(priceId);
+        pricingRepository.save(pricing);
+    }
+
     private PricingDto convertToDto(Pricing pricing) {
         PricingDto pricingDto = new PricingDto();
         pricingDto.setId(pricing.getId());

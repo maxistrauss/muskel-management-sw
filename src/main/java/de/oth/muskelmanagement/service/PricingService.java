@@ -23,5 +23,8 @@ public interface PricingService {
     void deletePricing(Long id);
 
     Page<PricingDto> findPricings(String name, Boolean active, Pageable pageable);
+
+    // Update only the Stripe Price ID mapping for a pricing
+    void updateStripePriceId(Long id, String stripePriceId);
 }
 

@@ -87,43 +87,33 @@
                         </ul>
                     </div>
 
-                    <!-- Subscribe Button with Stripe Buy Button -->
-                    <script async
-                        src="https://js.stripe.com/v3/buy-button.js">
-                    </script>
+                    <!-- Subscribe Button with Payment Links -->
+                    <!-- Basic/Standard Plan (29,99€) -->
+                    <div th:if="${pricing.name == 'Basic'}">
+                        <a href="https://buy.stripe.com/test_cNi14o3yD6Mp7mI9M9cjS01" 
+                           target="_blank"
+                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center">
+                            Subscribe Now
+                        </a>
+                    </div>
 
-                    <stripe-buy-button
-                        buy-button-id="buy_btn_1SjjWTKgAYD85Anv6segaSpf"
-                        publishable-key="pk_test_51SjjOwKgAYD85AnvZSUrGasY3Q6HuN4UFlcQa2mwi5mjqtnCYXbYm8reGvx24wwvtgSoPLZqwIZYsMh2WWCnoOYw00CWbYRjJA"
-                        >
-                    </stripe-buy-button>
+                    <!-- Premium Plan (59,99€) -->
+                    <div th:if="${pricing.name == 'Premium'}">
+                        <a href="https://buy.stripe.com/test_5kQ28sc599YB5eA1fDcjS03" 
+                           target="_blank"
+                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center">
+                            Subscribe Now
+                        </a>
+                    </div>
 
-                    <script>
-                        (function () {
-                            try {
-                                const el = document.querySelector('stripe-buy-button');
-                                if (!el) {
-                                    console.error('Stripe Buy Button element missing on page.');
-                                    return;
-                                }
-                                const id = el.getAttribute('buy-button-id');
-                                const key = el.getAttribute('publishable-key');
-                                if (!id || !key) {
-                                    console.error('Stripe Buy Button misconfigured: id or publishable key missing', { id, key });
-                                }
-
-                                window.addEventListener('error', function (e) {
-                                    const msg = (e && (e.message || (e.error && e.error.message))) || 'Unknown error';
-                                    console.error('Stripe error:', msg, e);
-                                });
-                                window.addEventListener('unhandledrejection', function (e) {
-                                    console.error('Stripe unhandled rejection:', e && e.reason);
-                                });
-                            } catch (err) {
-                                console.error('Stripe logging setup failed:', err);
-                            }
-                        })();
-                    </script>
+                    <!-- Student Plan (19,99€) -->
+                    <div th:if="${pricing.name == 'Student'}">
+                        <a href="https://buy.stripe.com/test_7sY3cwglp6Mp5eA2jHcjS02" 
+                           target="_blank"
+                           class="w-full inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center">
+                            Subscribe Now
+                        </a>
+                    </div>
 
                     <!-- Current Plan Badge (if this is the active subscription) -->
                     <div th:if="${!canSubscribe && activeSubscription != null && activeSubscription.pricingId == pricing.id}">
