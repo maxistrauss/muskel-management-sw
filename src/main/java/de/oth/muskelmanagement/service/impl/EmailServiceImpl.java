@@ -1347,4 +1347,87 @@ public class EmailServiceImpl implements EmailService {
                             courseName != null ? courseName : "Your Course",
                             changeDescription != null ? changeDescription : "The course has been updated. Please review the details.");
     }
+
+    @Override
+    public void sendMembershipConfirmationEmail(String toEmail, String userName, byte[] pdf, String pdfFileName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Your Membership Confirmation - MuskelManagement");
+
+            String htmlContent = buildMembershipConfirmationEmailTemplate(userName);
+            helper.setText(htmlContent, true);
+
+            // Add attachment
+            helper.addAttachment(pdfFileName, new org.springframework.core.io.ByteArrayResource(pdf));
+
+            mailSender.send(message);
+            logger.info("Membership confirmation email sent successfully to: {}", toEmail);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send membership confirmation email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send membership confirmation email", e);
+        }
+    }
+
+    private String buildMembershipConfirmationEmailTemplate(String userName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #007bff;
+                            color: white;
+                            padding: 10px;
+                            text-align: center;
+                        }
+                        .content {
+                            padding: 20px;
+                            border: 1px solid #ddd;
+                        }
+                        .footer {
+                            margin-top: 20px;
+                            font-size: 12px;
+                            text-align: center;
+                            color: #888;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>MuskelManagement</h1>
+                        </div>
+                        <div class="content">
+                            <h2>Hello %s,</h2>
+                            <p>Thank you for your membership at MuskelManagement!</p>
+                            <p>Attached to this email, you will find your official membership confirmation in PDF format.</p>
+                            <p>Please keep this document for your records.</p>
+                            <p>If you have any questions, feel free to contact us.</p>
+                            <br>
+                            <p>Best regards,</p>
+                            <p>Your MuskelManagement Team</p>
+                        </div>
+                        <div class="footer">
+                            <p>This is an automated email. Please do not reply.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(userName);
+    }
 }

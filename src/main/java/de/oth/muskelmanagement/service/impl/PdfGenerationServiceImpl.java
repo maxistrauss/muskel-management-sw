@@ -9,6 +9,7 @@ import de.oth.muskelmanagement.repository.MembershipConfirmationRepository;
 import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.PdfGenerationService;
+import de.oth.muskelmanagement.service.EmailService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,17 +36,19 @@ public class PdfGenerationServiceImpl implements PdfGenerationService {
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final TemplateEngine templateEngine;
+    private final EmailService emailService;
 
     @Value("${pdf.storage.path:pdf-confirmations}")
     private String pdfStoragePath;
 
     public PdfGenerationServiceImpl(MembershipConfirmationRepository confirmationRepository,
             UserRepository userRepository, SubscriptionRepository subscriptionRepository,
-            TemplateEngine templateEngine) {
+            TemplateEngine templateEngine, EmailService emailService) {
         this.confirmationRepository = confirmationRepository;
         this.userRepository = userRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.templateEngine = templateEngine;
+        this.emailService = emailService;
     }
 
     @Override
@@ -85,6 +88,9 @@ public class PdfGenerationServiceImpl implements PdfGenerationService {
             // Create and save metadata
             MembershipConfirmation confirmation = new MembershipConfirmation(user, subscription, fileName, filePath,
                     adminEmail);
+            
+            // Send email with PDF attachment
+            emailService.sendMembershipConfirmationEmail(user.getEmail(), user.getFirstName(), pdfBytes, fileName);
 
             return confirmationRepository.save(confirmation);
 

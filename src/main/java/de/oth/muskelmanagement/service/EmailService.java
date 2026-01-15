@@ -24,4 +24,6 @@ public interface EmailService {
     void sendCourseWaitlistPromotionEmail(String toEmail, String userName, String courseName);
 
     void sendCourseChangeNotificationEmail(String toEmail, String userName, String courseName, String changeDescription);
+
+    void sendMembershipConfirmationEmail(String toEmail, String userName, byte[] pdf, String pdfFileName);
 }

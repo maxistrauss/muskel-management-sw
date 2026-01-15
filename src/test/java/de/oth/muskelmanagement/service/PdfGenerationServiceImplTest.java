@@ -10,6 +10,7 @@ import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.impl.PdfGenerationServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -50,6 +54,9 @@ class PdfGenerationServiceImplTest {
     @Mock
     private TemplateEngine templateEngine;
 
+    @Mock
+    private EmailService emailService;
+
     private PdfGenerationServiceImpl pdfGenerationService;
 
     @TempDir
@@ -65,7 +72,8 @@ class PdfGenerationServiceImplTest {
                 confirmationRepository,
                 userRepository,
                 subscriptionRepository,
-                templateEngine
+                templateEngine,
+                emailService
         );
 
         // Set the temp directory as storage path
@@ -92,6 +100,72 @@ class PdfGenerationServiceImplTest {
         testSubscription.setEndDate(LocalDate.now().plusMonths(12));
         testSubscription.setStatus(SubscriptionStatus.ACTIVE);
     }
+
+    @Test
+    void generateMembershipConfirmation_FitsOnOnePage() throws IOException {
+        // Arrange
+        Long userId = 1L;
+        Long subscriptionId = 1L;
+        String adminEmail = "admin@example.com";
+
+        // Setup a real TemplateEngine
+        TemplateEngine realTemplateEngine = new TemplateEngine();
+        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateResolver.setPrefix("templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setCharacterEncoding("UTF-8");
+        realTemplateEngine.setTemplateResolver(templateResolver);
+
+        // Create a service instance with the real template engine
+        pdfGenerationService = new PdfGenerationServiceImpl(
+                confirmationRepository,
+                userRepository,
+                subscriptionRepository,
+                realTemplateEngine,
+                emailService
+        );
+        ReflectionTestUtils.setField(pdfGenerationService, "pdfStoragePath", tempDir.toString());
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+        when(subscriptionRepository.findById(subscriptionId)).thenReturn(Optional.of(testSubscription));
+
+        when(confirmationRepository.save(any(MembershipConfirmation.class))).thenAnswer(invocation -> {
+            MembershipConfirmation conf = invocation.getArgument(0);
+            // Simulate saving by setting an ID, so we can retrieve the file path later
+            ReflectionTestUtils.setField(conf, "id", 1L);
+            return conf;
+        });
+
+        // Act
+        MembershipConfirmation result = pdfGenerationService.generateMembershipConfirmation(
+                userId, subscriptionId, adminEmail);
+
+        // Assert
+        assertNotNull(result);
+        assertNotNull(result.getFilePath());
+
+        File pdfFile = new File(result.getFilePath());
+        assertTrue(pdfFile.exists(), "PDF file should be created");
+
+        try (PDDocument document = PDDocument.load(pdfFile)) {
+            assertEquals(1, document.getNumberOfPages(), "The generated PDF should have exactly one page.");
+        } finally {
+            // Cleanup
+            Files.deleteIfExists(pdfFile.toPath());
+        }
+        
+        // Verify email sending
+        ArgumentCaptor<byte[]> pdfCaptor = ArgumentCaptor.forClass(byte[].class);
+        verify(emailService).sendMembershipConfirmationEmail(
+                eq(testUser.getEmail()),
+                eq(testUser.getFirstName()),
+                pdfCaptor.capture(),
+                anyString()
+        );
+        assertTrue(pdfCaptor.getValue().length > 0);
+    }
+
 
     @Test
     void generateMembershipConfirmation_Success() {
