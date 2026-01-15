@@ -143,14 +143,14 @@
             <h2 class="text-xl font-bold mb-4">Participant Management</h2>
 
             <!-- List of Enrolled Members -->
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">Enrolled Members (<span th:text="${#lists.size(enrolledMembers)}">0</span>/<span th:text="${course.capacity}">0</span>)</h3>
-            <div th:if="${#lists.isEmpty(enrolledMembers)}" class="text-gray-500 italic p-4 bg-gray-50 rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Enrolled Members (<span th:text="${enrolledMembersPage.totalElements}">0</span>/<span th:text="${course.capacity}">0</span>)</h3>
+            <div th:if="${enrolledMembersPage.totalElements == 0}" class="text-gray-500 italic p-4 bg-gray-50 rounded-lg">
                 No members are currently enrolled in this course.
             </div>
-            <div th:unless="${#lists.isEmpty(enrolledMembers)}" class="space-y-2 border rounded-lg p-4">
-                <div th:each="member : ${enrolledMembers}" class="flex items-center justify-between p-2 hover:bg-gray-100 rounded-lg">
-                    <span th:text="${member.firstName} + ' ' + ${member.lastName} + ' (' + ${member.email} + ')'">Member Name (email@example.com)</span>
-                    <form th:action="@{/admin/courses/edit/{id}/remove-member/{memberId}(id=${course.id}, memberId=${member.id})}" method="post">
+            <div th:unless="${enrolledMembersPage.totalElements == 0}" class="space-y-2 border rounded-lg p-4">
+                <div th:each="enrollment : ${enrolledMembersPage.content}" class="flex items-center justify-between p-2 hover:bg-gray-100 rounded-lg">
+                    <span th:text="${enrollment.user.firstName} + ' ' + ${enrollment.user.lastName} + ' (' + ${enrollment.user.email} + ')'">Member Name (email@example.com)</span>
+                    <form th:action="@{/admin/courses/edit/{id}/remove-member/{memberId}(id=${course.id}, memberId=${enrollment.user.id})}" method="post">
                         <button class="text-sm bg-red-100 text-red-700 hover:bg-red-200 font-semibold py-1 px-3 rounded-full"
                                 type="submit">
                             Remove
@@ -159,36 +159,82 @@
                 </div>
             </div>
 
+            <!-- Pagination for Enrolled Members -->
+            <div th:if="${enrolledMembersPage.totalPages > 1}" class="mt-4 flex justify-center">
+                <nav class="inline-flex rounded-md shadow-sm">
+                    <a th:href="@{/admin/courses/edit/{id}(id=${course.id}, enrolledPage=${enrolledMembersPage.number - 1}, enrolledSize=${enrolledMembersPage.size}, waitlistedPage=${waitlistedMembersPage.number}, waitlistedSize=${waitlistedMembersPage.size})}"
+                       th:classappend="${enrolledMembersPage.first} ? 'pointer-events-none opacity-50' : ''"
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+                        Previous
+                    </a>
+                    <span th:each="pageNum : ${#numbers.sequence(0, enrolledMembersPage.totalPages - 1)}">
+                        <a th:href="@{/admin/courses/edit/{id}(id=${course.id}, enrolledPage=${pageNum}, enrolledSize=${enrolledMembersPage.size}, waitlistedPage=${waitlistedMembersPage.number}, waitlistedSize=${waitlistedMembersPage.size})}"
+                           th:text="${pageNum + 1}"
+                           th:classappend="${pageNum == enrolledMembersPage.number} ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                           class="px-3 py-2 text-sm font-medium border-t border-b border-gray-300">
+                        </a>
+                    </span>
+                    <a th:href="@{/admin/courses/edit/{id}(id=${course.id}, enrolledPage=${enrolledMembersPage.number + 1}, enrolledSize=${enrolledMembersPage.size}, waitlistedPage=${waitlistedMembersPage.number}, waitlistedSize=${waitlistedMembersPage.size})}"
+                       th:classappend="${enrolledMembersPage.last} ? 'pointer-events-none opacity-50' : ''"
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+                        Next
+                    </a>
+                </nav>
+            </div>
+
             <!-- List of Waitlisted Members -->
             <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-2">Waitlisted Members (<span
-                    th:text="${#lists.size(waitlistedMembers)}">0</span>)</h3>
-            <div class="text-gray-500 italic p-4 bg-gray-50 rounded-lg" th:if="${#lists.isEmpty(waitlistedMembers)}">
+                    th:text="${waitlistedMembersPage.totalElements}">0</span>)</h3>
+            <div class="text-gray-500 italic p-4 bg-gray-50 rounded-lg" th:if="${waitlistedMembersPage.totalElements == 0}">
                 The waitlist is currently empty.
             </div>
             <div class="space-y-2 border rounded-lg p-4 bg-yellow-50 border-yellow-200"
-                 th:unless="${#lists.isEmpty(waitlistedMembers)}">
+                 th:unless="${waitlistedMembersPage.totalElements == 0}">
                 <div class="flex items-center justify-between p-2 hover:bg-yellow-100 rounded-lg"
-                     th:each="member, iterStat : ${waitlistedMembers}">
+                     th:each="enrollment, iterStat : ${waitlistedMembersPage.content}">
                     <div>
-                        <span class="font-bold text-yellow-800 mr-2" th:text="'#' + ${iterStat.count}">#1</span>
-                        <span th:text="${member.firstName} + ' ' + ${member.lastName} + ' (' + ${member.email} + ')'">Member Name (email@example.com)</span>
+                        <span class="font-bold text-yellow-800 mr-2" th:text="'#' + ${(waitlistedMembersPage.number * waitlistedMembersPage.size) + iterStat.count}">#1</span>
+                        <span th:text="${enrollment.user.firstName} + ' ' + ${enrollment.user.lastName} + ' (' + ${enrollment.user.email} + ')'">Member Name (email@example.com)</span>
                     </div>
                     <form method="post"
-                          th:action="@{/admin/courses/edit/{id}/remove-member/{memberId}(id=${course.id}, memberId=${member.id})}">
+                          th:action="@{/admin/courses/edit/{id}/remove-member/{memberId}(id=${course.id}, memberId=${enrollment.user.id})}">
                         <button type="submit" class="text-sm bg-red-100 text-red-700 hover:bg-red-200 font-semibold py-1 px-3 rounded-full">Remove</button>
                     </form>
                 </div>
             </div>
 
+            <!-- Pagination for Waitlisted Members -->
+            <div th:if="${waitlistedMembersPage.totalPages > 1}" class="mt-4 flex justify-center">
+                <nav class="inline-flex rounded-md shadow-sm">
+                    <a th:href="@{/admin/courses/edit/{id}(id=${course.id}, enrolledPage=${enrolledMembersPage.number}, enrolledSize=${enrolledMembersPage.size}, waitlistedPage=${waitlistedMembersPage.number - 1}, waitlistedSize=${waitlistedMembersPage.size})}"
+                       th:classappend="${waitlistedMembersPage.first} ? 'pointer-events-none opacity-50' : ''"
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+                        Previous
+                    </a>
+                    <span th:each="pageNum : ${#numbers.sequence(0, waitlistedMembersPage.totalPages - 1)}">
+                        <a th:href="@{/admin/courses/edit/{id}(id=${course.id}, enrolledPage=${enrolledMembersPage.number}, enrolledSize=${enrolledMembersPage.size}, waitlistedPage=${pageNum}, waitlistedSize=${waitlistedMembersPage.size})}"
+                           th:text="${pageNum + 1}"
+                           th:classappend="${pageNum == waitlistedMembersPage.number} ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                           class="px-3 py-2 text-sm font-medium border-t border-b border-gray-300">
+                        </a>
+                    </span>
+                    <a th:href="@{/admin/courses/edit/{id}(id=${course.id}, enrolledPage=${enrolledMembersPage.number}, enrolledSize=${enrolledMembersPage.size}, waitlistedPage=${waitlistedMembersPage.number + 1}, waitlistedSize=${waitlistedMembersPage.size})}"
+                       th:classappend="${waitlistedMembersPage.last} ? 'pointer-events-none opacity-50' : ''"
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+                        Next
+                    </a>
+                </nav>
+            </div>
+
             <!-- Add New Member Form -->
             <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-2">Add Member</h3>
-            <div th:if="${#lists.size(enrolledMembers) >= course.capacity}" class="text-orange-600 italic p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <div th:if="${enrolledMembersPage.totalElements >= course.capacity}" class="text-orange-600 italic p-4 bg-orange-50 border border-orange-200 rounded-lg">
                 The course has reached its maximum capacity. No more members can be added.
             </div>
-            <div th:if="${#lists.isEmpty(availableMembers) and #lists.size(enrolledMembers) < course.capacity}" class="text-gray-500 italic p-4 bg-gray-50 rounded-lg">
+            <div th:if="${#lists.isEmpty(availableMembers) and enrolledMembersPage.totalElements < course.capacity}" class="text-gray-500 italic p-4 bg-gray-50 rounded-lg">
                 All available members are already enrolled in this course.
             </div>
-            <form th:if="${#lists.size(enrolledMembers) < course.capacity and !#lists.isEmpty(availableMembers)}" th:action="@{/admin/courses/edit/{id}/add-member(id=${course.id})}" method="post" class="flex items-center space-x-2 mt-4">
+            <form th:if="${enrolledMembersPage.totalElements < course.capacity and !#lists.isEmpty(availableMembers)}" th:action="@{/admin/courses/edit/{id}/add-member(id=${course.id})}" method="post" class="flex items-center space-x-2 mt-4">
                 <select name="memberId" class="w-full border rounded px-3 py-2 bg-white">
                     <option th:each="member : ${availableMembers}" th:value="${member.id}" th:text="${member.firstName} + ' ' + ${member.lastName}"></option>
                 </select>

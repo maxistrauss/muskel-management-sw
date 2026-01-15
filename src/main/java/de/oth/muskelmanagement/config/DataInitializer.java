@@ -281,6 +281,26 @@ public class DataInitializer implements CommandLineRunner {
         pelvicFloor.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.SUNDAY));
         courseRepository.save(pelvicFloor);
 
+        // Create Test Course with Admin as Trainer and 12 members
+        de.oth.muskelmanagement.model.entity.User admin = userRepository.findByEmail("admin@example.com");
+        de.oth.muskelmanagement.model.entity.Course testCourse = new de.oth.muskelmanagement.model.entity.Course(
+                "Test Course - Pagination", 
+                "This is a test course to demonstrate pagination with 12 enrolled members.", 
+                15, 
+                true,
+                LocalTime.of(14, 0), 
+                60);
+        if (admin != null) {
+            testCourse.setTrainer(admin);
+        }
+        roomRepository.findByName("Main Gym").ifPresent(r -> testCourse.setRoom(r));
+        testCourse.setStartDate(LocalDate.now());
+        testCourse.setEndDate(LocalDate.now().plusWeeks(8));
+        testCourse.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY,
+                de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY,
+                de.oth.muskelmanagement.model.enums.DayOfWeek.FRIDAY));
+        courseRepository.save(testCourse);
+
         // Optionally enroll seeded users
         try {
             de.oth.muskelmanagement.model.entity.User member = userRepository.findByEmail("member@example.com");
@@ -296,6 +316,19 @@ public class DataInitializer implements CommandLineRunner {
                 hiit.addEnrollment(e2);
                 courseRepository.save(hiit);
             }
+
+            // Enroll 12 test members in the Test Course
+            for (int i = 1; i <= 12; i++) {
+                de.oth.muskelmanagement.model.entity.User testMember = userRepository.findByEmail("testmember" + i + "@example.com");
+                if (testMember != null && testCourse != null) {
+                    var enrollment = new de.oth.muskelmanagement.model.entity.Enrollment(testMember, testCourse);
+                    enrollment.setStatus(de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED);
+                    enrollmentRepository.save(enrollment);
+                    testCourse.addEnrollment(enrollment);
+                }
+            }
+            courseRepository.save(testCourse);
+
         } catch (Exception ex) {
             // ignore seeding enrollment errors
         }
@@ -336,6 +369,15 @@ public class DataInitializer implements CommandLineRunner {
         User member = new User("Member", "User", "member@example.com", passwordEncoder.encode("password"),
                 Set.of(memberRole));
         userRepository.save(member);
+
+        // Create 12 additional test members for pagination testing
+        for (int i = 1; i <= 12; i++) {
+            User testMember = new User("TestMember" + i, "User" + i, 
+                    "testmember" + i + "@example.com", 
+                    passwordEncoder.encode("password"),
+                    Set.of(memberRole));
+            userRepository.save(testMember);
+        }
     }
 
     @Transactional

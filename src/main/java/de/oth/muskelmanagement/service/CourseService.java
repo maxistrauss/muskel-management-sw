@@ -22,6 +22,8 @@ public interface CourseService {
     void removeMember(Long courseId, Long userId);
     Enrollment setAttendance(Long courseId, Long userId, AttendanceStatus status);
     List<Enrollment> listEnrollments(Long courseId);
+    Page<Enrollment> listEnrollmentsPaginated(Long courseId, Pageable pageable);
+    Page<Enrollment> listEnrollmentsByStatusPaginated(Long courseId, de.oth.muskelmanagement.model.enums.EnrollmentStatus status, Pageable pageable);
     
     // Enrollment management
     Enrollment enrollCreator(Long courseId, Long creatorId);

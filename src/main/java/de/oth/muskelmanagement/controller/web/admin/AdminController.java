@@ -141,7 +141,12 @@ public class AdminController {
     }
 
     @GetMapping("/courses/edit/{id}")
-    public String showEditCourseForm(@PathVariable Long id, Model model) {
+    public String showEditCourseForm(@PathVariable Long id, 
+                                      @RequestParam(defaultValue = "0") int enrolledPage,
+                                      @RequestParam(defaultValue = "10") int enrolledSize,
+                                      @RequestParam(defaultValue = "0") int waitlistedPage,
+                                      @RequestParam(defaultValue = "10") int waitlistedSize,
+                                      Model model) {
         CourseDto courseDto = courseService.getCourseDtoById(id);
         model.addAttribute("course", courseDto);
 
@@ -155,33 +160,20 @@ public class AdminController {
         var rooms = roomService.findActiveRooms();
         model.addAttribute("rooms", rooms);
 
-        // Member Management Data
+        // Paginated enrolled members
+        Pageable enrolledPageable = org.springframework.data.domain.PageRequest.of(enrolledPage, enrolledSize);
+        Page<Enrollment> enrolledMembersPage = courseService.listEnrollmentsByStatusPaginated(id, 
+                de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED, enrolledPageable);
+        model.addAttribute("enrolledMembersPage", enrolledMembersPage);
+
+        // Paginated waitlisted members  
+        Pageable waitlistedPageable = org.springframework.data.domain.PageRequest.of(waitlistedPage, waitlistedSize);
+        Page<Enrollment> waitlistedMembersPage = courseService.listEnrollmentsByStatusPaginated(id, 
+                de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED, waitlistedPageable);
+        model.addAttribute("waitlistedMembersPage", waitlistedMembersPage);
+
+        // Get all enrollments for available members calculation
         List<Enrollment> allEnrollments = courseService.listEnrollments(id);
-
-        List<UserDto> enrolledMembers = allEnrollments.stream()
-                .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED)
-                .map(Enrollment::getUser)
-                .map(user -> {
-                    UserDto dto = new UserDto();
-                    dto.setId(user.getId());
-                    dto.setFirstName(user.getFirstName());
-                    dto.setLastName(user.getLastName());
-                    dto.setEmail(user.getEmail());
-                    return dto;
-                })
-                .collect(Collectors.toList());
-
-        List<UserDto> waitlistedMembers = allEnrollments.stream()
-                .filter(e -> e.getStatus() == de.oth.muskelmanagement.model.enums.EnrollmentStatus.WAITLISTED)
-                .sorted((e1, e2) -> e1.getCreatedAt().compareTo(e2.getCreatedAt())) // Sort by waitlist position
-                .map(Enrollment::getUser).map(user -> {
-                    UserDto dto = new UserDto();
-                    dto.setId(user.getId());
-                    dto.setFirstName(user.getFirstName());
-                    dto.setLastName(user.getLastName());
-                    dto.setEmail(user.getEmail());
-                    return dto;
-                }).collect(Collectors.toList());
 
         Set<Long> excludedMemberIds = allEnrollments.stream().map(e -> e.getUser().getId())
                 .collect(Collectors.toSet());
@@ -190,8 +182,6 @@ public class AdminController {
                 .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !excludedMemberIds.contains(user.getId()))
                 .collect(Collectors.toList());
 
-        model.addAttribute("enrolledMembers", enrolledMembers);
-        model.addAttribute("waitlistedMembers", waitlistedMembers);
         model.addAttribute("availableMembers", availableMembers);
 
         return "admin/course-form";

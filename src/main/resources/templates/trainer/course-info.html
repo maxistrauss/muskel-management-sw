@@ -65,7 +65,7 @@
         <div class="mt-6 border-t pt-6">
             <h3 class="text-xl font-semibold mb-4">Participants</h3>
             <ul class="space-y-2">
-                <li th:each="e : ${course.enrollments}"
+                <li th:each="e : ${enrollmentsPage.content}"
                     class="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span th:text="${e.user.firstName + ' ' + e.user.lastName}"></span>
                     <span class="px-3 py-1 text-sm rounded-full"
@@ -75,7 +75,35 @@
                           th:text="${e.attendanceStatus}"></span>
                 </li>
             </ul>
-            <p th:if="${#lists.isEmpty(course.enrollments)}" class="text-gray-500 italic">No participants enrolled yet.</p>
+            <p th:if="${enrollmentsPage.totalElements == 0}" class="text-gray-500 italic">No participants enrolled yet.</p>
+
+            <!-- Pagination Controls -->
+            <div th:if="${enrollmentsPage.totalPages > 1}" class="mt-4 flex justify-center">
+                <nav class="inline-flex rounded-md shadow-sm">
+                    <!-- Previous Button -->
+                    <a th:href="@{/trainer/courses/{id}/info(id=${course.id}, page=${enrollmentsPage.number - 1}, size=${enrollmentsPage.size})}"
+                       th:classappend="${enrollmentsPage.first} ? 'pointer-events-none opacity-50' : ''"
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+                        Previous
+                    </a>
+                    
+                    <!-- Page Numbers -->
+                    <span th:each="pageNum : ${#numbers.sequence(0, enrollmentsPage.totalPages - 1)}">
+                        <a th:href="@{/trainer/courses/{id}/info(id=${course.id}, page=${pageNum}, size=${enrollmentsPage.size})}"
+                           th:text="${pageNum + 1}"
+                           th:classappend="${pageNum == enrollmentsPage.number} ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                           class="px-3 py-2 text-sm font-medium border-t border-b border-gray-300">
+                        </a>
+                    </span>
+                    
+                    <!-- Next Button -->
+                    <a th:href="@{/trainer/courses/{id}/info(id=${course.id}, page=${enrollmentsPage.number + 1}, size=${enrollmentsPage.size})}"
+                       th:classappend="${enrollmentsPage.last} ? 'pointer-events-none opacity-50' : ''"
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+                        Next
+                    </a>
+                </nav>
+            </div>
         </div>
 
         <!-- Reviews -->

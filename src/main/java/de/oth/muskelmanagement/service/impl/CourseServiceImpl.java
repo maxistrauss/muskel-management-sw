@@ -184,6 +184,18 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Page<Enrollment> listEnrollmentsPaginated(Long courseId, Pageable pageable) {
+        Course course = findById(courseId);
+        return enrollmentRepository.findByCourse(course, pageable);
+    }
+
+    @Override
+    public Page<Enrollment> listEnrollmentsByStatusPaginated(Long courseId, de.oth.muskelmanagement.model.enums.EnrollmentStatus status, Pageable pageable) {
+        Course course = findById(courseId);
+        return enrollmentRepository.findByCourseAndStatus(course, status, pageable);
+    }
+
+    @Override
     public Page<Course> findEnrolledCoursesByUser(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         List<Enrollment> enrollments = enrollmentRepository.findByUser(user);
