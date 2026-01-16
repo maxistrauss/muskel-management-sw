@@ -6,7 +6,6 @@ import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.service.FitnessMeasurementService;
 import de.oth.muskelmanagement.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -33,7 +32,6 @@ public class FitnessMeasurementController {
 
     // --- TRAINER ROUTES ---
 
-    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     @GetMapping("/trainer/members/{memberId}/measurements")
     public String getMeasurementsForMember(@PathVariable Long memberId, Model model,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -55,7 +53,6 @@ public class FitnessMeasurementController {
         return "trainer/measurements";
     }
 
-    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     @GetMapping("/trainer/members/{memberId}/measurements/create")
     public String createMeasurementForm(@PathVariable Long memberId, Model model) {
         User member = userService.findEntityById(memberId);
@@ -68,7 +65,6 @@ public class FitnessMeasurementController {
         return "trainer/measurement-form";
     }
 
-    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     @PostMapping("/trainer/members/{memberId}/measurements/create")
     public String createMeasurement(@PathVariable Long memberId,
             @Valid @ModelAttribute("measurement") FitnessMeasurementDto dto, BindingResult bindingResult, Model model) {
@@ -82,7 +78,6 @@ public class FitnessMeasurementController {
         return "redirect:/trainer/members/" + memberId + "/measurements";
     }
 
-    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     @GetMapping("/trainer/measurements/{id}/edit")
     public String editMeasurementForm(@PathVariable Long id, Model model) {
         FitnessMeasurement measurement = measurementService.getMeasurementById(id);
@@ -94,7 +89,6 @@ public class FitnessMeasurementController {
         return "trainer/measurement-form";
     }
 
-    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     @PostMapping("/trainer/measurements/{id}/edit")
     public String updateMeasurement(@PathVariable Long id,
             @Valid @ModelAttribute("measurement") FitnessMeasurementDto dto, BindingResult bindingResult, Model model) {
@@ -109,7 +103,6 @@ public class FitnessMeasurementController {
         return "redirect:/trainer/members/" + updated.getUser().getId() + "/measurements";
     }
 
-    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     @PostMapping("/trainer/measurements/{id}/delete")
     public String deleteMeasurement(@PathVariable Long id) {
         FitnessMeasurement measurement = measurementService.getMeasurementById(id);
@@ -120,7 +113,7 @@ public class FitnessMeasurementController {
 
     // --- MEMBER ROUTES ---
     // (Optional: Members can view their own progress)
-    @PreAuthorize("hasRole('MEMBER')")
+
     @GetMapping("/member/measurements")
     public String getMyMeasurements(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User member = userService.findByEmail(userDetails.getUsername());
