@@ -123,6 +123,15 @@ public class TrainingPlanServiceImpl implements TrainingPlanService {
     }
 
     @Override
+    @Transactional
+    public void deletePlan(Long planId) {
+        if (!trainingPlanRepository.existsById(planId)) {
+            throw new IllegalArgumentException("Training plan not found");
+        }
+        trainingPlanRepository.deleteById(planId);
+    }
+
+    @Override
     public TrainingPlan getPlanById(Long id) {
         return trainingPlanRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Training plan not found"));

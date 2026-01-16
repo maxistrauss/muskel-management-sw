@@ -15,6 +15,8 @@ public interface TrainingPlanService {
 
     void unarchivePlan(Long planId);
 
+    void deletePlan(Long planId);
+
     TrainingPlan getPlanById(Long id);
 
     List<TrainingPlan> getPlansByMember(Long memberId);

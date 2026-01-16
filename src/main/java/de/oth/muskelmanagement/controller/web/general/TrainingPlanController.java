@@ -129,6 +129,15 @@ public class TrainingPlanController {
         return "redirect:/trainer/members/" + memberId + "/plans";
     }
 
+    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
+    @PostMapping("/trainer/plans/{planId}/delete")
+    public String deletePlan(@PathVariable Long planId) {
+        TrainingPlan plan = trainingPlanService.getPlanById(planId);
+        Long memberId = plan.getMember().getId();
+        trainingPlanService.deletePlan(planId);
+        return "redirect:/trainer/members/" + memberId + "/plans";
+    }
+
     // --- MEMBER ROUTES ---
 
     @PreAuthorize("hasRole('MEMBER')")
