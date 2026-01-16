@@ -79,7 +79,19 @@ public class EquipmentServiceImpl implements EquipmentService {
 
         equipment.setName(equipmentDto.getName());
         equipment.setSerialNumber(equipmentDto.getSerialNumber());
-        equipment.setStatus(equipmentDto.getStatus());
+        
+        // Synchronize status with archived flag
+        if (equipmentDto.isArchived()) {
+            // When archiving, always set status to ARCHIVED
+            equipment.setStatus(EquipmentStatus.ARCHIVED);
+        } else {
+            // When not archived, use the submitted status (but prevent manual ARCHIVED status)
+            if (equipmentDto.getStatus() == EquipmentStatus.ARCHIVED) {
+                equipment.setStatus(EquipmentStatus.AVAILABLE); // Default fallback
+            } else {
+                equipment.setStatus(equipmentDto.getStatus());
+            }
+        }
 
         // Handle room assignment
         if (equipmentDto.getRoomId() != null) {
