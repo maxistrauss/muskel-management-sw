@@ -30,8 +30,6 @@ public class FitnessMeasurementController {
         this.userService = userService;
     }
 
-    // --- TRAINER ROUTES ---
-
     @GetMapping("/trainer/members/{memberId}/measurements")
     public String getMeasurementsForMember(@PathVariable Long memberId, Model model,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -110,9 +108,6 @@ public class FitnessMeasurementController {
         measurementService.deleteMeasurement(id);
         return "redirect:/trainer/members/" + userId + "/measurements";
     }
-
-    // --- MEMBER ROUTES ---
-    // (Optional: Members can view their own progress)
 
     @GetMapping("/member/measurements")
     public String getMyMeasurements(@AuthenticationPrincipal UserDetails userDetails, Model model) {
