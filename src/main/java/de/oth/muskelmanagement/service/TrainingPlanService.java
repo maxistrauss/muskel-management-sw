@@ -13,6 +13,8 @@ public interface TrainingPlanService {
 
     void archivePlan(Long planId);
 
+    void unarchivePlan(Long planId);
+
     TrainingPlan getPlanById(Long id);
 
     List<TrainingPlan> getPlansByMember(Long memberId);

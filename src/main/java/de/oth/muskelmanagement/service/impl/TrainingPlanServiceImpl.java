@@ -115,6 +115,14 @@ public class TrainingPlanServiceImpl implements TrainingPlanService {
     }
 
     @Override
+    @Transactional
+    public void unarchivePlan(Long planId) {
+        TrainingPlan plan = getPlanById(planId);
+        plan.setStatus(TrainingPlanStatus.ACTIVE);
+        trainingPlanRepository.save(plan);
+    }
+
+    @Override
     public TrainingPlan getPlanById(Long id) {
         return trainingPlanRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Training plan not found"));

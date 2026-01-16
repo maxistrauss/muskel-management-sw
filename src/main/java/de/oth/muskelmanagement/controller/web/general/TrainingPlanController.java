@@ -120,6 +120,15 @@ public class TrainingPlanController {
         return "redirect:/trainer/members/" + memberId + "/plans";
     }
 
+    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
+    @PostMapping("/trainer/plans/{planId}/unarchive")
+    public String unarchivePlan(@PathVariable Long planId) {
+        TrainingPlan plan = trainingPlanService.getPlanById(planId);
+        Long memberId = plan.getMember().getId();
+        trainingPlanService.unarchivePlan(planId);
+        return "redirect:/trainer/members/" + memberId + "/plans";
+    }
+
     // --- MEMBER ROUTES ---
 
     @PreAuthorize("hasRole('MEMBER')")

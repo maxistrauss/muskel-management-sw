@@ -54,6 +54,15 @@
                                 <button class="text-red-600 hover:text-red-800 font-semibold" type="submit">Archive
                                 </button>
                             </form>
+
+                            <form method="post"
+                                  onsubmit="return confirm('Are you sure you want to unarchive this plan?');"
+                                  th:action="@{/trainer/plans/{id}/unarchive(id=${plan.id})}"
+                                  th:if="${plan.status.name() == 'ARCHIVED'}">
+                                <button class="text-green-600 hover:text-green-800 font-semibold" type="submit">
+                                    Unarchive
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(plans)}">
