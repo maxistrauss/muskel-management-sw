@@ -285,6 +285,20 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(spec, pageable).map(this::convertToDto);
     }
 
+    @Override
+    public Page<UserDto> findAllNonAdmins(Pageable pageable) {
+        Specification<User> spec = (root, query, cb) -> {
+            query.distinct(true);
+            jakarta.persistence.criteria.Subquery<Long> subquery = query.subquery(Long.class);
+            jakarta.persistence.criteria.Root<User> subRoot = subquery.from(User.class);
+            jakarta.persistence.criteria.Join<User, Role> roleJoin = subRoot.join("roles");
+            subquery.select(subRoot.get("id")).where(cb.equal(roleJoin.get("name"), "ROLE_ADMIN"));
+
+            return cb.not(root.get("id").in(subquery));
+        };
+        return userRepository.findAll(spec, pageable).map(this::convertToDto);
+    }
+
     private UserDto convertToDto(User user) {
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());

@@ -7,6 +7,7 @@ import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.repository.ExerciseRepository;
 import de.oth.muskelmanagement.service.TrainingPlanService;
 import de.oth.muskelmanagement.service.UserService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,8 +38,18 @@ public class TrainingPlanController {
 
     @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     @GetMapping("/trainer/members/{memberId}/plans")
-    public String getPlansForMember(@PathVariable Long memberId, Model model) {
+    public String getPlansForMember(@PathVariable Long memberId, Model model,
+            @AuthenticationPrincipal UserDetails userDetails) {
         User member = userService.findEntityById(memberId);
+
+        // If logged in user is only trainer (not admin), they cannot see admin's plans
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean targetIsAdmin = member.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && targetIsAdmin) {
+            throw new AccessDeniedException("Trainers cannot view admin plans");
+        }
+        
         List<TrainingPlan> plans = trainingPlanService.getPlansByMember(memberId);
         model.addAttribute("member", member);
         model.addAttribute("plans", plans);

@@ -57,6 +57,7 @@
         const dates = sorted.map(m => new Date(m.date).toLocaleDateString());
         const weights = sorted.map(m => m.weight);
         const bodyFats = sorted.map(m => m.bodyFatPercentage);
+        const muscleMass = sorted.map(m => m.muscleMassPercentage);
 
         const ctx = document.getElementById('progressChart').getContext('2d');
         new Chart(ctx, {
@@ -74,6 +75,13 @@
                         label: 'Body Fat (%)',
                         data: bodyFats,
                         borderColor: 'rgb(239, 68, 68)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    },
+                    {
+                        label: 'Muscle Mass (%)',
+                        data: muscleMass,
+                        borderColor: 'rgb(34, 197, 94)',
                         tension: 0.1,
                         yAxisID: 'y1'
                     }

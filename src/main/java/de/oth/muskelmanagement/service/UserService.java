@@ -34,4 +34,6 @@ public interface UserService {
     void changeMyPassword(Long userId, String oldPassword, String newPassword);
 
     Page<UserDto> findUsers(String email, String firstName, String lastName, String activePlan, Pageable pageable);
+
+    Page<UserDto> findAllNonAdmins(Pageable pageable);
 }

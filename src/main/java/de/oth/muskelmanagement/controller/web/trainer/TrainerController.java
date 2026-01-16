@@ -118,7 +118,7 @@ public class TrainerController {
         Set<Long> excludedMemberIds = allEnrollments.stream().map(e -> e.getUser().getId())
                 .collect(Collectors.toSet());
 
-        List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
+        List<UserDto> availableMembers = userService.findAllNonAdmins(Pageable.unpaged()).getContent().stream()
                 .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !excludedMemberIds.contains(user.getId()))
                 .collect(Collectors.toList());
 
@@ -171,7 +171,7 @@ public class TrainerController {
             Set<Long> excludedMemberIds = allEnrollments.stream().map(e -> e.getUser().getId())
                     .collect(Collectors.toSet());
 
-            List<UserDto> availableMembers = userService.findAll(Pageable.unpaged()).getContent().stream()
+            List<UserDto> availableMembers = userService.findAllNonAdmins(Pageable.unpaged()).getContent().stream()
                     .filter(user -> user.getRoles().contains("ROLE_MEMBER") && !excludedMemberIds.contains(user.getId()))
                     .collect(Collectors.toList());
 
@@ -290,7 +290,7 @@ public class TrainerController {
 
     @GetMapping("/members")
     public String listMembers(Model model, @PageableDefault(size = 20) Pageable pageable) {
-        Page<UserDto> users = userService.findAll(pageable);
+        Page<UserDto> users = userService.findAllNonAdmins(pageable);
         model.addAttribute("userPage", users);
         return "trainer/members";
     }

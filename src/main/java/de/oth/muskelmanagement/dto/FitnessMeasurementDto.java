@@ -1,14 +1,32 @@
 package de.oth.muskelmanagement.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Positive;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDate;
 
 public class FitnessMeasurementDto {
     private Long id;
     private Long userId;
+
+    @NotNull(message = "Date is required")
+    @PastOrPresent(message = "Date cannot be in the future")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
+
+    @Positive(message = "Weight must be positive")
     private Double weight;
+
+    @Positive(message = "Body fat percentage must be positive")
     private Double bodyFatPercentage;
+
+    @Positive(message = "Muscle mass percentage must be positive")
     private Double muscleMassPercentage;
+
     private String notes;
 
     public FitnessMeasurementDto() {

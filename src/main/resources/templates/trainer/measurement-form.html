@@ -22,25 +22,36 @@
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="date">Date</label>
                     <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           th:classappend="${#fields.hasErrors('date')} ? 'border-red-500' : ''"
                            id="date" required th:field="*{date}" type="date">
+                    <p class="text-red-500 text-xs italic" th:errors="*{date}" th:if="${#fields.hasErrors('date')}"></p>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="weight">Weight (kg)</label>
                     <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           th:classappend="${#fields.hasErrors('weight')} ? 'border-red-500' : ''"
                            id="weight" min="0" step="0.1" th:field="*{weight}" type="number">
+                    <p class="text-red-500 text-xs italic" th:errors="*{weight}"
+                       th:if="${#fields.hasErrors('weight')}"></p>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="bodyFat">Body Fat (%)</label>
                     <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           th:classappend="${#fields.hasErrors('bodyFatPercentage')} ? 'border-red-500' : ''"
                            id="bodyFat" min="0" step="0.1" th:field="*{bodyFatPercentage}" type="number">
+                    <p class="text-red-500 text-xs italic" th:errors="*{bodyFatPercentage}"
+                       th:if="${#fields.hasErrors('bodyFatPercentage')}"></p>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="muscleMass">Muscle Mass (%)</label>
                     <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           th:classappend="${#fields.hasErrors('muscleMassPercentage')} ? 'border-red-500' : ''"
                            id="muscleMass" min="0" step="0.1" th:field="*{muscleMassPercentage}" type="number">
+                    <p class="text-red-500 text-xs italic" th:errors="*{muscleMassPercentage}"
+                       th:if="${#fields.hasErrors('muscleMassPercentage')}"></p>
                 </div>
 
                 <div class="mb-6">
