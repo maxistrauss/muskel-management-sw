@@ -27,9 +27,9 @@
 
             <!-- Active Subscription -->
             <div th:if="${activeSubscription != null}">
-                <div class="border-l-4 border-green-500 bg-green-50 p-4 mb-4">
+                <div class="border-l-4 border-green-500 bg-green-50 dark:bg-green-800 dark:border-green-600 p-4 mb-4">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-xl font-bold text-green-800">🟢 Active Subscription</h3>
+                        <h3 class="text-xl font-bold text-green-800 dark:text-green-200">🟢 Active Subscription</h3>
                         <span th:if="${activeSubscription.isExpiringSoon}" 
                               class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">
                             Expiring Soon

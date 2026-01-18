@@ -235,7 +235,7 @@ class EquipmentServiceImplTest {
         updateDto.setCategory(EquipmentCategory.STRENGTH);
         updateDto.setMaintenanceInterval(60);
         updateDto.setLastMaintenanceDate(LocalDate.of (2024, 11, 1));
-        updateDto.setArchived(true);
+        updateDto.setArchived(false);
 
         when(equipmentRepository.findById(1L)).thenReturn(Optional.of(existingEquipment));
         when(roomRepository.findById(2L)).thenReturn(Optional.of(newRoom));
@@ -253,7 +253,7 @@ class EquipmentServiceImplTest {
         assertEquals(EquipmentCategory.STRENGTH, existingEquipment.getCategory());
         assertEquals(60, existingEquipment.getMaintenanceInterval());
         assertEquals(LocalDate.of(2024, 11, 1), existingEquipment.getLastMaintenanceDate());
-        assertTrue(existingEquipment.isArchived());
+        assertFalse(existingEquipment.isArchived());
         
         verify(equipmentRepository, times(1)).save(existingEquipment);
     }

@@ -34,9 +34,9 @@
         <form id="courseMainForm" th:action="${course.id} == null ? @{/admin/courses/new} : @{/admin/courses/edit/{id}(id=${course.id})}" method="post">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                    <label class="block text-gray-700">Name</label>
+                    <label class="block text-gray-700">Name <span class="text-red-500">*</span></label>
                     <input type="text" name="name" th:value="${course.name}"
-                           class="w-full border rounded px-3 py-2" required/>
+                           class="w-full border rounded px-3 py-2" required minlength="2" maxlength="100"/>
                 </div>
                 <div>
                     <label class="block text-gray-700">Trainer</label>
@@ -61,13 +61,13 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-gray-700">Capacity</label>
+                    <label class="block text-gray-700">Capacity <span class="text-red-500">*</span></label>
                     <input type="number" name="capacity" th:value="${course.capacity}"
-                           class="w-full border rounded px-3 py-2" min="0"/>
+                           class="w-full border rounded px-3 py-2" min="1" required/>
                 </div>
                 <div>
-                    <label class="block text-gray-700">Duration (minutes)</label>
-                    <input type="number" name="durationMinutes" th:value="${course.durationMinutes}" class="w-full border rounded px-3 py-2" min="1" required/>
+                    <label class="block text-gray-700">Duration (minutes) <span class="text-red-500">*</span></label>
+                    <input type="number" name="durationMinutes" th:value="${course.durationMinutes}" class="w-full border rounded px-3 py-2" min="15" max="480" required/>
                     <p th:if="${#fields.hasErrors('course.durationMinutes')}" th:errors="*{course.durationMinutes}" class="text-red-500 text-xs mt-1"></p>
                 </div>
                 <div>
@@ -93,11 +93,11 @@
                     <!-- START: Days of Week Section -->
                     <div class="mb-4">
                         <!-- Display currently selected days in edit mode -->
-                        <div th:if="${course.id != null && !#sets.isEmpty(course.daysOfWeek)}" class="mb-4 p-3 bg-gray-50 rounded border">
-                            <label class="block text-sm font-medium text-gray-700">Currently Scheduled Days</label>
+                        <div th:if="${course.id != null && !#sets.isEmpty(course.daysOfWeek)}" class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Currently Scheduled Days</label>
                             <div class="flex flex-wrap gap-2 mt-2">
                                 <span th:each="d : ${course.daysOfWeek}"
-                                      class="bg-blue-100 text-blue-800 text-sm font-semibold px-2.5 py-0.5 rounded-full"
+                                      class="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-sm font-semibold px-2.5 py-0.5 rounded-full"
                                       th:text="${d.name().substring(0,1) + d.name().substring(1).toLowerCase()}">
                                 </span>
                             </div>
@@ -119,19 +119,13 @@
                         <div class="flex flex-wrap pt-2">
                             <div th:each="day : ${T(de.oth.muskelmanagement.model.enums.DayOfWeek).values()}" class="mr-4">
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="daysOfWeek" th:value="${day.name()}" class="mr-2"/>
+                                    <input type="checkbox" name="daysOfWeek" th:value="${day.name()}" th:checked="${course.daysOfWeek != null && course.daysOfWeek.contains(day)}" class="mr-2"/>
                                     <span th:text="${day.name().substring(0,1) + day.name().substring(1).toLowerCase()}"></span>
                                 </label>
                             </div>
                         </div>
                     </div>
                     <!-- END: Days of Week Section -->
-                </div>
-                <div class="md:col-span-2">
-                    <label class="inline-flex items-center">
-                        <input type="checkbox" name="active" th:checked="${course.active}" class="mr-2"/>
-                        <span>Active</span>
-                    </label>
                 </div>
             </div>
             <div class="flex space-x-2">
@@ -170,8 +164,8 @@
                     <span th:each="pageNum : ${#numbers.sequence(0, enrolledMembersPage.totalPages - 1)}">
                         <a th:href="@{/admin/courses/edit/{id}(id=${course.id}, enrolledPage=${pageNum}, enrolledSize=${enrolledMembersPage.size}, waitlistedPage=${waitlistedMembersPage.number}, waitlistedSize=${waitlistedMembersPage.size})}"
                            th:text="${pageNum + 1}"
-                           th:classappend="${pageNum == enrolledMembersPage.number} ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'"
-                           class="px-3 py-2 text-sm font-medium border-t border-b border-gray-300">
+                           th:classappend="${pageNum == enrolledMembersPage.number} ? 'bg-blue-600 dark:bg-blue-500 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'"
+                           class="px-3 py-2 text-sm font-medium border-t border-b border-gray-300 dark:border-gray-600">
                         </a>
                     </span>
                     <a th:href="@{/admin/courses/edit/{id}(id=${course.id}, enrolledPage=${enrolledMembersPage.number + 1}, enrolledSize=${enrolledMembersPage.size}, waitlistedPage=${waitlistedMembersPage.number}, waitlistedSize=${waitlistedMembersPage.size})}"
@@ -245,15 +239,15 @@
         <div th:if="${course.id != null}" class="mt-8 pt-8 border-t">
             <h2 class="text-xl font-bold mb-4">Exercises</h2>
 
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-4">
+            <div class="bg-blue-50 dark:bg-blue-800 border border-blue-200 dark:border-blue-600 rounded-lg p-6 mb-4">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Manage Exercises</h3>
-                        <p class="text-gray-700 mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-blue-100 mb-2">Manage Exercises</h3>
+                        <p class="text-gray-700 dark:text-blue-100 mb-4">
                             Currently assigned exercises:
-                            <span class="font-bold text-blue-600" th:text="${#sets.size(course.exercises)}">0</span>
+                            <span class="font-bold text-blue-600 dark:text-blue-300" th:text="${#sets.size(course.exercises)}">0</span>
                         </p>
-                        <p class="text-sm text-gray-600 mb-4">
+                        <p class="text-sm text-gray-600 dark:text-blue-200 mb-4">
                             Click the button below to select exercises for this course.
                             You can add or remove multiple exercises at once.
                         </p>

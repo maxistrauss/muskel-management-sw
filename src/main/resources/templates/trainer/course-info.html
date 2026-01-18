@@ -16,8 +16,8 @@
         <p class="text-sm text-gray-500 mt-1">Room: <span th:text="${course.room != null && course.room.active ? course.room.name : '-'}"></span></p>
 
         <!-- Weather Info (Hidden by default, shown via JS if Room is Outdoor) -->
-        <div class="hidden mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200" id="weather-info">
-            <h3 class="text-sm font-semibold text-blue-800 mb-2">Current Weather (Outdoor)</h3>
+        <div class="hidden mt-4 p-3 bg-blue-50 dark:bg-blue-800 rounded-lg border border-blue-200 dark:border-blue-600" id="weather-info">
+            <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">Current Weather (Outdoor)</h3>
 
             <!-- Current -->
             <div class="flex items-center mb-3">
@@ -68,7 +68,8 @@
                 <li th:each="e : ${enrollmentsPage.content}"
                     class="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span th:text="${e.user.firstName + ' ' + e.user.lastName}"></span>
-                    <span class="px-3 py-1 text-sm rounded-full"
+                    <span th:if="${e.attendanceStatus.name() != 'NONE'}" 
+                          class="px-3 py-1 text-sm rounded-full"
                           th:classappend="${e.attendanceStatus.name() == 'PRESENT' ? 'bg-green-100 text-green-800' :
                                            e.attendanceStatus.name() == 'ABSENT' ? 'bg-red-100 text-red-800' :
                                            'bg-gray-100 text-gray-800'}"
@@ -91,7 +92,7 @@
                     <span th:each="pageNum : ${#numbers.sequence(0, enrollmentsPage.totalPages - 1)}">
                         <a th:href="@{/trainer/courses/{id}/info(id=${course.id}, page=${pageNum}, size=${enrollmentsPage.size})}"
                            th:text="${pageNum + 1}"
-                           th:classappend="${pageNum == enrollmentsPage.number} ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                           th:classappend="${pageNum == enrollmentsPage.number} ? 'bg-blue-50 dark:bg-blue-500 text-blue-600 dark:text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
                            class="px-3 py-2 text-sm font-medium border-t border-b border-gray-300">
                         </a>
                     </span>

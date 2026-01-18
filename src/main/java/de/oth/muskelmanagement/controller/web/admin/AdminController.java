@@ -277,12 +277,20 @@ public class AdminController {
     }
 
     @GetMapping("/courses/{id}/info")
-    public String showCourseInfo(@PathVariable Long id, Model model) {
+    public String showCourseInfo(@PathVariable Long id, 
+                                  @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "10") int size,
+                                  Model model) {
         Course course = courseService.findById(id);
         List<Review> reviews = reviewService.getReviewsByCourse(id);
         model.addAttribute("course", course);
         model.addAttribute("reviews", reviews);
         model.addAttribute("exercises", course.getExercises());
+
+        // Paginated enrollments
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        Page<Enrollment> enrollmentsPage = courseService.listEnrollmentsPaginated(id, pageable);
+        model.addAttribute("enrollmentsPage", enrollmentsPage);
 
         return "admin/course-info";
     }
