@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 import java.util.List;
@@ -58,7 +59,11 @@ public class CourseController {
     }
 
     @GetMapping("/{id}")
-    public String details(@PathVariable Long id, Model model, Principal principal) {
+    public String details(@PathVariable Long id, 
+                          @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "10") int size,
+                          Model model, 
+                          Principal principal) {
         Course course = courseService.findById(id);
         model.addAttribute("course", course);
 
@@ -69,6 +74,11 @@ public class CourseController {
         // Get course reviews
         List<Review> reviews = reviewService.getReviewsByCourse(id);
         model.addAttribute("reviews", reviews);
+
+        // Paginated enrollments
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        org.springframework.data.domain.Page<de.oth.muskelmanagement.model.entity.Enrollment> enrollmentsPage = courseService.listEnrollmentsPaginated(id, pageable);
+        model.addAttribute("enrollmentsPage", enrollmentsPage);
 
         boolean enrolled = false;
         boolean waitlisted = false;
