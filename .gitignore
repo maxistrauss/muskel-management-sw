@@ -50,3 +50,4 @@ application.log
 
 ### Documentation ###
 docs/
+src/main/resources/static/css/output.css
