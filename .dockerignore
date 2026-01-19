@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.iml
+
+# Build artifacts
+build/
+target/
+bin/
+out/
+.gradle/
+
+# Node modules (werden im Container neu installiert)
+node_modules/
+
+# Logs
+*.log
+application.log
+build.log
+
+# H2 Database files (werden zur Laufzeit erstellt)
+*.db
+*.mv.db
+*.trace.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+diagram.png

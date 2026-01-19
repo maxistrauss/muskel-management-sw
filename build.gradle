@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'de.oth'
-version = '0.0.1-SNAPSHOT'
+version = 'v1.0.0'
 description = 'MuskelManagement'
 
 java {
@@ -57,7 +57,7 @@ task installTailwind(type: NpmTask) {
 
 task buildTailwind(type: NpxTask) {
     command = "tailwindcss"
-    args = ["-i", "src/main/resources/static/css/input.css", "-o", "build/resources/main/static/css/output.css"]
+    args = ["-i", "src/main/resources/static/css/input.css", "-o", "src/main/resources/static/css/output.css"]
 }
 
 tasks.named("processResources") {
