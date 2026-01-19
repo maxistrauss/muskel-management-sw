@@ -12,12 +12,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
+
+import static de.oth.muskelmanagement.model.enums.DayOfWeek.*;
+import static de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -227,9 +229,9 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // Get trainer user if exists
-        de.oth.muskelmanagement.model.entity.User trainer = userRepository.findByEmail("trainer@example.com");
+        User trainer = userRepository.findByEmail("trainer@example.com");
 
-        de.oth.muskelmanagement.model.entity.Course yoga = new de.oth.muskelmanagement.model.entity.Course(
+        Course yoga = new Course(
                 "Yoga Basics", "A gentle introduction to yoga focusing on breath and basic poses.", 20, true,
                 LocalTime.of(9, 0), 60);
         if (trainer != null) {
@@ -238,11 +240,10 @@ public class DataInitializer implements CommandLineRunner {
         roomRepository.findByName("Yoga Studio").ifPresent(r -> yoga.setRoom(r));
         yoga.setStartDate(LocalDate.now().minusWeeks(4));
         yoga.setEndDate(LocalDate.now().plusWeeks(8));
-        yoga.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY,
-                de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY));
+        yoga.setDaysOfWeek(Set.of(MONDAY, WEDNESDAY));
         courseRepository.save(yoga);
 
-        de.oth.muskelmanagement.model.entity.Course hiit = new de.oth.muskelmanagement.model.entity.Course(
+        Course hiit = new Course(
                 "HIIT Cardio", "High intensity interval training to boost your cardio fitness.", 15, true,
                 LocalTime.of(18, 0), 45);
         if (trainer != null) {
@@ -251,12 +252,10 @@ public class DataInitializer implements CommandLineRunner {
         roomRepository.findByName("Cardio Room").ifPresent(r -> hiit.setRoom(r));
         hiit.setStartDate(LocalDate.now().minusWeeks(2));
         hiit.setEndDate(LocalDate.now().plusWeeks(10));
-        hiit.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.TUESDAY,
-                de.oth.muskelmanagement.model.enums.DayOfWeek.THURSDAY,
-                de.oth.muskelmanagement.model.enums.DayOfWeek.SATURDAY));
+        hiit.setDaysOfWeek(Set.of(TUESDAY, THURSDAY, SATURDAY));
         courseRepository.save(hiit);
 
-        de.oth.muskelmanagement.model.entity.Course strength = new de.oth.muskelmanagement.model.entity.Course(
+        Course strength = new Course(
                 "Strength Training", "Build muscle and increase strength with progressive overload.", 10, true,
                 LocalTime.of(17, 0), 75);
         if (trainer != null) {
@@ -265,12 +264,10 @@ public class DataInitializer implements CommandLineRunner {
         roomRepository.findByName("Weight Room").ifPresent(r -> strength.setRoom(r));
         strength.setStartDate(LocalDate.now().minusWeeks(1));
         strength.setEndDate(LocalDate.now().plusWeeks(11));
-        strength.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY,
-                de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY,
-                de.oth.muskelmanagement.model.enums.DayOfWeek.FRIDAY));
+        strength.setDaysOfWeek(Set.of(MONDAY, WEDNESDAY, FRIDAY));
         courseRepository.save(strength);
 
-        de.oth.muskelmanagement.model.entity.Course pelvicFloor = new de.oth.muskelmanagement.model.entity.Course(
+        Course pelvicFloor = new Course(
                 "Pelvic Floor Training", "Pelvic floor training, doesn't have to taste good but has to work.", 2, true,
                 LocalTime.of(10, 0), 90);
         if (trainer != null) {
@@ -278,12 +275,12 @@ public class DataInitializer implements CommandLineRunner {
         }
         pelvicFloor.setStartDate(LocalDate.now().plusWeeks(1));
         pelvicFloor.setEndDate(LocalDate.now().plusWeeks(3));
-        pelvicFloor.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.SUNDAY));
+        pelvicFloor.setDaysOfWeek(Set.of(SUNDAY));
         courseRepository.save(pelvicFloor);
 
         // Create Test Course with Admin as Trainer and 12 members
-        de.oth.muskelmanagement.model.entity.User admin = userRepository.findByEmail("admin@example.com");
-        de.oth.muskelmanagement.model.entity.Course testCourse = new de.oth.muskelmanagement.model.entity.Course(
+        User admin = userRepository.findByEmail("admin@example.com");
+        Course testCourse = new Course(
                 "Test Course - Pagination", 
                 "This is a test course to demonstrate pagination with 12 enrolled members.", 
                 15, 
@@ -296,22 +293,39 @@ public class DataInitializer implements CommandLineRunner {
         roomRepository.findByName("Main Gym").ifPresent(r -> testCourse.setRoom(r));
         testCourse.setStartDate(LocalDate.now());
         testCourse.setEndDate(LocalDate.now().plusWeeks(8));
-        testCourse.setDaysOfWeek(Set.of(de.oth.muskelmanagement.model.enums.DayOfWeek.MONDAY,
-                de.oth.muskelmanagement.model.enums.DayOfWeek.WEDNESDAY,
-                de.oth.muskelmanagement.model.enums.DayOfWeek.FRIDAY));
+        testCourse.setDaysOfWeek(Set.of(MONDAY, WEDNESDAY, FRIDAY));
         courseRepository.save(testCourse);
+
+        Course sunKiss = new Course("Sun Kissed Training", "Sun Kissed Training, which is only outside available", 2,
+                true, LocalTime.of(12, 0), 30);
+        if (trainer != null) {
+            sunKiss.setTrainer(trainer);
+        }
+        sunKiss.setStartDate(LocalDate.now().plusWeeks(1));
+        sunKiss.setEndDate(LocalDate.now().plusWeeks(3));
+        sunKiss.setDaysOfWeek(Set.of(SUNDAY));
+        sunKiss.setRoom(roomRepository.findByName("Outdoor").orElse(null));
+        for (int i = 1; i <= 2; i++) {
+            User testMember = userRepository.findByEmail("testmember" + i + "@example.com");
+            if (testMember != null && sunKiss != null) {
+                var enrollment = new Enrollment(testMember, sunKiss);
+                enrollment.setStatus(CONFIRMED);
+                sunKiss.addEnrollment(enrollment);
+            }
+        }
+        courseRepository.save(sunKiss);
 
         // Optionally enroll seeded users
         try {
-            de.oth.muskelmanagement.model.entity.User member = userRepository.findByEmail("member@example.com");
+            User member = userRepository.findByEmail("member@example.com");
             if (member != null) {
-                var e1 = new de.oth.muskelmanagement.model.entity.Enrollment(member, yoga);
+                var e1 = new Enrollment(member, yoga);
                 enrollmentRepository.save(e1);
                 yoga.addEnrollment(e1);
                 courseRepository.save(yoga);
             }
             if (trainer != null) {
-                var e2 = new de.oth.muskelmanagement.model.entity.Enrollment(trainer, hiit);
+                var e2 = new Enrollment(trainer, hiit);
                 enrollmentRepository.save(e2);
                 hiit.addEnrollment(e2);
                 courseRepository.save(hiit);
@@ -319,10 +333,10 @@ public class DataInitializer implements CommandLineRunner {
 
             // Enroll 12 test members in the Test Course
             for (int i = 1; i <= 12; i++) {
-                de.oth.muskelmanagement.model.entity.User testMember = userRepository.findByEmail("testmember" + i + "@example.com");
+                User testMember = userRepository.findByEmail("testmember" + i + "@example.com");
                 if (testMember != null && testCourse != null) {
-                    var enrollment = new de.oth.muskelmanagement.model.entity.Enrollment(testMember, testCourse);
-                    enrollment.setStatus(de.oth.muskelmanagement.model.enums.EnrollmentStatus.CONFIRMED);
+                    var enrollment = new Enrollment(testMember, testCourse);
+                    enrollment.setStatus(CONFIRMED);
                     enrollmentRepository.save(enrollment);
                     testCourse.addEnrollment(enrollment);
                 }
@@ -380,7 +394,6 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    @Transactional
     protected void initializeRooms() {
         createRoomIfNotFound("Main Gym", 50, "Mirrors, Air conditioning, Sound system, Rubber flooring", true);
         createRoomIfNotFound("Cardio Room", 30, "Treadmills area, Bikes area, TV screens, Water dispensers", true);

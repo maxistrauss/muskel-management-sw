@@ -22,6 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -176,7 +177,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void findAll_shouldReturnEmptyPageWhenNoEquipment() {
-        Page<Equipment> emptyPage = new PageImpl<>(Arrays.asList(), pageable, 0);
+        Page<Equipment> emptyPage = new PageImpl<>(List.of(), pageable, 0);
         when(equipmentRepository.findAll(pageable)).thenReturn(emptyPage);
 
         Page<EquipmentDto> result = equipmentService.findAll(pageable);
@@ -318,7 +319,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void findEquipment_shouldFilterByName() {
-        List<Equipment> filteredList = Arrays.asList(equipment);
+        List<Equipment> filteredList = Collections.singletonList(equipment);
         Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
         
         when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
@@ -333,7 +334,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void findEquipment_shouldFilterBySerialNumber() {
-        List<Equipment> filteredList = Arrays.asList(equipment);
+        List<Equipment> filteredList = Collections.singletonList(equipment);
         Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
         
         when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
@@ -347,7 +348,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void findEquipment_shouldFilterByManufacturer() {
-        List<Equipment> filteredList = Arrays.asList(equipment);
+        List<Equipment> filteredList = Collections.singletonList(equipment);
         Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
         
         when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
@@ -361,7 +362,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void findEquipment_shouldFilterByStatus() {
-        List<Equipment> filteredList = Arrays.asList(equipment);
+        List<Equipment> filteredList = Collections.singletonList(equipment);
         Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
         
         when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
@@ -376,7 +377,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void findEquipment_shouldFilterByLocation() {
-        List<Equipment> filteredList = Arrays.asList(equipment);
+        List<Equipment> filteredList = Collections.singletonList(equipment);
         Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
         
         when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
@@ -390,7 +391,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void findEquipment_shouldFilterByMultipleCriteria() {
-        List<Equipment> filteredList = Arrays.asList(equipment);
+        List<Equipment> filteredList = Collections.singletonList(equipment);
         Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
         
         when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);
@@ -425,7 +426,7 @@ class EquipmentServiceImplTest {
 
     @Test
     void findEquipment_shouldHandleCaseInsensitiveSearch() {
-        List<Equipment> filteredList = Arrays.asList(equipment);
+        List<Equipment> filteredList = Collections.singletonList(equipment);
         Page<Equipment> filteredPage = new PageImpl<>(filteredList, pageable, filteredList.size());
         
         when(equipmentRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(filteredPage);

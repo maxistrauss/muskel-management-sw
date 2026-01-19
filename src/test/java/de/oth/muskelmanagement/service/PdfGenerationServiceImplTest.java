@@ -1,8 +1,8 @@
 package de.oth.muskelmanagement.service;
 
 import de.oth.muskelmanagement.model.entity.MembershipConfirmation;
-import de.oth.muskelmanagement.model.entity.Subscription;
 import de.oth.muskelmanagement.model.entity.Pricing;
+import de.oth.muskelmanagement.model.entity.Subscription;
 import de.oth.muskelmanagement.model.entity.User;
 import de.oth.muskelmanagement.model.enums.SubscriptionStatus;
 import de.oth.muskelmanagement.repository.MembershipConfirmationRepository;
@@ -10,7 +10,6 @@ import de.oth.muskelmanagement.repository.SubscriptionRepository;
 import de.oth.muskelmanagement.repository.UserRepository;
 import de.oth.muskelmanagement.service.impl.PdfGenerationServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,10 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.templatemode.TemplateMode;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -247,8 +243,8 @@ class PdfGenerationServiceImplTest {
         Long userId = 1L;
         MembershipConfirmation conf1 = new MembershipConfirmation();
         conf1.setId(1L);
-        
-        List<MembershipConfirmation> confirmations = Arrays.asList(conf1);
+
+        List<MembershipConfirmation> confirmations = List.of(conf1);
         when(confirmationRepository.findByUser_IdAndDeletedFalse(userId)).thenReturn(confirmations);
 
         // Act

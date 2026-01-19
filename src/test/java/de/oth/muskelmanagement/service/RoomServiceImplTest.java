@@ -268,7 +268,7 @@ class RoomServiceImplTest {
         equipment1.setStatus(EquipmentStatus.AVAILABLE);
         equipment1.setRoom(room);
 
-        List<Equipment> equipmentList = Arrays.asList(equipment1);
+        List<Equipment> equipmentList = List.of(equipment1);
 
         when(equipmentRepository.findByRoomId(1L)).thenReturn(equipmentList);
         when(equipmentRepository.save(any(Equipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
