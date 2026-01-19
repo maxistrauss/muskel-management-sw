@@ -20,8 +20,6 @@
         <!-- Search/Filter Form -->
         <form class="mb-6 p-4 border rounded-lg bg-gray-50" method="get" th:action="@{/admin/users}">
             <input name="size" th:value="${userPage.size}" type="hidden"/>
-            <input name="sort" th:if="${userPage.sort.isSorted()}" th:value="${userPage.sort.toString().replace(': ', ',')}"
-                   type="hidden"/>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="email">Email:</label>
@@ -174,7 +172,7 @@
 
             <div class="flex items-center space-x-2" th:if="${userPage.totalPages > 0}">
                 <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-l-lg"
-                   th:href="@{/admin/users(page=${userPage.number - 1}, size=${userPage.size}, sort=${userPage.sort.toString().replace(': ', ',')}, email=${email}, firstName=${firstName}, lastName=${lastName}, activePlan=${activePlan})}"
+                   th:href="@{/admin/users(page=${userPage.number - 1}, size=${userPage.size}, sort=${userPage.sort.isSorted() ? userPage.sort.toString().replace(': ', ',') : ''}, email=${email}, firstName=${firstName}, lastName=${lastName}, activePlan=${activePlan})}"
                    th:if="${userPage.hasPrevious()}">Previous</a>
                 <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-l-lg"
                       th:unless="${userPage.hasPrevious()}">Previous</span>
@@ -183,12 +181,12 @@
                     <!-- Show limited page numbers for large lists (optional optimization, but keeping simple for now) -->
                     <a class="px-3 py-2 leading-tight border border-gray-300"
                        th:classappend="${i == userPage.number ? 'bg-blue-500 text-white' : 'text-gray-700 bg-white hover:bg-gray-100'}"
-                       th:href="@{/admin/users(page=${i}, size=${userPage.size}, sort=${userPage.sort.toString().replace(': ', ',')}, email=${email}, firstName=${firstName}, lastName=${lastName}, activePlan=${activePlan})}">[[${i
+                       th:href="@{/admin/users(page=${i}, size=${userPage.size}, sort=${userPage.sort.isSorted() ? userPage.sort.toString().replace(': ', ',') : ''}, email=${email}, firstName=${firstName}, lastName=${lastName}, activePlan=${activePlan})}">[[${i
                         + 1}]]</a>
                 </div>
 
                 <a class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 rounded-r-lg"
-                   th:href="@{/admin/users(page=${userPage.number + 1}, size=${userPage.size}, sort=${userPage.sort.toString().replace(': ', ',')}, email=${email}, firstName=${firstName}, lastName=${lastName}, activePlan=${activePlan})}"
+                   th:href="@{/admin/users(page=${userPage.number + 1}, size=${userPage.size}, sort=${userPage.sort.isSorted() ? userPage.sort.toString().replace(': ', ',') : ''}, email=${email}, firstName=${firstName}, lastName=${lastName}, activePlan=${activePlan})}"
                    th:if="${userPage.hasNext()}">Next</a>
                 <span class="px-3 py-2 leading-tight text-gray-400 bg-white border border-gray-300 rounded-r-lg"
                       th:unless="${userPage.hasNext()}">Next</span>
