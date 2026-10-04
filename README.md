@@ -25,4 +25,4 @@ Java 21 · Spring Boot 3 (Web, Security, Data JPA, Mail) · Thymeleaf · Tailwin
 docker compose up --build
 ```
 
-API keys (Stripe, PayPal, mail, ExerciseDB) are configured in `src/main/resources/application.properties`.
+API keys are read from environment variables: `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `EXERCISEDB_API_KEY` (all optional for local testing).

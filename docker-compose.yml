@@ -14,8 +14,8 @@ services:
       # Mail Configuration (optional - mit deinen Werten)
       - SPRING_MAIL_HOST=sandbox.smtp.mailtrap.io
       - SPRING_MAIL_PORT=587
-      - SPRING_MAIL_USERNAME=f6db00ce5cfbb8
-      - SPRING_MAIL_PASSWORD=9100ab5936e050
+      - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
     volumes:
       # Persistente Datenbank
       - muskelmanagement-data:/app/data
